@@ -56,6 +56,7 @@ class ToolData
 {
 public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
+  typedef kwiver::vital::feature_track_set_changes_sptr feature_track_set_changes_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
   typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
@@ -65,6 +66,9 @@ public:
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
+
+  /// Deep copy of the feature track changes into this data class
+  void copyTrackChanges(feature_track_set_changes_sptr const&);
 
   /// Deep copy the cameras into this data class
   void copyCameras(camera_map_sptr const&);
@@ -83,6 +87,7 @@ public:
   std::string videoPath;
   std::string maskPath;
   feature_track_set_sptr tracks;
+  feature_track_set_changes_sptr track_changes;
   depth_sptr active_depth;
   camera_map_sptr cameras;
   landmark_map_sptr landmarks;
@@ -104,6 +109,7 @@ class AbstractTool : public QAction
 
 public:
   typedef kwiver::vital::feature_track_set_sptr feature_track_set_sptr;
+  typedef kwiver::vital::feature_track_set_changes_sptr feature_track_set_changes_sptr;
   typedef kwiver::vital::camera_map_sptr camera_map_sptr;
   typedef kwiver::vital::landmark_map_sptr landmark_map_sptr;
   typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
@@ -117,9 +123,10 @@ public:
     Landmarks = 0x4,
     ActiveFrame = 0x8,
     KeyFrames = 0x10,
-    Depth = 0x20,
-    BatchDepth = 0x40,
-    Fusion = 0x80
+    TrackChanges = 0x20,
+    Depth = 0x40,
+    BatchDepth = 0x80,
+    Fusion = 0x100
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
@@ -153,6 +160,9 @@ public:
 
   /// Set the feature tracks to be used as input to the tool.
   void setTracks(feature_track_set_sptr const&);
+
+  /// Set the feature track changes to be used as input to the tool.
+  void setTrackChanges(feature_track_set_changes_sptr const&);
 
   /// Set the cameras to be used as input to the tool.
   void setCameras(camera_map_sptr const&);

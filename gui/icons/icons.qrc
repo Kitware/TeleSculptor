@@ -3,6 +3,8 @@
     <file alias="camera">16x16/camera.png</file>
     <file alias="cancel">16x16/cancel.png</file>
     <file alias="close">16x16/close.png</file>
+    <file alias="copy-location">16x16/copy-location.png</file>
+    <file alias="delete">16x16/delete.png</file>
     <file alias="depthmap">16x16/depthmap.png</file>
     <file alias="feature">16x16/feature.png</file>
     <file alias="grid">16x16/grid.png</file>
@@ -15,6 +17,7 @@
     <file alias="playback-loop">16x16/playback-loop.png</file>
     <file alias="playback-play">16x16/playback-play.png</file>
     <file alias="quit">16x16/quit.png</file>
+    <file alias="reset">16x16/reset.png</file>
     <file alias="residual">16x16/residual.png</file>
     <file alias="roi">16x16/roi.png</file>
     <file alias="save">16x16/save.png</file>
@@ -26,6 +29,8 @@
     <file alias="camera">22x22/camera.png</file>
     <file alias="cancel">22x22/cancel.png</file>
     <file alias="close">22x22/close.png</file>
+    <file alias="copy-location">22x22/copy-location.png</file>
+    <file alias="delete">22x22/delete.png</file>
     <file alias="depthmap">22x22/depthmap.png</file>
     <file alias="feature">22x22/feature.png</file>
     <file alias="grid">22x22/grid.png</file>
@@ -38,6 +43,7 @@
     <file alias="playback-loop">22x22/playback-loop.png</file>
     <file alias="playback-play">22x22/playback-play.png</file>
     <file alias="quit">22x22/quit.png</file>
+    <file alias="reset">22x22/reset.png</file>
     <file alias="residual">22x22/residual.png</file>
     <file alias="roi">22x22/roi.png</file>
     <file alias="save">22x22/save.png</file>
@@ -55,5 +61,8 @@
   </qresource>
   <qresource prefix="icons/128x128">
     <file alias="telesculptor">128x128/telesculptor.png</file>
+  </qresource>
+  <qresource prefix="icons/scalable">
+    <file alias="registered">scalable/registered.svg</file>
   </qresource>
 </RCC>

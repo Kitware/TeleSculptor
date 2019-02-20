@@ -239,6 +239,15 @@
     </property>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="groundControlPointsDock">
+   <property name="windowTitle">
+    <string>&amp;Ground Control Points</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="GroundControlPointsView" name="groundControlPoints"/>
+  </widget>
   <action name="actionNewProject">
    <property name="text">
     <string>&amp;New Project</string>
@@ -476,10 +485,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Ground Control Points</string>
+    <string>&amp;Ground Control Points...</string>
    </property>
    <property name="toolTip">
-    <string>Export the ground control points in the current project</string>
+    <string>Export the ground control points as a GeoJSON file</string>
    </property>
   </action>
   <action name="actionAntialiasing">
@@ -533,7 +542,7 @@
   </action>
   <action name="actionImportLandmarks">
    <property name="text">
-    <string>&amp;Landmarks</string>
+    <string>&amp;Landmarks...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O, L</string>
@@ -541,10 +550,7 @@
   </action>
   <action name="actionImportGroundControlPoints">
    <property name="text">
-    <string>&amp;Ground Control Points</string>
-   </property>
-   <property name="toolTip">
-    <string>Ground Control Points</string>
+    <string>&amp;Ground Control Points...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O, G</string>
@@ -585,6 +591,12 @@
    <class>qtProgressWidget</class>
    <extends>QWidget</extends>
    <header>qtProgressWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GroundControlPointsView</class>
+   <extends>QWidget</extends>
+   <header>GroundControlPointsView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

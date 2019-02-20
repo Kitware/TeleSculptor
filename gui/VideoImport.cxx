@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -133,7 +133,7 @@ void VideoImport::run()
 
     if (mdVec.size() > 0)
     {
-      metadataMap->insert(std::make_pair(frame, mdVec));
+      metadataMap->emplace(frame, mdVec);
     }
 
     QString desc = description.arg(frame);

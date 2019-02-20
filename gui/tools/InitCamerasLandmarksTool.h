@@ -50,7 +50,8 @@ public:
 
   bool execute(QWidget* window = 0) override;
 
-  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks);
+  bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks,
+                        feature_track_set_changes_sptr track_changes);
 
 protected:
   void run() override;

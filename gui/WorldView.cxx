@@ -56,10 +56,10 @@
 #include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkContourFilter.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkEventQtSlotConnect.h>
+#include <vtkFlyingEdges3D.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
@@ -169,7 +169,7 @@ public:
   GroundControlPointsWidget* groundControlPointsWidget;
 
   VolumeOptions* volumeOptions;
-  vtkContourFilter* contourFilter;
+  vtkFlyingEdges3D* contourFilter;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
@@ -394,7 +394,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowGroundPlane);
   this->addAction(d->UI.actionShowDepthMap);
   this->addAction(d->UI.actionShowVolume);
-  this->addAction(d->UI.PlaceGroundControlPoint);
+  this->addAction(d->UI.actionEditGroundControlPoints);
 
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
@@ -443,7 +443,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->UI.renderWidget->SetRenderWindow(d->renderWindow);
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setInteractor(d->UI.renderWidget->GetInteractor());
-  connect(d->UI.PlaceGroundControlPoint, &QAction::toggled,
+  connect(d->UI.actionEditGroundControlPoints, &QAction::toggled,
           this, &WorldView::pointPlacementEnabled);
 
   vtkNew<vtkMaptkInteractorStyle> iren;
@@ -455,6 +455,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set up image actor and "dummy" data for use when we have no "real" image
   d->imageActor->SetVisibility(false);
+  d->imageActor->PickableOff();
   d->renderer->AddViewProp(d->imageActor);
 
   // Enable antialiasing by default
@@ -507,6 +508,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->groundActor->GetProperty()->SetColor(0.5, 0.5, 0.5);
   d->groundActor->GetProperty()->SetLighting(false);
   d->groundActor->GetProperty()->SetRepresentationToWireframe();
+  d->groundActor->PickableOff();
   d->renderer->AddActor(d->groundActor);
 
   // Set up axes
@@ -746,7 +748,7 @@ void WorldView::loadVolume(QString const& path)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(
     transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
@@ -787,7 +789,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkContourFilter::New();
+  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);

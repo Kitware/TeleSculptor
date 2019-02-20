@@ -10,3 +10,5 @@ cd @KWIVER_DIR@
 source setup_KWIVER.sh
 cd @MAPTK_BINARY_DIR@
 
+export LOG4CPLUS_CONFIGURATION=@MAPTK_BINARY_DIR@/share/maptk/@MAPTK_VERSION@/config/log4cplus.properties
+
