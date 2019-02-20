@@ -431,6 +431,12 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
                                 lgcs.origin().crs()));
   sfmConstraints->set_local_geo_cs(lgcs);
 
+  if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+      !project->geoOriginFile.isEmpty())
+  {
+    saveGeoOrigin(project->geoOriginFile);
+  }
+
   // shift the landmarks
   for (auto lm : this->landmarks->landmarks())
   {
