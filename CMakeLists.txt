@@ -75,7 +75,7 @@ if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
   return()
 endif()
-project(MAPTK VERSION 0.11.0)
+project(MAPTK VERSION 1.0.0)
 include( maptk-depends )
 
 # set the name for our package exports
