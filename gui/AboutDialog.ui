@@ -48,7 +48,7 @@ p { margin-top: 0px; margin-bottom: 0px; }
 &lt;body&gt;
 &lt;p style=&quot;font-size: 14pt&quot;&gt;@APP_TITLE@&lt;/p&gt;
 &lt;p style=&quot;font-weight: bold&quot;&gt;Version @APP_VERSION@&lt;/p&gt;
-&lt;p&gt;Using Qt @QT_VERSION@&lt;/p&gt;
+&lt;p&gt;Using KWIVER @KWIVER_VERSION@ and Qt @QT_VERSION@&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textInteractionFlags">

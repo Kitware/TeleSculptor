@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #include "ui_AboutDialog.h"
 
 #include <maptk/version.h>
+#include <vital/version.h>
 
 #include <qtSaxNodes.h>
 #include <qtSaxWriter.h>
@@ -53,6 +54,7 @@ QString formatTitle(QString formatStr)
   formatStr.replace("@APP_TITLE@", QApplication::applicationName());
   formatStr.replace("@APP_VERSION@", QApplication::applicationVersion());
   formatStr.replace("@QT_VERSION@", QString::fromLocal8Bit(qVersion()));
+  formatStr.replace("@KWIVER_VERSION@", QString::fromLocal8Bit(KWIVER_VERSION));
   return formatStr;
 }
 
