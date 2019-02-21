@@ -58,6 +58,7 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 
 #include <maptk/version.h>
+#include <maptk/write_pdal.h>
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
@@ -1961,6 +1962,7 @@ void MainWindow::saveLandmarks()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Landmarks", QString(),
     "Landmark file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -1976,13 +1978,21 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
   try
   {
-    kv::write_ply_file(d->landmarks, kvPath(path));
-
-    if (writeToProject && d->project)
+    if (QFileInfo(path).suffix() == "las")
     {
-      d->project->config->set_value(
-        "output_ply_file",
-        kvPath(d->project->getContingentRelativePath(path)));
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      kwiver::maptk::write_pdal(stdString(path), lgcs, d->landmarks);
+    }
+    else
+    {
+      kv::write_ply_file(d->landmarks, kvPath(path));
+
+      if (writeToProject && d->project)
+      {
+        d->project->config->set_value(
+          "output_ply_file",
+          kvPath(d->project->getContingentRelativePath(path)));
+      }
     }
   }
   catch (...)
@@ -2244,6 +2254,7 @@ void MainWindow::saveDepthPoints()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Depth Point Cloud", QString(),
     "PLY file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -2259,7 +2270,8 @@ void MainWindow::saveDepthPoints(QString const& path)
 
   try
   {
-    d->UI.worldView->saveDepthPoints(path);
+    auto lgcs = d->sfmConstraints->get_local_geo_cs();
+    d->UI.worldView->saveDepthPoints(path, lgcs);
     d->project->config->set_value(
       "depthmaps_images_file",
       kvPath(d->project->getContingentRelativePath(path)));
@@ -2362,13 +2374,25 @@ void MainWindow::saveColoredMesh()
 
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Colored Mesh", QString("colored_mesh.vtp"),
+    "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "PLY File (*.ply);;"
     "All Files (*)");
 
-  if (!path.isEmpty())
+  try
   {
-    d->UI.worldView->saveColoredMesh(path);
+    if (!path.isEmpty())
+    {
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      d->UI.worldView->saveColoredMesh(path, lgcs);
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting the mesh to \"%1\". "
+        "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
 
