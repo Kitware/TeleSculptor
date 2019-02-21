@@ -285,14 +285,9 @@ void FuseDepthTool::run()
   roi->GetXMax(maxptd);
   kwiver::vital::vector_3d maxpt(maxptd);
 
-  double pixel_to_world_scale; 
-  pixel_to_world_scale = kwiver::arrows::core::compute_pixel_to_world_scale(minpt, maxpt, cameras_out);
-  std::cout << "Pixel to world scale: " << pixel_to_world_scale << "\n";
-
-
   kwiver::vital::image_container_sptr volume;
   kwiver::vital::vector_3d spacing;
-  d->fuse_algo->integrate(minpt, maxpt, pixel_to_world_scale, depths_out, cameras_out, volume, spacing);
+  d->fuse_algo->integrate(minpt, maxpt, depths_out, cameras_out, volume, spacing);
 
   vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, spacing);
 
