@@ -219,8 +219,8 @@ if(APPLE)
 
   set_target_properties(TeleSculptor PROPERTIES
     OUTPUT_NAME TeleSculptor
-    MACOSX_BUNDLE_NAME "MAP-Tk TeleSculptor"
-    MACOSX_BUNDLE_INFO_STRING "MAP-Tk v${MAPTK_VERSION} TeleSculptor Application"
+    MACOSX_BUNDLE_NAME "TeleSculptor"
+    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${MAPTK_VERSION} Application"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${MAPTK_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
     )

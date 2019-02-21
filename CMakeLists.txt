@@ -56,7 +56,7 @@ endif()
 
 # Always build shared libraries, required due to plugin infrastructure
 if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
-  message(FATAL_ERROR "MAP-Tk must be built as shared libraries, please set BUILD_SHARED_LIBS=ON")
+  message(FATAL_ERROR "TeleSculptor must be built as shared libraries, please set BUILD_SHARED_LIBS=ON")
 endif()
 set(BUILD_SHARED_LIBS ON)
 
@@ -212,7 +212,7 @@ endif()
 
 
 
-set(CPACK_PACKAGE_NAME              "MAP-Tk")
+set(CPACK_PACKAGE_NAME              "TeleSculptor")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
@@ -235,7 +235,7 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http://www.kwiver.org")
 set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 
 if(MAPTK_ENABLE_GUI)
-  set (CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "MAP-Tk TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
+  set (CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 endif()
 
 if(APPLE)

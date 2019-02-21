@@ -1,5 +1,5 @@
 ===============================================================================
-  MAP-Tk TeleSculptor
+  TeleSculptor
 ===============================================================================
 
 .. role:: f
@@ -10,7 +10,7 @@
 Overview
 ========
 
-The MAP-Tk TeleSculptor graphical applicaton provides a means of computing
+The TeleSculptor graphical applicaton provides a means of computing
 structure-from-motion and visualizing the results, as well as loading results
 from the MAP-Tk command line tools. Entities available for display include the
 images or video frames, tracked feature points, cameras frustums, 3D landmark
@@ -492,17 +492,17 @@ View Menu
 Help Menu
 ---------
 
-:icon:`help-manual` MAP-Tk TeleSculptor User Manual
+:icon:`help-manual` TeleSculptor User Manual
   Displays the user manual (i.e. this document) in the default web browser.
 
-:icon:`telesculptor` About MAP-Tk TeleSculptor
+:icon:`telesculptor` About TeleSculptor
   Shows copyright and version information about the application.
 
 Glossary
 ========
 
 Camera:
-  A camera in MAP-Tk refers primarily to the model which describes the
+  A camera in TeleSculptor refers primarily to the model which describes the
   properties of a camera, including attributes such as focal length and world
   position and orientation. In the GUI, cameras are represented as frustums.
 
@@ -521,7 +521,7 @@ Landmark:
 
 Residual:
   A residual, in general, is the difference between an observed value and an
-  estimated value\ [#er]_. In MAP-Tk, the observed value is typically a
+  estimated value\ [#er]_. In TeleSculptor, the observed value is typically a
   detected feature point, and the estimated value is a landmark.
 
 .. [#nc] https://en.wikipedia.org/wiki/Necker_cube
