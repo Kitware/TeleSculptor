@@ -26,6 +26,8 @@ TeleSculptor
    by picking along the active camera direction vector for landmarks or the
    ground plane.
 
+ * Use robust bounds fit to the landmarks when setting or resetting the ROI.
+
 Fixes since last public release
 -------------------------------
 

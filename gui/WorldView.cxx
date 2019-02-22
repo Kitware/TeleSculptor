@@ -140,6 +140,8 @@ public:
   void updateScale(WorldView*);
   void updateAxes(WorldView*, bool immediate = false);
 
+  void setRobustROI();
+
   void
   vtkToPointList(vtkSmartPointer<vtkPolyData> mesh,
                  std::string const& colorArrayName,
@@ -312,6 +314,56 @@ void WorldViewPrivate::updateAxes(WorldView* q, bool immediate)
   {
     this->axesDirty = true;
     QMetaObject::invokeMethod(q, "updateAxes", Qt::QueuedConnection);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldViewPrivate::setRobustROI()
+{
+  if (this->roi)
+  {
+    constexpr double percentile = 0.1;
+    // use a different percentile for z-max, that's typically where you have
+    // small structures (poles, towers) with few points.
+    constexpr double zmax_percentile = 0.01;
+    constexpr double margin = 0.5;
+    vtkIdType numPts = this->landmarkPoints->GetNumberOfPoints();
+    if (numPts < 2)
+    {
+      return;
+    }
+    std::vector<double> x, y, z;
+    x.reserve(numPts);
+    y.reserve(numPts);
+    z.reserve(numPts);
+    for (vtkIdType i = 0; i < numPts; ++i)
+    {
+      double pt[3];
+      this->landmarkPoints->GetPoint(i, pt);
+      x.push_back(pt[0]);
+      y.push_back(pt[1]);
+      z.push_back(pt[2]);
+    }
+    std::sort(x.begin(), x.end());
+    std::sort(y.begin(), y.end());
+    std::sort(z.begin(), z.end());
+    vtkIdType minIdx = static_cast<vtkIdType>(percentile * (numPts - 1));
+    vtkIdType maxIdx = static_cast<vtkIdType>(numPts - 1 - minIdx);
+    vtkIdType zmaxIdx = static_cast<vtkIdType>((numPts - 1) *
+                                               (1.0 - zmax_percentile));
+    double bounds[6] = { x[minIdx], x[maxIdx],
+                         y[minIdx], y[maxIdx],
+                         z[minIdx], z[zmaxIdx] };
+    for (unsigned i = 0; i < 3; ++i)
+    {
+      unsigned i_min = 2 * i;
+      unsigned i_max = i_min + 1;
+      double offset = (bounds[i_max] - bounds[i_min]) * margin;
+      bounds[i_min] -= offset;
+      bounds[i_max] += offset;
+    }
+
+    this->roi->SetBounds(bounds);
   }
 }
 
@@ -1272,7 +1324,7 @@ void WorldView::updateScale()
         (bounds[3] - bounds[2]) < 0.0 &&
         (bounds[5] - bounds[4]) < 0.0)
     {
-      d->roi->SetBounds(d->landmarkActor->GetBounds());
+      d->setRobustROI();
     }
 
     // If landmarks are not valid, then get ground scale from the cameras
@@ -1591,10 +1643,10 @@ void WorldView::resetROI()
       vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
     if (rep)
     {
-      rep->PlaceWidget(d->landmarkActor->GetBounds());
       if (d->roi)
       {
-        d->roi->SetBounds(d->landmarkActor->GetBounds());
+        d->setRobustROI();
+        rep->PlaceWidget(d->roi->GetBounds());
       }
     }
   }
