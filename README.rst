@@ -1,47 +1,48 @@
-############################################
-                   MAP-Tk
-############################################
-.. image:: /gui/icons/64x64/telesculptor.png
+.. image:: doc/images/TeleSculptor_Logo.png
+   :width: 1024px
+   :alt: TeleSculptor
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Motion-imagery Aerial Photogrammetry Toolkit
+TeleSculptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+TeleSculptor is a cross-platform desktop application for photogrammetry.
+It was designed with a focus on aerial video, such as video collected from UAVs,
+and handles geospatial coordinates and can make use of metadata, if available,
+from GPS and IMU sensors.  However, the software can also work with
+non-geospatial data and with collections of images instead of metadata.
+TeleSculptor uses Structure-from-Motion techniques to estimate camera parameters
+as well as a sparse set of 3D landmarks.  It uses Multiview Stereo techniques
+to estimate dense depth maps on key frame and then fuses those depth maps
+into a consistent surface mesh which can be colored from the source imagery.
+
+TeleSculptor provides a graphical user interface with Qt_, 3D visualization
+with VTK_, and photogrammetry algorithms with KWIVER_. This project was
+previously called MAP-Tk (Motion-imagery Aerial Photogrammetry Toolkit).
+The MAP-Tk name is still scattered throughout the source code.
 MAP-Tk started as an open source C++ collection of libraries and tools for
-making measurements from aerial video.  Initial capability focused on
-estimating the camera flight trajectory and a sparse 3D point cloud of a scene.
-These products are jointly optimized via sparse bundle adjustment and are
-geo-localized if given additional control points or GPS metadata.
+making measurements from aerial video.  The TeleSculptor application was added
+to the project later. The original software framework and algorithm were then
+refactored into KWIVER and then expanded to address broader computer vision
+problems.  While KWIVER is now a more broad set of tools, TeleSculptor remains
+an application focused on photogrammetry.
 
-This project has similar goals as projects like Bundler_ and VisualSFM_.
-However, the focus here in on efficiently processing aerial video rather than
-community photo collections. Special attention has been given to the case where
-the variation in depth of the 3D scene is small compared to distance to the
-camera.  In these cases, planar homographies can be used to assist feature
-tracking, stabilize the video, and aid in solving loop closure problems.
-
-MAP-Tk uses the KWIVER_ software architecture.  Originally developed for
-MAP-Tk, KWIVER is highly modular and provides an algorithm abstraction layer
+The advantage of the KWIVER software architecture (previously MAP-Tk) is that
+it is highly modular and provides an algorithm abstraction layer
 that allows seamless interchange and run-time selection of algorithms from
 various other open source projects like OpenCV, VXL, Ceres Solver, and PROJ4.
-The core library and tools are light-weight with minimal dependencies
-(C++ standard library, KWIVER_ vital, and Eigen_).  The tools are written to depend
-only on the MAP-Tk and KWIVER vital libraries.  Additional capabilities are
+The core KWIVER library (vital) and tools are light-weight with minimal
+dependencies (C++ standard library, and Eigen_).  TeleSculptor is written to
+depend only on the KWIVER "vital" library.  Additional capabilities are
 provided by KWIVER arrows (plugin modules) that use third party libraries
 to implement various abstract algorithm interfaces defined in the KWIVER vital
-library.  Earlier versions of MAP-Tk contained these core data structures,
-algorithms, and plugins, but these have since been moved to KWIVER for easier
-reuse across projects.  What remains in this repository are the tools, scripts,
-and applications required to apply KWIVER algorithms to photogrammetry problems.
-As MAP-Tk capabilities have continued to migrate up into KWIVER this repository
-has become less of a "toolkit" and more of an end user application that uses
-the KWIVER toolkit.  Additionally the capabilities are starting to branch out
-beyond aerial data.  As a result, we are transitioning away from the MAP-Tk
-name as this repository becomes more about the GUI application named
-TeleSculptor.
+library.  This means that new plugins can be dropped into TeleSculptor to
+enable alternative or new functionality by adjusting some settings in a
+configuration file.  While TeleSculptor provides a default workflow that works
+out of the box, it is not just an end user tool.  It is designed to be highly
+configurable to support research into to algorithms and new problem domains.
 
-TeleSculptor is a GUI application built on Qt.  It provides a graphical
-interface to run photogrammetry algorithms and assist with visualization of
-data and results with the help of VTK.  The screenshots below show TeleSculptor
+The screenshots below show TeleSculptor
 running on example videos from the `VIRAT Video Dataset`_,
 `CLIF 2007 Dataset`_, and other public data sets.  More information about this
 example data can be found in the `examples <examples>`_ directory.
@@ -53,11 +54,6 @@ example data can be found in the `examples <examples>`_ directory.
 .. image:: /doc/screenshot/telesculptor_screenshot_linux.png
    :alt: Linux Screenshot
 
-TeleSculptor now supports visualization of depth maps, but compution of
-depth maps is not yet supported by KWIVER.  Instead, the cameras computed
-by MAP-Tk can be used with a fork of PlaneSweepLib_ that reads in the cameras
-and images and produces depthmaps that the GUI can load.  We are working on
-extending MAP-Tk TeleSculptor to compute depth maps directly.
 
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
@@ -83,22 +79,23 @@ Overview of Directories
 ======================= ========================================================
 
 
-Building MAP-Tk
-===============
+Building TeleSculptor
+=====================
 
-MAP-Tk requires C++11 compliant compiler
+TeleSculptor requires C++11 compliant compiler
 (e.g. GCC 4.8.1, Clang 3.3, Visual Studio 2015).
-MAP-Tk uses CMake (www.cmake.org) for easy cross-platform compilation. The
-minimum required version of CMake is 3.0, but newer versions are recommended.
+TeleSculptor uses CMake (www.cmake.org) for easy cross-platform compilation. The
+minimum required version of CMake is 3.9.5, but newer versions are recommended.
 
 Building
 --------
 
-The build is directed by CMake to ensure it can be built on various platforms. 
-The code is built by a CMake 'superbuild', meaning as part of the build, 
-CMake will download and build any dependent libraries needed by MAP-Tk. 
-The build is also out of source, meaning the code base is to be seperate from the build files.
-This means you will need two folders, one for the source code and one for the build files.
+The build is directed by CMake to ensure it can be built on various platforms.
+The code is built by a CMake 'superbuild', meaning as part of the build,
+CMake will download and build any dependent libraries needed by TeleSculptor.
+The build is also out of source, meaning the code base is to be separate from
+the build files.  This means you will need two folders, one for the source code
+and one for the build files.
 Here is the quickest way to build via a cmd/bash shell
 
 .. code-block :: bash
@@ -120,14 +117,14 @@ Here is the quickest way to build via a cmd/bash shell
   cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
   # Using the CMake GUI you can set the source and build directories accordingly and press the "Configure"  and “Generate” buttons
   # Alternatively, the ccmake tool allows for interactive selection of CMake options.
-  
+
 
   # Build the install target/project
-  # On Linux/OSX/MinGW 
+  # On Linux/OSX/MinGW
   make
-  # Once the Superbuild is complete, 
+  # Once the Superbuild is complete,
   # the maptk makefile will be placed in the build/external/maptk-build directory
-  
+
   # For MSVC
   # Open the MAPTK-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
   # When the build is complete you may close this solution.
@@ -139,8 +136,8 @@ CMake Options
 ============================== =================================================
 ``CMAKE_BUILD_TYPE``           The compiler mode, usually ``Debug`` or ``Release``
 
-``MAPTK_ENABLE_GUI``           Builds the TeleSculptor GUI 
-``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation 
+``MAPTK_ENABLE_GUI``           Builds the TeleSculptor GUI
+``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation
 ``MAPTK_ENABLE_TESTING``       Build the unit tests
 ============================== =================================================
 
@@ -149,22 +146,25 @@ Mulit-Configuration Build Tools
 
 By default the CMAKE_BUILD_TYPE is set to Release.
 
-Separate directories are required for Debug and Release builds, requiring cmake to be run for each.
+Separate directories are required for Debug and Release builds, requiring CMake
+to be run for each.
 
-Even if you are using a Multi-Configuration build tool (like MSVC) to build Debug you must select the Debug CMAKE_BUILD_TYPE.
-(On Windows in order to debug a project all dependent projects must be build with Debug information.)
+Even if you are using a Multi-Configuration build tool (like MSVC) to build
+Debug you must select the Debug CMAKE_BUILD_TYPE. (On Windows in order to debug
+a project all dependent projects must be build with Debug information.)
 
-For MSVC users wanting a RelWithDebInfo build we recommend you still choose Release for the superbuild.
-Release and RelWithDebInfo are compatible with each other, and Fletch will build its base libraries as Release.
-MSVC solutions will provide both Release and RelWithDebInfo configuration options.
-You will need to open the ``<build/directory>/external/kwiver-build/KWIVER.sln`` and
-build this solution with the RelWithDebInfo configuration.
+For MSVC users wanting a RelWithDebInfo build we recommend you still choose
+Release for the superbuild.  Release and RelWithDebInfo are compatible with each
+other, and Fletch will build its base libraries as Release.  MSVC solutions will
+provide both Release and RelWithDebInfo configuration options. You will need to
+open the ``<build/directory>/external/kwiver-build/KWIVER.sln`` and build this
+solution with the RelWithDebInfo configuration.
 
 
 TeleSculptor
 ''''''''''''
 
-The MAP-Tk TeleSculptor GUI application is enabled by default,
+The TeleSculptor GUI application is enabled by default,
 and all dependencies will be built by the Superbuild.
 You may choose to disable building the GUI by setting ``MAPTK_ENABLE_GUI`` to OFF
 
@@ -174,7 +174,7 @@ Documentation
 If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds all dependencies,
 then the user manuals are built as part of the normal build process under the target
 "manuals".  The GUI manual can be viewed from inside the GUI by choosing the
-"MAP-Tk TeleSculptor User Manual" action from the "Help" menu.
+"TeleSculptor User Manual" action from the "Help" menu.
 
 To build the user manual(s), you need:
 
@@ -203,7 +203,8 @@ provided.  Follow the instructions in the comments.
 
 `Travis CI`_ is also used for continued integration testing.
 Travis CI is limited to a single platform (Ubuntu Linux), but provides
-automated testing of all topic branches and pull requests whenever they are created.
+automated testing of all topic branches and pull requests whenever they are
+created.
 
 ============================= =============
 Travis CI **master** branch:  |CI:master|_
@@ -213,30 +214,33 @@ Travis CI **release** branch: |CI:release|_
 Advanced Build
 --------------
 
-MAP-Tk is built on top of the `KWIVER <https://github.com/Kitware/kwiver>`_ toolkit.
-which is in turn built on the `Fletch <https://github.com/Kitware/fletch>`_ super build system.
-As mentioned above, to make it easier to build MAP-Tk, a "super-build" is provided to build both KWIVER and Fletch.
-But, if you wish, you may point the MAP-Tk build to use your own KWIVER builds.
+TeleSculptor is built on top of the KWIVER_ toolkit, which is in turn built on
+the Fletch_ super build system.  As mentioned above, to make it easier to build
+TeleSculptor, a "super-build" is provided to build both KWIVER and Fletch.
+But, if you wish, you may point the TeleSculptor build to use your own KWIVER
+builds.
 
-If you would like MAP-Tk to use a prebuilt version of KWIVER, specify the kwiver_DIR flag to cmake.
-The kwiver_DIR is the KWIVER build directory root, which contains the kwiver-config.cmake file. 
+If you would like TeleSculptor to use a prebuilt version of KWIVER, specify the
+kwiver_DIR flag to CMake.  The kwiver_DIR is the KWIVER build directory root,
+which contains the kwiver-config.cmake file.
 
 .. code-block :: bash
 
-    $ cmake ../../src -DCMAKE_BUILD_TYPE=Release -Dkwiver_DIR:PATH=<path/to/kwiver/build/dir> 
+    $ cmake ../../src -DCMAKE_BUILD_TYPE=Release -Dkwiver_DIR:PATH=<path/to/kwiver/build/dir>
 
 You must ensure that the specified build of KWIVER was built with at least the following options set:
 
-The required KWIVER flags can be found in this file : `<CMake/maptk-external-kwiver.cmake>`_ 
+The required KWIVER flags can be found in this file : `<CMake/maptk-external-kwiver.cmake>`_
 
-The required Fletch flags can be found in this file : `<CMake/maptk-external-fletch.cmake>`_ 
+The required Fletch flags can be found in this file : `<CMake/maptk-external-fletch.cmake>`_
 
 
 MAP-Tk Tools
 ============
 
 MAP-Tk command line tools are placed in the ``bin`` directory of the build
-or install path.  These tools are described below.
+or install path.  These tools are described below.  Note that these tools are
+in the process of being migrated to KWIVER and will leave this repository soon.
 
 
 Summary of MAP-Tk Tools
@@ -328,11 +332,11 @@ default configuration files for each algorithm in the ``config`` directory.
 Getting Help
 ============
 
-MAP-Tk is a component of Kitware_'s collection of open source computer vision
-tools known as KWIVER_. Please join the
+TeleSculptor is a component of Kitware_'s collection of open source computer
+vision tools and part of the KWIVER_ ecosystem. Please join the
 `kwiver-users <http://public.kitware.com/mailman/listinfo/kwiver-users>`_
-mailing list to discuss MAP-Tk or to ask for help with using MAP-Tk.
-For less frequent announcements about MAP-Tk and other KWIVER components,
+mailing list to discuss or to ask for help with using TeleSculptor.
+For less frequent announcements about TeleSculptor and other KWIVER components,
 please join the
 `kwiver-announce <http://public.kitware.com/mailman/listinfo/kwiver-announce>`_
 mailing list.
@@ -357,9 +361,10 @@ public release via 88ABW-2015-2555.
 .. _Fletch: https://github.com/Kitware/fletch
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
-.. _PlaneSweepLib: https://github.com/bastienjacquet/PlaneSweepLib
+.. _Qt: https://www.qt.io/
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
+.. _VTK: https://vtk.org/
 
 .. Appendix II: Text Substitutions
 .. ===============================
@@ -371,5 +376,3 @@ public release via 88ABW-2015-2555.
 
 .. _CI:master: https://travis-ci.org/Kitware/maptk
 .. _CI:release: https://travis-ci.org/Kitware/maptk
-
-

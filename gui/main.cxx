@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
   QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
   // Set application information
-  QApplication::setApplicationName("MAP-Tk TeleSculptor");
+  QApplication::setApplicationName("TeleSculptor");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);
@@ -104,6 +104,13 @@ int main(int argc, char** argv)
   if (QFileInfo{projDataDir}.isDir())
   {
     qputenv("PROJ_LIB", projDataDir.toLocal8Bit());
+  }
+
+  // Tell GDAL where to find its data files
+  auto gdalDataDir = exeDir.absoluteFilePath("../share/gdal");
+  if (QFileInfo{ gdalDataDir }.isDir())
+  {
+    qputenv("GDAL_DATA", gdalDataDir.toLocal8Bit());
   }
 
   // Create and show main window

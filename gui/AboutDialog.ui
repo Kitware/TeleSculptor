@@ -48,7 +48,7 @@ p { margin-top: 0px; margin-bottom: 0px; }
 &lt;body&gt;
 &lt;p style=&quot;font-size: 14pt&quot;&gt;@APP_TITLE@&lt;/p&gt;
 &lt;p style=&quot;font-weight: bold&quot;&gt;Version @APP_VERSION@&lt;/p&gt;
-&lt;p&gt;Using Qt @QT_VERSION@&lt;/p&gt;
+&lt;p&gt;Using KWIVER @KWIVER_VERSION@ and Qt @QT_VERSION@&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textInteractionFlags">
@@ -65,7 +65,7 @@ p { margin-top: 0px; margin-bottom: 0px; }
       <property name="text">
        <string>&lt;html&gt;&lt;body&gt;
 &lt;p&gt;
-  MAP-Tk TeleSculptor:&lt;br/&gt;
+  TeleSculptor:&lt;br/&gt;
   Graphical tool for image and video structure-from-motion, photogrammetry, and 3D surface reconstruction.
 &lt;/p&gt;
 &lt;p&gt;

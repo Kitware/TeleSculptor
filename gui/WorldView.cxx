@@ -47,6 +47,8 @@
 #include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
+#include <maptk/write_pdal.h>
+
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
@@ -139,6 +141,12 @@ public:
   void updateAxes(WorldView*, bool immediate = false);
 
   void setRobustROI();
+
+  void
+  vtkToPointList(vtkSmartPointer<vtkPolyData> mesh,
+                 std::string const& colorArrayName,
+                 std::vector<kwiver::vital::vector_3d>& points,
+                 std::vector<kwiver::vital::rgb_color>& colors);
 
   Ui::WorldView UI;
   Am::WorldView AM;
@@ -356,6 +364,40 @@ void WorldViewPrivate::setRobustROI()
     }
 
     this->roi->SetBounds(bounds);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void
+WorldViewPrivate::vtkToPointList(vtkSmartPointer<vtkPolyData> data,
+                                 std::string const& colorArrayName,
+                                 std::vector<kwiver::vital::vector_3d>& points,
+                                 std::vector<kwiver::vital::rgb_color>& colors)
+{
+  namespace kv = kwiver::vital;
+  vtkPoints *inPts = data->GetPoints();
+  vtkIdType numPts = inPts->GetNumberOfPoints();
+  points.resize(numPts);
+  colors.clear();
+
+  vtkDataArray* da = data->GetPointData()->GetArray(colorArrayName.c_str());
+  vtkUnsignedCharArray* rgbArray = nullptr;
+  if (da != nullptr && da->GetNumberOfComponents() == 3)
+  {
+    rgbArray = vtkArrayDownCast<vtkUnsignedCharArray>(da);
+    colors.resize(numPts);
+  }
+
+  for (vtkIdType i = 0; i < numPts; ++i)
+  {
+    inPts->GetPoint(i, points[i].data());
+    if (rgbArray)
+    {
+      vtkIdType idx = 3 * i;
+      colors[i] = kv::rgb_color(rgbArray->GetValue(idx),
+                                rgbArray->GetValue(idx + 1),
+                                rgbArray->GetValue(idx + 2));
+    }
   }
 }
 
@@ -1355,17 +1397,32 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveDepthPoints(QString const& path)
+void WorldView::saveDepthPoints(QString const& path,
+                                kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
+  namespace kv = kwiver::vital;
+  if (QFileInfo(path).suffix().toLower() == "las")
+  {
+    // convert the point cloud into a set of landmarks,
+    // then use the PDAL writer for landmarks
+    vtkSmartPointer<vtkPolyData> data =
+      vtkPolyData::SafeDownCast(d->depthScalarFilter->GetOutput());
+    std::vector<kv::vector_3d> points;
+    std::vector<kv::rgb_color> colors;
+    d->vtkToPointList(data, DepthMapArrays::TrueColor, points, colors);
+    kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+  }
+  else
+  {
+    vtkNew<vtkPLYWriter> writer;
 
-  vtkNew<vtkPLYWriter> writer;
-
-  writer->SetFileName(qPrintable(path));
-  writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
-  writer->SetColorMode(0);
-  writer->SetArrayName(DepthMapArrays::TrueColor);
-  writer->Write();
+    writer->SetFileName(qPrintable(path));
+    writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
+    writer->SetColorMode(0);
+    writer->SetArrayName(DepthMapArrays::TrueColor);
+    writer->Write();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1449,10 +1506,11 @@ void WorldView::saveVolume(const QString &path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveColoredMesh(const QString &path)
+void WorldView::saveColoredMesh(const QString &path,
+                                kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
-
+  namespace kv = kwiver::vital;
   const QString ext = QFileInfo(path).suffix().toLower();
   if(ext == "ply")
   {
@@ -1464,6 +1522,15 @@ void WorldView::saveColoredMesh(const QString &path)
     writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     writer->AddInputDataObject(mesh);
     writer->Write();
+  }
+  else if (ext == "las")
+  {
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+    std::vector<kv::vector_3d> points;
+    std::vector<kv::rgb_color> colors;
+    d->vtkToPointList(mesh, mesh->GetPointData()->GetScalars()->GetName(),
+                      points, colors);
+    kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
   }
   else
   {
