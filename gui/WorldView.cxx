@@ -320,6 +320,10 @@ void WorldViewPrivate::setRobustROI()
     constexpr double zmax_percentile = 0.01;
     constexpr double margin = 0.5;
     vtkIdType numPts = this->landmarkPoints->GetNumberOfPoints();
+    if (numPts < 2)
+    {
+      return;
+    }
     std::vector<double> x, y, z;
     x.reserve(numPts);
     y.reserve(numPts);
