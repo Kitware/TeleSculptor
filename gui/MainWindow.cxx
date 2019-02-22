@@ -403,6 +403,9 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 kv::vector_3d MainWindowPrivate::centerLandmarks() const
 {
   std::vector<double> x, y, z;
+  x.reserve(this->landmarks->size());
+  y.reserve(this->landmarks->size());
+  z.reserve(this->landmarks->size());
   for (auto lm : this->landmarks->landmarks())
   {
     auto v = lm.second->loc();
