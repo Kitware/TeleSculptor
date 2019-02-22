@@ -15,6 +15,10 @@ TeleSculptor
  * Switched the iso-surfacing algorithm to
    [flying edges](https://ieeexplore.ieee.org/document/7348069).
 
+ * Rebranded "MAP-Tk TeleSculptor" to simply "TeleSculptor".  These changes
+   apply mostly to documentation and user-facing names.  The name "maptk"
+   is still used heavily in the code itself.
+
  * Placing ground control points in the view uses a smart guess initial position
    method. When placing points in the world view, a point placer is used which
    snaps the point to a nearby landmark or the ground plane. When placing points
@@ -24,6 +28,9 @@ TeleSculptor
 
  * We now recompute the geographic origin whenever the landmarks are updated.
    This keeps the ground plane aligned with the data.
+
+ * Use robust bounds fit to the landmarks when setting or resetting the ROI.
+
 
 Fixes since last public release
 -------------------------------

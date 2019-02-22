@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MAP-Tk TeleSculptor</string>
+   <string>TeleSculptor</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -322,7 +322,7 @@
      <normaloff>:/icons/16x16/help-manual</normaloff>:/icons/16x16/help-manual</iconset>
    </property>
    <property name="text">
-    <string>MAP-Tk TeleSculptor User &amp;Manual</string>
+    <string>TeleSculptor User &amp;Manual</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -334,7 +334,7 @@
      <normaloff>:/icons/16x16/telesculptor</normaloff>:/icons/16x16/telesculptor</iconset>
    </property>
    <property name="text">
-    <string>&amp;About MAP-Tk TeleSculptor</string>
+    <string>&amp;About TeleSculptor</string>
    </property>
   </action>
   <action name="actionShowMatchMatrix">
@@ -356,10 +356,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLY &amp;Landmarks...</string>
+    <string>&amp;Landmarks...</string>
    </property>
    <property name="toolTip">
-    <string>Export the landmarks in the current project to a PLY file</string>
+    <string>Export the landmarks in the current project to a file</string>
    </property>
   </action>
   <action name="actionExportCameras">
@@ -449,13 +449,13 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLY &amp;Depth Map...</string>
+    <string>&amp;Depth Map...</string>
    </property>
    <property name="iconText">
-    <string>PLY Depth Map</string>
+    <string>Depth Map</string>
    </property>
    <property name="toolTip">
-    <string>Export the current back projected depth map as a PLY file</string>
+    <string>Export the current back projected depth map to a point cloud file</string>
    </property>
   </action>
   <action name="actionExportTracks">
