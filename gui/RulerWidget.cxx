@@ -293,6 +293,16 @@ void RulerWidget::movePointEvent(vtkObject* vtkNotUsed(da),
   }
   else
   {
+    // In define mode, it is guaranteed that execution reaches here because the
+    // user is interacting with handle index 1. Update the point placement.
+    if (vtkMaptkPointPlacer::SafeDownCast(d->pointRepr->GetPointPlacer()))
+    {
+      double pos[3], newPos[3];
+      d->repr->GetPoint2DisplayPosition(pos);
+      d->pointRepr->GetPointPlacer()->ComputeWorldPosition(
+        this->renderer(), pos, newPos, nullptr);
+      d->repr->SetPoint2WorldPosition(newPos);
+    }
     // Got here via InteractionEvent while defining the second point
     emit pointPlaced(1);
   }
