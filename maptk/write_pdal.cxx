@@ -34,9 +34,12 @@
  */
 
 #include "write_pdal.h"
+#include <maptk/maptk_config.h>
 #include <vital/logger/logger.h>
 #include <vital/exceptions/base.h>
+#include <vital/exceptions/io.h>
 
+#ifdef MAPTK_USE_PDAL
 #include <pdal/PointView.hpp>
 #include <pdal/PointTable.hpp>
 #include <pdal/Dimension.hpp>
@@ -44,6 +47,7 @@
 #include <pdal/StageFactory.hpp>
 
 #include <io/BufferReader.hpp>
+#endif
 
 
 namespace kwiver {
@@ -76,6 +80,8 @@ write_pdal(vital::path_t const& filename,
 {
   namespace kv = kwiver::vital;
   kv::logger_handle_t logger( kv::get_logger( "write_pdal" ) );
+
+#ifdef MAPTK_USE_PDAL
 
   if( !colors.empty() && colors.size() != points.size() )
   {
@@ -152,6 +158,13 @@ write_pdal(vital::path_t const& filename,
   writer->setOptions(options);
   writer->prepare(table);
   writer->execute(table);
+
+#else
+
+  throw vital::file_write_exception(filename,
+                                    "TeleSculptor was not compiled with PDAL, "
+                                    "cannot write LAS.");
+#endif
 }
 
 
