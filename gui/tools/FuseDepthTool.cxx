@@ -31,7 +31,6 @@
 #include "FuseDepthTool.h"
 #include "GuiCommon.h"
 
-#include <arrows/core/depth_utils.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/integrate_depth_maps.h>
 #include <vital/algo/video_input.h>
