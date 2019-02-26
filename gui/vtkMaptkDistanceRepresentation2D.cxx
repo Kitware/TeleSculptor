@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
-#define MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
+// MAPTK includes
+#include "vtkMaptkDistanceRepresentation2D.h"
 
 // VTK includes
-#include <vtkPointHandleRepresentation3D.h>
+#include <vtkAxisActor2D.h>
+#include <vtkHandleRepresentation.h>
+#include <vtkObjectFactory.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkTextProperty.h>
 
-// Forward declarations
-class vtkRenderer;
+vtkStandardNewMacro(vtkMaptkDistanceRepresentation2D);
 
-class vtkMaptkPointHandleRepresentation3D
-  : public vtkPointHandleRepresentation3D
+//----------------------------------------------------------------------------
+void vtkMaptkDistanceRepresentation2D::PrintSelf(ostream& os, vtkIndent indent)
 {
-public:
-  vtkTypeMacro(vtkMaptkPointHandleRepresentation3D,
-               vtkPointHandleRepresentation3D);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
+  this->Superclass::PrintSelf(os, indent);
+}
 
-  static vtkMaptkPointHandleRepresentation3D* New();
+//----------------------------------------------------------------------------
+void vtkMaptkDistanceRepresentation2D::BuildRepresentation()
+{
+  if (this->GetMTime() > this->BuildTime ||
+      this->AxisActor->GetMTime() > this->BuildTime ||
+      this->AxisActor->GetTitleTextProperty()->GetMTime() > this->BuildTime ||
+      this->Point1Representation->GetMTime() > this->BuildTime ||
+      this->Point2Representation->GetMTime() > this->BuildTime ||
+      (this->Renderer && this->Renderer->GetVTKWindow() &&
+       this->Renderer->GetVTKWindow()->GetMTime() > this->BuildTime))
+  {
+    double oldDist = this->Distance;
+    this->Superclass::BuildRepresentation();
+    if (!this->GetComputeDistance())
+    {
+      this->Distance = oldDist;
 
-protected:
-  vtkMaptkPointHandleRepresentation3D() = default;
-  ~vtkMaptkPointHandleRepresentation3D() = default;
-
-  // Override to ensure that the pick tolerance is always about the same as
-  // handle size.
-  int ComputeInteractionState(int X, int Y, int modify) override;
-
-private:
-  vtkMaptkPointHandleRepresentation3D(
-    const vtkMaptkPointHandleRepresentation3D&) = delete;
-  void operator=(const vtkMaptkPointHandleRepresentation3D) = delete;
-};
-
-#endif
+      char string[512];
+      snprintf(string,
+               sizeof(string),
+               this->LabelFormat,
+               this->Distance * this->Scale);
+      this->AxisActor->SetTitle(string);
+      this->BuildTime.Modified();
+    }
+  }
+}

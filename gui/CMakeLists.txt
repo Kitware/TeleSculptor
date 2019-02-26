@@ -117,6 +117,8 @@ set(gui_sources
   MetadataView.cxx
   PointOptions.cxx
   Project.cxx
+  RulerHelper.cxx
+  RulerWidget.cxx
   Utils.cxx
   VideoImport.cxx
   VolumeOptions.cxx
@@ -124,6 +126,8 @@ set(gui_sources
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+  vtkMaptkDistanceRepresentation2D.cxx
+  vtkMaptkDistanceWidget.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx

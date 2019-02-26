@@ -50,6 +50,7 @@ class vtkStructuredGrid;
 namespace kwiver { namespace vital { class landmark_map; } }
 
 class GroundControlPointsWidget;
+class RulerWidget;
 class vtkMaptkCamera;
 
 class WorldViewPrivate;
@@ -76,6 +77,7 @@ public:
   void setROI(vtkBox*, bool init = false);
 
   GroundControlPointsWidget* groundControlPointsWidget() const;
+  RulerWidget* rulerWidget() const;
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
@@ -85,6 +87,8 @@ signals:
   void meshEnabled(bool);
   void coloredMeshEnabled(bool);
   void pointPlacementEnabled(bool);
+  void rulerEnabled(bool);
+  void rulerReset();
 
 public slots:
   void setBackgroundColor(QColor const&);

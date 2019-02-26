@@ -28,37 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
-#define MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
+#ifndef MAPTK_RULERHELPER_H_
+#define MAPTK_RULERHELPER_H_
 
-// VTK includes
-#include <vtkPointHandleRepresentation3D.h>
+// qtExtensions includes
+#include <qtGlobal.h>
+
+// Qt declarations
+#include <QObject>
 
 // Forward declarations
-class vtkRenderer;
+class RulerHelperPrivate;
 
-class vtkMaptkPointHandleRepresentation3D
-  : public vtkPointHandleRepresentation3D
+class RulerHelper : public QObject
 {
+  Q_OBJECT
+
 public:
-  vtkTypeMacro(vtkMaptkPointHandleRepresentation3D,
-               vtkPointHandleRepresentation3D);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
+  RulerHelper(QObject* parent = nullptr);
+  ~RulerHelper();
 
-  static vtkMaptkPointHandleRepresentation3D* New();
+  // Update the camera view ruler from the world view
+  void updateCameraViewRuler();
 
-protected:
-  vtkMaptkPointHandleRepresentation3D() = default;
-  ~vtkMaptkPointHandleRepresentation3D() = default;
+public slots:
+  void enableWidgets(bool);
+  void resetRuler();
 
-  // Override to ensure that the pick tolerance is always about the same as
-  // handle size.
-  int ComputeInteractionState(int X, int Y, int modify) override;
+protected slots:
+  void addWorldViewPoint(int pId);
+  void addCameraViewPoint(int pId);
+
+  void moveCameraViewPoint(int pId);
+  void moveWorldViewPoint(int pId);
 
 private:
-  vtkMaptkPointHandleRepresentation3D(
-    const vtkMaptkPointHandleRepresentation3D&) = delete;
-  void operator=(const vtkMaptkPointHandleRepresentation3D) = delete;
+  QTE_DECLARE_PRIVATE_RPTR(RulerHelper)
+  QTE_DECLARE_PRIVATE(RulerHelper)
+
+  QTE_DISABLE_COPY(RulerHelper)
 };
 
 #endif

@@ -52,6 +52,7 @@
 #include "GroundControlPointsHelper.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "RulerHelper.h"
 #include "VideoImport.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
@@ -373,6 +374,7 @@ public:
 
   // Manual landmarks
   GroundControlPointsHelper* groundControlPointsHelper;
+  RulerHelper* rulerHelper;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -1098,6 +1100,7 @@ void MainWindowPrivate::updateCameraView()
   }
 
   this->groundControlPointsHelper->updateCameraViewPoints();
+  this->rulerHelper->updateCameraViewRuler();
   this->UI.cameraView->render();
 }
 
@@ -1515,6 +1518,13 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           d->groundControlPointsHelper,
           &GroundControlPointsHelper::enableWidgets);
   d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
+
+  // Ruler widget
+  d->rulerHelper = new RulerHelper(this);
+  connect(d->UI.worldView, &WorldView::rulerEnabled,
+          d->rulerHelper, &RulerHelper::enableWidgets);
+  connect(d->UI.worldView, &WorldView::rulerReset,
+          d->rulerHelper, &RulerHelper::resetRuler);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,

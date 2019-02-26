@@ -31,6 +31,10 @@ TeleSculptor
 
  * Use robust bounds fit to the landmarks when setting or resetting the ROI.
 
+ * Added a new ruler measurement for measuring the distance between two points
+   in the view. The ruler measurement displays two synchronized rulers between
+   the world and camera view. Placing the end-points of the ruler also uses the
+   smart guess initial position approach employed by ground control points.
 
 Fixes since last public release
 -------------------------------

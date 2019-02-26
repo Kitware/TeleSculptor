@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
-#define MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
+#ifndef MAPTK_VTKMAPTKDISTANCEREPRESENTATION2D_H_
+#define MAPTK_VTKMAPTKDISTANCEREPRESENTATION2D_H_
 
 // VTK includes
-#include <vtkPointHandleRepresentation3D.h>
+#include <vtkDistanceRepresentation2D.h>
 
-// Forward declarations
-class vtkRenderer;
-
-class vtkMaptkPointHandleRepresentation3D
-  : public vtkPointHandleRepresentation3D
+class vtkMaptkDistanceRepresentation2D : public vtkDistanceRepresentation2D
 {
 public:
-  vtkTypeMacro(vtkMaptkPointHandleRepresentation3D,
-               vtkPointHandleRepresentation3D);
+  vtkTypeMacro(vtkMaptkDistanceRepresentation2D, vtkDistanceRepresentation2D);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  static vtkMaptkPointHandleRepresentation3D* New();
+  static vtkMaptkDistanceRepresentation2D* New();
+
+  /**
+   * Set the distance measurement
+   */
+  vtkSetMacro(Distance, double);
+
+  /**
+   * Override to use the pre-set distance measurement
+   */
+  void BuildRepresentation() override;
+
+  /**
+   * Set/Get whether to compute the distance label
+   */
+  vtkSetMacro(ComputeDistance, vtkTypeBool);
+  vtkGetMacro(ComputeDistance, vtkTypeBool);
+  vtkBooleanMacro(ComputeDistance, vtkTypeBool);
 
 protected:
-  vtkMaptkPointHandleRepresentation3D() = default;
-  ~vtkMaptkPointHandleRepresentation3D() = default;
+  vtkMaptkDistanceRepresentation2D() = default;
+  ~vtkMaptkDistanceRepresentation2D() = default;
 
-  // Override to ensure that the pick tolerance is always about the same as
-  // handle size.
-  int ComputeInteractionState(int X, int Y, int modify) override;
+  vtkTypeBool ComputeDistance = true;
 
 private:
-  vtkMaptkPointHandleRepresentation3D(
-    const vtkMaptkPointHandleRepresentation3D&) = delete;
-  void operator=(const vtkMaptkPointHandleRepresentation3D) = delete;
+  vtkMaptkDistanceRepresentation2D(
+    const vtkMaptkDistanceRepresentation2D&) = delete;
+  void operator=(const vtkMaptkDistanceRepresentation2D) = delete;
 };
 
 #endif

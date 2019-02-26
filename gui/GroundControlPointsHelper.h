@@ -40,9 +40,6 @@
 // Qt declarations
 #include <QObject>
 
-// Kwiver includes
-#include <vital/types/landmark_map.h>
-
 // Forward declarations
 class GroundControlPointsHelperPrivate;
 

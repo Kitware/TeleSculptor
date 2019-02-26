@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
-#define MAPTK_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
+#ifndef MAPTK_VTKMAPTKDISTANCEWIDGET_H_
+#define MAPTK_VTKMAPTKDISTANCEWIDGET_H_
 
 // VTK includes
-#include <vtkPointHandleRepresentation3D.h>
+#include <vtkDistanceWidget.h>
 
 // Forward declarations
-class vtkRenderer;
+class vtkMaptkDistanceWidgetCallback;
 
-class vtkMaptkPointHandleRepresentation3D
-  : public vtkPointHandleRepresentation3D
+class vtkMaptkDistanceWidget : public vtkDistanceWidget
 {
 public:
-  vtkTypeMacro(vtkMaptkPointHandleRepresentation3D,
-               vtkPointHandleRepresentation3D);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
+  vtkTypeMacro(vtkMaptkDistanceWidget, vtkDistanceWidget);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-  static vtkMaptkPointHandleRepresentation3D* New();
+  static vtkMaptkDistanceWidget* New();
 
+  int DistanceInteractionEvent;
 protected:
-  vtkMaptkPointHandleRepresentation3D() = default;
-  ~vtkMaptkPointHandleRepresentation3D() = default;
+  vtkMaptkDistanceWidget();
+  ~vtkMaptkDistanceWidget();
 
-  // Override to ensure that the pick tolerance is always about the same as
-  // handle size.
-  int ComputeInteractionState(int X, int Y, int modify) override;
+  // Methods invoked when the handles at the
+  // end points of the widget are manipulated
+  void DistanceInteraction(int handleNum);
+
+  friend class vtkMaptkDistanceWidgetCallback;
+  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback1;
+  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback2;
 
 private:
-  vtkMaptkPointHandleRepresentation3D(
-    const vtkMaptkPointHandleRepresentation3D&) = delete;
-  void operator=(const vtkMaptkPointHandleRepresentation3D) = delete;
+  vtkMaptkDistanceWidget(const vtkMaptkDistanceWidget&) = delete;
+  void operator=(const vtkMaptkDistanceWidget) = delete;
 };
 
 #endif
