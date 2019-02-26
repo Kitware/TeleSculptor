@@ -318,11 +318,12 @@ void ComputeDepthTool::run()
   kwiver::vital::vector_3d maxpt(maxptd);
 
   d->crop =  kwiver::arrows::core::project_3d_bounds(minpt, maxpt, *cameras_out[ref_frame],
-    d->ref_img->width(), d->ref_img->height());
-  
+    static_cast<int>(d->ref_img->width()),
+    static_cast<int>(d->ref_img->height()));
+
   double height_min, height_max;
   kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
-  
+
   //compute depth
   this->setDescription("Computing Cost Volume");
   data = std::make_shared<ToolData>();

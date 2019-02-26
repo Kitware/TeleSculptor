@@ -145,7 +145,7 @@ protected:
  */
 
 /// output stream operator for a ground_control_point
-VITAL_EXPORT std::ostream& operator<<(std::ostream& s,
+MAPTK_EXPORT std::ostream& operator<<(std::ostream& s,
                                       ground_control_point const& m);
 
 /// input stream operator for a ground_control_point

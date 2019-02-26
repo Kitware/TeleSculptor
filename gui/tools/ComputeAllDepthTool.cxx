@@ -268,7 +268,9 @@ void ComputeAllDepthTool::run()
     kwiver::vital::vector_3d maxpt(maxptd);
 
     kwiver::vital::bounding_box<int> crop = kwiver::arrows::core::project_3d_bounds(
-      minpt, maxpt, *cameras_out[ref_frame], ref_img->width(), ref_img->height());
+      minpt, maxpt, *cameras_out[ref_frame],
+      static_cast<int>(ref_img->width()),
+      static_cast<int>(ref_img->height()));
 
     double height_min, height_max;
     kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
