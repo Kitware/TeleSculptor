@@ -306,6 +306,8 @@ public:
                       int value = 0);
 
   void saveGeoOrigin(QString const& path);
+  kv::vector_3d centerLandmarks() const;
+  void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
 
@@ -395,6 +397,91 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
     project->getContingentRelativePath(path)));
   kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(),
                                  stdString(path));
+}
+
+//-----------------------------------------------------------------------------
+kv::vector_3d MainWindowPrivate::centerLandmarks() const
+{
+  std::vector<double> x, y, z;
+  x.reserve(this->landmarks->size());
+  y.reserve(this->landmarks->size());
+  z.reserve(this->landmarks->size());
+  for (auto lm : this->landmarks->landmarks())
+  {
+    auto v = lm.second->loc();
+    x.push_back(v[0]);
+    y.push_back(v[1]);
+    z.push_back(v[2]);
+  }
+  // compute the median in x and y
+  size_t mid = x.size() / 2;
+  std::nth_element(x.begin(), x.begin() + mid, x.end());
+  std::nth_element(y.begin(), y.begin() + mid, y.end());
+  // compute 5th percentile for z
+  size_t pct5 = static_cast<size_t>(x.size() * 0.05);
+  std::nth_element(z.begin(), z.begin() + pct5, z.end());
+
+  return kv::vector_3d(x[mid], y[mid], z[pct5]);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
+{
+  auto lgcs = sfmConstraints->get_local_geo_cs();
+  lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
+  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
+                                  + kv::vector_2d(offset[0], offset[1]),
+                                lgcs.origin().crs()));
+  sfmConstraints->set_local_geo_cs(lgcs);
+
+  if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+      !project->geoOriginFile.isEmpty())
+  {
+    saveGeoOrigin(project->geoOriginFile);
+  }
+
+  // shift the landmarks
+  for (auto lm : this->landmarks->landmarks())
+  {
+    auto lmd = std::dynamic_pointer_cast<kv::landmark_d>(lm.second);
+    if (lmd)
+    {
+      lmd->set_loc(lm.second->loc() - offset);
+    }
+  }
+  this->UI.worldView->setLandmarks(*landmarks);
+  this->UI.cameraView->setLandmarksData(*landmarks);
+
+  // shift the cameras
+  auto cameras = this->cameraMap();
+  for (auto cam : cameras->cameras())
+  {
+    auto cam_ptr =
+      std::dynamic_pointer_cast<kv::simple_camera_perspective>(cam.second);
+    if (cam_ptr)
+    {
+      cam_ptr->set_center(cam_ptr->center() - offset);
+    }
+  }
+  this->updateCameras(cameras);
+
+  // shift the GCPs
+  for (auto gcp : this->groundControlPointsHelper->groundControlPoints())
+  {
+    gcp.second->set_loc(gcp.second->loc() - offset);
+  }
+  this->groundControlPointsHelper->pointsReloaded();
+
+  // shift the ROI
+  kv::vector_3d pt;
+  this->roi->GetXMin(pt.data());
+  pt -= offset;
+  this->roi->SetXMin(pt.data());
+  this->roi->GetXMax(pt.data());
+  pt -= offset;
+  this->roi->SetXMax(pt.data());
+  UI.worldView->setROI(roi.GetPointer(), true);
+  project->config->set_value("ROI", roiToString());
 }
 
 //-----------------------------------------------------------------------------
@@ -2659,6 +2746,7 @@ void MainWindow::saveToolResults()
 void MainWindow::updateToolResults()
 {
   QTE_D();
+  bool updated_landmarks = false;
 
   if (d->toolUpdateCameras)
   {
@@ -2673,6 +2761,7 @@ void MainWindow::updateToolResults()
     d->UI.actionExportLandmarks->setEnabled(
       d->landmarks && d->landmarks->size());
     d->toolUpdateLandmarks = NULL;
+    updated_landmarks = true;
   }
   if (d->toolUpdateTracks)
   {
@@ -2739,6 +2828,12 @@ void MainWindow::updateToolResults()
     d->UI.camera->setValue(d->toolUpdateActiveFrame);
     this->setActiveCamera(d->toolUpdateActiveFrame);
     d->toolUpdateActiveFrame = -1;
+  }
+
+  if (updated_landmarks)
+  {
+    auto offset = d->centerLandmarks();
+    d->shiftGeoOrigin(offset);
   }
 
   if (!d->frames.isEmpty())
