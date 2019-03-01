@@ -102,6 +102,8 @@ public:
   QMenu* popupMenu;
   QToolButton* copyLocationButton;
 
+  QMetaObject::Connection screenChanged;
+
   GroundControlPointsModel model;
   GroundControlPointsHelper* helper = nullptr;
 
@@ -312,9 +314,6 @@ GroundControlPointsView::GroundControlPointsView(
 
   d->updateRegisteredIcon(this);
 
-  connect(this->window()->windowHandle(), &QWindow::screenChanged,
-          this, [d, this]{ d->updateRegisteredIcon(this); });
-
   auto const clText = QStringLiteral("Copy Location");
 
   auto* const clMenu = new QMenu{clText, this};
@@ -455,4 +454,17 @@ void GroundControlPointsView::changeEvent(QEvent* e)
   }
 
   QWidget::changeEvent(e);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsView::showEvent(QShowEvent* e)
+{
+  QTE_D();
+
+  disconnect(d->screenChanged);
+  d->screenChanged =
+    connect(this->window()->windowHandle(), &QWindow::screenChanged,
+            this, [d, this] { d->updateRegisteredIcon(this); });
+
+  QWidget::showEvent(e);
 }
