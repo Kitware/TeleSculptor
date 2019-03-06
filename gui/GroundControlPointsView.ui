@@ -181,6 +181,12 @@
    <property name="text">
     <string>&amp;Revert Changes</string>
    </property>
+   <property name="iconText">
+    <string>Revert</string>
+   </property>
+   <property name="toolTip">
+    <string>Revert user changes to the active point</string>
+   </property>
   </action>
   <action name="actionDelete">
    <property name="icon">
@@ -188,7 +194,13 @@
      <normaloff>:/icons/16x16/delete</normaloff>:/icons/16x16/delete</iconset>
    </property>
    <property name="text">
-    <string>&amp;Delete</string>
+    <string>&amp;Delete Point</string>
+   </property>
+   <property name="iconText">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete the active point</string>
    </property>
   </action>
  </widget>

@@ -266,10 +266,13 @@
      <normaloff>:/icons/22x22/depthmap</normaloff>:/icons/22x22/depthmap</iconset>
    </property>
    <property name="text">
+    <string>Show 3D Depth Map</string>
+   </property>
+   <property name="iconText">
     <string>Depth Map</string>
    </property>
    <property name="toolTip">
-    <string>Toggles depth maps display</string>
+    <string>Toggle visibility of the depth map</string>
    </property>
   </action>
   <action name="actionShowVolume">
@@ -284,6 +287,9 @@
      <normaloff>:/icons/22x22/volume</normaloff>:/icons/22x22/volume</iconset>
    </property>
    <property name="text">
+    <string>Show Surface from Volume</string>
+   </property>
+   <property name="iconText">
     <string>Volume</string>
    </property>
    <property name="toolTip">
@@ -302,6 +308,9 @@
      <normaloff>:/icons/22x22/location</normaloff>:/icons/22x22/location</iconset>
    </property>
    <property name="text">
+    <string>Edit Ground Control Points</string>
+   </property>
+   <property name="iconText">
     <string>Control Points</string>
    </property>
    <property name="toolTip">
@@ -320,10 +329,13 @@
      <normaloff>:/icons/22x22/roi</normaloff>:/icons/22x22/roi</iconset>
    </property>
    <property name="text">
-    <string>SelectROI</string>
+    <string>Show/Edit Region of Interest</string>
+   </property>
+   <property name="iconText">
+    <string>Show/Edit ROI</string>
    </property>
    <property name="toolTip">
-    <string>Select 3D region of interest</string>
+    <string>Toggle visibility of the 3D region of interest and enable editing of the same</string>
    </property>
    <property name="shortcut">
     <string>S</string>
@@ -331,10 +343,13 @@
   </action>
   <action name="actionResetROI">
    <property name="text">
-    <string>ResetROI</string>
+    <string>Reset Region of Interest</string>
+   </property>
+   <property name="iconText">
+    <string>Reset ROI</string>
    </property>
    <property name="toolTip">
-    <string>Reset region of interest selection</string>
+    <string>Reset the region of interest selection</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
@@ -349,10 +364,13 @@
      <normaloff>:/icons/22x22/ruler</normaloff>:/icons/22x22/ruler</iconset>
    </property>
    <property name="text">
+    <string>Enable Measurement Tool</string>
+   </property>
+   <property name="iconText">
     <string>Ruler</string>
    </property>
    <property name="toolTip">
-    <string>Measure distance using a ruler</string>
+    <string>Measure distances using a ruler tool</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -360,7 +378,7 @@
   </action>
   <action name="actionResetRuler">
    <property name="text">
-    <string>Reset Ruler</string>
+    <string>Reset Measurement Tool</string>
    </property>
    <property name="toolTip">
     <string>Reset ruler for new distance measurement</string>

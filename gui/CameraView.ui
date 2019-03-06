@@ -113,7 +113,7 @@
      <normaloff>:/icons/22x22/feature</normaloff>:/icons/22x22/feature</iconset>
    </property>
    <property name="text">
-    <string>Show Features</string>
+    <string>Show Feature Points</string>
    </property>
    <property name="iconText">
     <string>Features</string>
