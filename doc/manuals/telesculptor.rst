@@ -92,21 +92,31 @@ Tool Bar
   Toggles visibility of landmarks. The associated pop-up provides additional
   options; see `Point Options`_.
 
+:icon:`location` Edit Ground Control Points
+  Toggles editing of ground control points. In edit mode, ground control points
+  can be selected in the views and dragged to change their location. New points
+  may be added by a left-click while holding the **Ctrl** key.
+
 :icon:`grid` Show Ground Plane Grid
   Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
   plane in world coordinates. The grid is centered about :f:`x = y = 0`,
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
+:icon:`roi` Select Region of Interest
+  TODO
+
 :icon:`depthmap` Show 3D Depth Map
   Toggles visibility of the depth map (if avaialble) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
 
-:icon:`volume` Surface from Volume
+:icon:`volume` Show Surface from Volume
   Toggles the visibility of the surface mesh extracted from volumetric data.
   This option is disabled if no volume data is loaded; see
   `Volume Surface Options`_.
 
+:icon:`ruler` Enable Measurement Tool
+  TODO
 
 Camera Options
 --------------
@@ -124,7 +134,6 @@ difference in camera frustum size relative to the numerical scale of the data,
 which can be arbitrary, and significantly different across various data sets.)
 The inactive camera scale is relative to the active camera scale, with the
 maximum allowed value giving active and inactive camera frustums the same size.
-
 
 Point Options
 -------------
@@ -163,7 +172,6 @@ Value.  Images of these attibutes as well as the depth map itself are also
 shown in the Depth Map View and the filter options selected here apply to that
 view as well.  See `Depth Map View`_.
 
-
 Volume Surface Options
 ----------------------
 
@@ -177,7 +185,6 @@ mode combines apperance projected from all frames or a subset of frame
 sampled at a regular interval.  The "Color display" options determine how to
 color the surface.  Options include mean color, median color, surface normal,
 and number of observations.
-
 
 Camera View
 ===========
@@ -273,7 +280,6 @@ of values in the image data.  By unselected the `Auto` checkbox the minimum
 and maximum values of the range can be adjusted manually for finer control of
 the visualization.
 
-
 Camera Selection
 ================
 
@@ -294,6 +300,54 @@ The slideshow action controls are also available via the `View <#view-menu>`_
 menu. The small slider controls the delay between slides. The slider response
 is logarithmic, with single steps in one-tenth powers of ten. The slider tool
 tip includes the current delay in human readable units.
+
+Metadata
+========
+
+The metadata panel displays the collection of video metadata for the current
+frame, if available. The set of fields is selected from the entire data set;
+individual frames may be missing some or all fields.
+
+Ground Control Points
+=====================
+
+The ground control points panel displays a list of all ground control points in
+the current data set, as well as detailed information for the selected point.
+Points have an automatically assigned ID (which may change between sessions)
+and an optional user-provided name, which may be assigned or changed by editing
+that column of the point (by double-clicking or pressing the edit key |--|
+usually **F2**).
+
+When a point is selected, changing its geodetic location (as described by the
+latitude, longitude, and elevation text fields) automatically promotes the
+point to a "user registered" point. These are points for which the geodetic
+location has been externally measured and is therefore known to be correct.
+The geodetic location of points which are not user registered is computed from
+their scene location and the computed scene to geodetic transformation (if
+available). User registered points are indicated by an icon in the ground
+control point list.
+
+Selecting a point in the list will select the same point in the world and
+camera views if ground control point editing is active. Similarly, selecting a
+ground control point in either view will select the same point in the list.
+Note that moving a user registered point in the world or camera views (that is,
+changing its scene location) does not change its geodetic location.
+
+Tool Bar
+--------
+
+:icon:`copy-location` Copy Location
+  Copies the geodetic location of the selected point to the clipboard. Several
+  options of ordering and whether or not to include the elevation are provided.
+
+:icon:`reset` Revert Changes
+  Reverts user changes to the active ground control point's geodetic location,
+  such that the point is no longer "user registered". This has no effect on
+  points that are not user registered. Note also that the geodetic location
+  will not change if a scene to geodetic transformation is not available.
+
+:icon:`delete` Delete Point
+  Deletes the active ground control point.
 
 Match Matrix View
 =================
@@ -364,7 +418,6 @@ typically only provides images and, if already computed, feature tracks.)
   corresponding frames, the camera/image files must be loaded so that these
   automatically assigned identifies match those that were assigned by the
   feature detection/tracking pipeline.
-
 
 Menu
 ====
@@ -470,7 +523,6 @@ Compute Menu -> Advanced
   plane (with the cameras in the :f:`+Z` direction). Additionally, the
   landmarks will be centered about the origin and scaled to an approximate
   variance of :f:`1.0`.
-
 
 View Menu
 ---------
