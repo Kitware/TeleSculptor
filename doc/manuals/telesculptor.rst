@@ -93,9 +93,8 @@ Tool Bar
   options; see `Point Options`_.
 
 :icon:`location` Edit Ground Control Points
-  Toggles editing of ground control points. In edit mode, ground control points
-  can be selected in the views and dragged to change their location. New points
-  may be added by a left-click while holding the **Ctrl** key.
+  Toggles editing of ground control points.
+  See `Editing Ground Control Points`_ for details.
 
 :icon:`grid` Show Ground Plane Grid
   Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
@@ -103,8 +102,15 @@ Tool Bar
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
-:icon:`roi` Select Region of Interest
-  TODO
+:icon:`roi` Show/Edit Region of Interest
+  Toggles visibility of the region of interest selection in the world view.
+  While visible, the ROI may be resized by clicking and dragging on any of the
+  six handles on the faces of the ROI box.
+
+:icon:`blank` Reset Region of Interest
+  Resets the region of interest to the axis-aligned bounds of the entire
+  dataset. This action is available via the
+  :action:`roi Show/Edit Region of Interest` button's associated pop-up menu.
 
 :icon:`depthmap` Show 3D Depth Map
   Toggles visibility of the depth map (if avaialble) rendered as a 3D point
@@ -116,7 +122,18 @@ Tool Bar
   `Volume Surface Options`_.
 
 :icon:`ruler` Enable Measurement Tool
-  TODO
+  Toggles placing or editing of the ruler measurement tool. Initially |--| when
+  the ruler has not yet been placed, or after it has been removed using
+  :action:`- Reset Measurement Tool` |--| a ruler can be placed by clicking two
+  points in the view. The depth of the points is calculated based on landmarks
+  in the immediate vicinity of the point being placed, or the ground plane if
+  no nearby landmarks are found. Once placed, the ruler's points may be moved
+  freely. Placement of the ruler may be canceled by pressing the **Esc** key
+  before placing the second point.
+
+:icon:`blank` Reset Measurement Tool
+  Removes the currently placed ruler. This action is available via the
+  :action:`ruler Enable Measurement Tool` button's associated pop-up menu.
 
 Camera Options
 --------------
@@ -185,6 +202,29 @@ mode combines apperance projected from all frames or a subset of frame
 sampled at a regular interval.  The "Color display" options determine how to
 color the surface.  Options include mean color, median color, surface normal,
 and number of observations.
+
+Editing Ground Control Points
+-----------------------------
+
+The :action:`location Edit Ground Control Points` action allows the user to
+enter or leave edit mode for ground control points. When not in edit mode,
+the scene location of ground control points is fixed and cannot be changed,
+nor can ground control points be selected in the world or camera views.
+
+In edit mode, clicking on a ground control point in either view selects the
+point in both views as well as the `Ground Control Points`_ panel. (Selecting
+a point in the panel also selects it in both views.) Points may be dragged in
+either view to change their scene location. Holding the **Shift** key while
+moving constrains movement to one of the principle axes.
+
+New points may be added by holding the **Ctrl** key while clicking. When
+placing new ground control points in the view, TeleSculptor projects a ray into
+the scene that corresponds to the location that was clicked and selects a
+location along this ray based on landmarks in the immediate vicinity. If no
+nearby landmark points are found, the new point is placed on the ground plane.
+
+Pressing the **Del** key while in edit mode when one of the views has keyboard
+focus will delete the currently selected ground control point.
 
 Camera View
 ===========
