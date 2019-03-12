@@ -83,7 +83,7 @@ QTE_IMPLEMENT_D_FUNC(TrackFeaturesSprokitTool)
 TrackFeaturesSprokitTool::TrackFeaturesSprokitTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new TrackFeaturesSprokitToolPrivate)
 {
-  this->setText("&Track Features");
+  this->setText("&Track Features Streaming");
   this->setToolTip(
     "<nobr>Track features through the video and identify keyframes. "
     "</nobr>Compute descriptors on the keyframes and match to a visual "

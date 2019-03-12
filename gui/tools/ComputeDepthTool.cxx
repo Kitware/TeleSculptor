@@ -86,7 +86,7 @@ ComputeDepthTool::ComputeDepthTool(QObject* parent)
   this->data()->logger =
     kwiver::vital::get_logger("telesculptor.tools.compute_depth");
 
-  this->setText("&Compute Depth Map");
+  this->setText("&Compute Single Depth Map");
   this->setToolTip("Computes depth map on current image.");
 }
 
