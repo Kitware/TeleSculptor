@@ -1632,7 +1632,10 @@ void WorldView::selectROI(bool toggled)
           d->initroi = false;
         }
         else
-          rep->PlaceWidget(d->landmarkActor->GetBounds());
+        {
+          d->setRobustROI();
+          rep->PlaceWidget(d->roi->GetBounds());
+        }
         d->connections->Connect(
           d->boxWidget,
           vtkCommand::InteractionEvent,
