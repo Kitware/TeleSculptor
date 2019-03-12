@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -371,6 +371,7 @@ void vtkMaptkCameraRepresentation::Update()
       camData.second->GetPosition(position);
       lines->InsertCellPoint(points->InsertNextPoint(position));
     }
+    lines->Modified();
   }
 }
 
