@@ -141,7 +141,7 @@ void VideoImport::run()
     emit this->updated(frame);
   }
 
-  emit this->progressChanged(description, 100);
+  emit this->progressChanged(QString("Loading video complete"), 100);
   emit this->completed(metadataMap);
 
   d->video_reader->close();
