@@ -329,6 +329,7 @@ void WorldViewPrivate::setRobustROI()
     // small structures (poles, towers) with few points.
     constexpr double zmax_percentile = 0.01;
     constexpr double margin = 0.5;
+    this->landmarkActor->GetMapper()->Update();
     vtkIdType numPts = this->landmarkPoints->GetNumberOfPoints();
     if (numPts < 2)
     {
@@ -1334,16 +1335,18 @@ void WorldView::updateScale()
     // the diagonal of the extents of the landmarks and camera centers
     vtkBoundingBox bbox;
 
-    // Add landmarks
-    d->landmarkActor->GetMapper()->Update();
-    bbox.AddBounds(d->landmarkActor->GetBounds());
-
+    // Add ROI bounds (if ROI set) otherwise estimate robust ROI and use that
     double* bounds = d->roi->GetBounds();
-    if ((bounds[1] - bounds[0]) < 0.0 &&
-        (bounds[3] - bounds[2]) < 0.0 &&
-        (bounds[5] - bounds[4]) < 0.0)
+    if ( bounds[1] >= bounds[0] &&
+         bounds[3] >= bounds[2] &&
+         bounds[5] >= bounds[4] )
+    {
+      bbox.AddBounds(bounds);
+    }
+    else
     {
       d->setRobustROI();
+      bbox.AddBounds(d->roi->GetBounds());
     }
 
     // If landmarks are not valid, then get ground scale from the cameras
