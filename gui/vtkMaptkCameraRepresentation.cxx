@@ -371,6 +371,7 @@ void vtkMaptkCameraRepresentation::Update()
       camData.second->GetPosition(position);
       lines->InsertCellPoint(points->InsertNextPoint(position));
     }
+    lines->Modified();
   }
 }
 
