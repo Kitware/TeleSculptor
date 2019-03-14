@@ -489,13 +489,47 @@ File Menu
 Compute Menu
 ------------
 
-:icon:`blank` Track Features Dense
+:icon:`blank` Track Features
   Run feature tracking on the loaded video starting from the current frame.
   Features and descriptors are detected and each frame and cached into a file
   in the project directory.  Features are then matched between adjacent frames
   as well as between the current frame as past keyframes.  These feature
   matches form "tracks" through time, and each track has the potential to
   become a landmark.
+
+:icon:`blank` Estimate Cameras/Landmarks
+  Estimates cameras and landmarks starting with tracks and metadata.  This also
+  runs bundle adjustment (refinement) along the way.  The goal is to
+  incrementally add cameras and landmarks, while optimizing, to build up
+  a consistent solution.
+
+:icon:`blank` Save Frames
+  Iterate through a video and save every frame as an image file in a
+  subdirectory of the project directory.  This is needed when exporting
+  the data to other tools that do not support video files.  This option
+  must be run before importing a project into SketchUp.
+
+:icon:`blank` Batch Compute Depth Maps
+  Estimates several dense depth maps and corresponding point clouds on several
+  frames spaced throughout the video.  This requires valid cameras and
+  computes the results in the active ROI.  The algorithm run on each frame
+  is the same as "Compute Single Depth Map", but intermediate solutions of
+  each depth map are not rendered.
+
+:icon:`blank` Fuse Depth Maps
+  Fuse all computed depth maps into a single mesh surface using an integration
+  volume specified by the ROI.  Note that this step requires an Nvidia GPU
+  and may not be able to run of the ROI is too large for the GPU memory.
+
+Compute Menu -> Advanced
+------------------------
+
+:icon:`blank` Filter Tracks
+  Filter the tracks to retain a smaller subset of tracks that is still
+  representative of the original set.  The intent is to make bundle adjustment
+  (refine solution tool) faster without loosing critical constraints.  The
+  filter attempts to remove the shortest tracks that span the same frames
+  already covered by longer tracks.
 
 :icon:`blank` Triangulate Landmarks
   For each available feature track, back project rays from the cameras that
@@ -505,35 +539,9 @@ Compute Menu
 
 :icon:`blank` Refine Solution
   Applies bundle adjustment to the cameras and landmarks in order to refine the
-  quality of the 3D reconstruction. It aims to minimze this distance between
+  quality of the 3D reconstruction. It aims to minimize this distance between
   the landmarks projected into each image by the cameras and the observed
   location of the corresponding feature tracks.
-
-:icon:`blank` Save Frames
-  Iterate through a video and save every frame as an image file in a
-  subdirectory of the project directory.  This is needed when exporting
-  the data to other tools that do not support video files.  This option
-  must be run before importing a project into SketchUp.
-
-:icon:`blank` Compute Depth Map
-  Estimate a dense depth map and corresponding point cloud from the current
-  frame.  This requires a valid camera on the current frame as well as cameras
-  on other frames for triangulation.  It also requires landmarks, which are
-  used to fit the bounds in space in which the dense depth is estimated.
-
-Compute Menu -> Advanced
-------------------------
-
-:icon:`blank` Track Features
-  Run feature tracking on the loaded video.  This is similar to the dense
-  feature tracking tool, but uses a two stage approach.  It first uses sparse
-  optical flow (KLT) to quickly track the flow of feature points through video.
-  From these feature tracks it identifies keyframes and then runs a second
-  stage feature and descriptor detection and matching on only the keyframes.
-  Keyframes are matched quickly with a bag of visual words index.  This
-  approach should be much faster than the original dense feature matcher.
-  However, the current implementation is bogged down by memory copies and
-  needs to be redesigned.
 
 :icon:`blank` Reverse (Necker)
   Transforms the cameras and landmarks in a manner intended to break the
@@ -543,19 +551,6 @@ Compute Menu -> Advanced
   180\ |deg| about their respective optical axes and 180\ |deg| about the
   best fit plane normal where each camera's optical axis intersects said plane.
 
-:icon:`blank` Filter Tracks
-  Filter the the tracks to retain a smaller subset of tracks that is still
-  representative of the original set.  The intent is to make bundle adjustment
-  (refine solution tool) faster without loosing critical constraints.  The
-  filter attempts to remove the shortest tracks that span the same frames
-  already covered by longer tracks.
-
-:icon:`blank` Estimate Cameras/Landmarks
-  Bootstraps booth cameras and landmarks starting only with tracks.  This also
-  runs bundle adjustment (refinement) along the way.  The goal is to
-  incrementally add cameras and landmarks, while optimizing, to build up
-  a consistent solution.  This tool does not yet use metadata as a constraint.
-
 :icon:`blank` Align
   Applies a similarity transformation to the camera and landmark data so that
   the data has a standard ("canonical") alignment. Particularly, this attempts
@@ -563,6 +558,17 @@ Compute Menu -> Advanced
   plane (with the cameras in the :f:`+Z` direction). Additionally, the
   landmarks will be centered about the origin and scaled to an approximate
   variance of :f:`1.0`.
+
+:icon:`blank` Save Key Frames
+  Iterate through a video and save every key frame as an image file in a
+  subdirectory of the project directory.  Key frames are marked by the
+  feature tracking algorithm.
+
+:icon:`blank` Compute Single Depth Map
+  Estimate a dense depth map and corresponding point cloud from the current
+  frame.  This requires a valid camera on the current frame as well as cameras
+  on other frames for triangulation.  It computes the solution within the
+  active ROI and shows an incremental visualization of how the solution evolves.
 
 View Menu
 ---------

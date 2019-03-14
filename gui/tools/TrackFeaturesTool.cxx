@@ -92,11 +92,11 @@ kwiver::vital::image_container_sptr TrackFeaturesToolPrivate::getImage(
 TrackFeaturesTool::TrackFeaturesTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new TrackFeaturesToolPrivate)
 {
-  this->setText("&Track Features Dense");
+  this->setText("&Track Features");
   this->setToolTip(
     "<nobr>Detect feature points in the images, compute feature descriptors, "
-    "</nobr>and track the features across images.  Also run loop closure if "
-    "configured to do so.  This is slower than the primary tracking algorithm.");
+    "</nobr>and match the features across images.  Also run loop closure if "
+    "configured to do so.");
 }
 
 //-----------------------------------------------------------------------------
