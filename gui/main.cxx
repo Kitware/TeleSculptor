@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,11 +56,17 @@ int main(int argc, char** argv)
   // Set the default surface format for the OpenGL view
   vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
   QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
+
   // Set application information
   QApplication::setApplicationName("TeleSculptor");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
   QApplication::setApplicationVersion(MAPTK_VERSION);
+
+  // Tell Qt to fully use High-DPI scaling, as the partial implementation we
+  // get otherwise is worse (and doesn't use our high-resolution icons)
+  QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
   // Register meta types
   using map_metadata_t = kwiver::vital::metadata_map::map_metadata_t;
