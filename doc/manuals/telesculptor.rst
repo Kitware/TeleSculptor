@@ -10,21 +10,22 @@
 Overview
 ========
 
-The TeleSculptor graphical applicaton provides a means of computing
+The TeleSculptor graphical application provides a means of computing
 structure-from-motion and visualizing the results, as well as loading results
 from the MAP-Tk command line tools. Entities available for display include the
 images or video frames, tracked feature points, cameras frustums, 3D landmark
-points, dense depth maps, and surfaces extracted volumetric data.
+points, dense depth maps, and surfaces extracted from volumetric data.
 
 The GUI consists of a primary (world) view, secondary (camera and depth) views,
-and a frame selection panel. The world view is a three dimensional view that
-shows the cameras and landmarks in the computed world coordinate system. The
-camera view shows the imagery from a single camera along with corresponding
-feature points, projected landmarks, and estimation residuals. The depth map
-view shows an estimated depth image for the current frame, if one is available.
-The frame selection panel provides controls to select the active camera and to
-use the slideshow mode. The camera view, depth view, and camera selection panel,
-are dockable and can be rearranged or detached to suit user preference.
+a frame selection panel, and various other ancillary views and panels. The
+world view is a three dimensional view that shows the cameras and landmarks in
+the computed world coordinate system. The camera view shows the imagery from a
+single camera along with corresponding feature points, projected landmarks, and
+estimation residuals. The depth map view shows an estimated depth image for the
+current frame, if one is available. The frame selection panel provides controls
+to select the active camera and to use the slideshow mode. Most of the views
+and panels are dockable and can be rearranged or detached to suit user
+preference.
 
 World View
 ==========
@@ -37,24 +38,21 @@ relations between cameras, and between cameras and landmarks.
 Landmarks are displayed as points, while cameras are displayed as frustums of
 semi-arbitrary length, with the active camera highlighted (see
 `Camera Options`_). The "camera path", which is a line connecting the camera
-centers, can also be displayed.
+centers, can also be displayed. Ground control points are displayed as "jacks";
+three short lines meeting at right angles in 3D.
 
 Additionally, the world view can display a representation of the ground plane
 (i.e. the world coordinate plane :f:`z = 0`), and can display the frame image
-for the active camera projected to that plane.  These projections result in
-a stablized view of the video if the scene is largely planar and that plane
-has been algined with `z = 0`.  There is a tool avaialable to reorient the
-data for this purpose.
+for the active camera projected to that plane. These projections result in a
+stabilized view of the video if the scene is largely planar and that plane has
+been aligned with :f:`z = 0`. There is a tool available to reorient the data
+for this purpose.
 
 The world view also supports visualization of the depth image for the current
-frame as either a dense RGB point cloud or a surface mesh.  It also can render
-a 3D surface mesh extracted from the level set of a volumetric array.
-The volume is typically the result of the fusion of several depth maps
-using a truncated signed distance function or similar operator.
-Computation of depth maps and volumetric data are not yet supported in the
-TeleSculptor application.  These types of data must be computed by command
-line tools and loaded into TeleSculptor for visualization by setting variables
-in a configuration file.
+frame as either a dense RGB point cloud or a surface mesh. It also can render a
+3D surface mesh extracted from the level set of a volumetric array. The volume
+is typically the result of the fusion of several depth maps using a truncated
+signed distance function or similar operator.
 
 Tool Bar
 --------
@@ -109,11 +107,11 @@ Tool Bar
 
 :icon:`blank` Reset Region of Interest
   Resets the region of interest to the axis-aligned bounds of the entire
-  dataset. This action is available via the
+  data set. This action is available via the
   :action:`roi Show/Edit Region of Interest` button's associated pop-up menu.
 
 :icon:`depthmap` Show 3D Depth Map
-  Toggles visibility of the depth map (if avaialble) rendered as a 3D point
+  Toggles visibility of the depth map (if available) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
 
 :icon:`volume` Show Surface from Volume
@@ -178,29 +176,29 @@ are not within said bounds.
 3D Depth Map Options
 --------------------
 
-The :action:`depthmap Show Depth Map` pop-up provides additional controls on the
-display of depth maps in the world view.  The options allow the depth map to be
-rendered either as a 3D point cloud (one point per pixel) or a dense triangular
-mesh (one vertex per pixel).  In either case, the rendered depth data is
-colored by the RGB color values of the corresponding video frame.  A filter
+The :action:`depthmap Show 3D Depth Map` pop-up provides additional controls on
+the display of depth maps in the world view. The options allow the depth map to
+be rendered either as a 3D point cloud (one point per pixel) or a dense
+triangular mesh (one vertex per pixel). In either case, the rendered depth data
+is colored by the RGB color values of the corresponding video frame. A filter
 option is also available to remove depth points based on thresholds on various
-attriutes.  Currently these attributes are the Uniqueness Ratio and Best Cost
-Value.  Images of these attibutes as well as the depth map itself are also
+attributes. Currently these attributes are the Uniqueness Ratio and Best Cost
+Value. Images of these attributes as well as the depth map itself are also
 shown in the Depth Map View and the filter options selected here apply to that
-view as well.  See `Depth Map View`_.
+view as well. See `Depth Map View`_.
 
 Volume Surface Options
 ----------------------
 
-The :action:`volume Volume from Surface` pop-up provides additional controls on the
-extraction and coloring of a surface from volumetric data.  The "Surface
-threshold" parameter controls the value of the iso-surface at which the surface
-is extracted from the volume.  The "Colorize surface" option, if checked,
-allows coloring each vertex of the mesh.  The "Current frame" mode projects the
-RGB values from the current frame onto the mesh, while the "All frames"
-mode combines apperance projected from all frames or a subset of frame
-sampled at a regular interval.  The "Color display" options determine how to
-color the surface.  Options include mean color, median color, surface normal,
+The :action:`volume Show Surface from Volume` pop-up provides additional
+controls on the extraction and coloring of a surface from volumetric data. The
+"Surface threshold" parameter controls the value of the isosurface at which the
+surface is extracted from the volume. The "Colorize surface" option, if
+checked, allows coloring each vertex of the mesh. The "Current frame" mode
+projects the RGB values from the current frame onto the mesh, while the
+"All frames" mode combines appearance projected from all frames or a subset of
+frame sampled at a regular interval. The "Color display" options determine how
+to color the surface. Options include mean color, median color, surface normal,
 and number of observations.
 
 Editing Ground Control Points
@@ -230,12 +228,12 @@ Camera View
 ===========
 
 The camera view provides a camera space view of detected feature points and
-computed landmarks (projected to the camera space), as well as the
-corresponding input imagery, for the active camera. Additionally, the
-estimation residuals |--| the difference between landmarks and feature points
-which participated in computing their estimated positions |--| can be
-displayed as line segments between the feature point location and projected
-landmark location.
+computed landmarks and ground control points (both projected to the camera
+space), as well as the corresponding input imagery, for the active camera.
+Additionally, the estimation residuals |--| the difference between landmarks
+and feature points which participated in computing their estimated positions
+|--| can be displayed as line segments between the feature point location and
+projected landmark location.
 
 Tool Bar
 --------
@@ -246,7 +244,8 @@ Tool Bar
 
 :icon:`blank` Zoom Extents
   Resets the view extents so that the entire scene is visible. This action is
-  available via the `Reset View` button's associated pop-up menu.
+  available via the :action:`view-reset Reset View` button's associated pop-up
+  menu.
 
 :icon:`image` Show Camera Frame Image
   Toggles visibility of the camera frame image. The associated pop-up allows
@@ -283,18 +282,16 @@ Depth Map View
 ==============
 
 The Depth Map View provides an image viewer similar to the Camera View but
-specialized to display depth map images.  Depth map images are loaded from
-VTK image (.vti) files associated with a particular video frame.  Often
-there are only depth maps on a subset of frames.  The active (or most recent)
-depth maps is displayed in this view by mapping depth to color.
-The Depth Map View can also display image of other attributes associated
-with the depth map such as the image color.  Some attributes like uniqueness
-and best cost are associated with the algorithms used to generate the depth.
-The same depth maps can be rendered in the World View as a point cloud.
+specialized to display depth map images. Depth map images are loaded from VTK
+image (``.vti``) files associated with a particular video frame. Often there
+are only depth maps on a subset of frames. The active (or most recent) depth
+map is displayed in this view by mapping depth to color. The Depth Map View can
+also display an image representation of other attributes associated with the
+depth map, such as the image color. Some attributes like uniqueness and best
+cost are associated with the algorithms used to generate the depth values. The
+same depth maps can be rendered in the World View as a point cloud.
 Furthermore, depth map filtering options in the World View also apply to the
 image rendering of the depth map in the Depth Map View.
-Depth maps are currently not produced by MAP-Tk but require third-party
-software to take MAP-Tk cameras and images to produce them.
 
 Tool Bar
 --------
@@ -302,7 +299,7 @@ Tool Bar
 :icon:`view-reset` Reset View
   Resets the view to the camera image extents.
 
-:icon:`blank` Display mode
+:icon:`blank` Display Mode
   Selects which image mode to display in the in the view: Color, Depth,
   Best Cost Value, Uniqueness Ratio; see `Color Map Options`_.
   The depth filters apply regardless of which image is shown.
@@ -310,15 +307,15 @@ Tool Bar
 Color Map Options
 -----------------
 
-In addition to selecting the mode under `Display Mode` there is also an
-option to select the color mapping function for each mode except Color.
-The mapping function describes how the scalar data field (e.g. depth) is
-mapped to color.  Below the color map option are the minimum and maximum values
-from the data used in the mapping.  The `Auto` checkbox, which is checked by
+In addition to selecting the mode under :action:`- Display Mode`, there is also
+an option to select the color mapping function for each mode except Color. The
+mapping function describes how the scalar data field (e.g. depth) is mapped to
+color. Below the color map option are the minimum and maximum values from the
+data used in the mapping. The :action:`- Auto` checkbox, which is checked by
 default, indicates that the values are determined automatically from the range
-of values in the image data.  By unselected the `Auto` checkbox the minimum
-and maximum values of the range can be adjusted manually for finer control of
-the visualization.
+of values in the image data. By unchecking the :action:`- Auto` checkbox, the
+minimum and maximum values of the range can be adjusted manually for finer
+control of the visualization.
 
 Camera Selection
 ================
@@ -466,19 +463,23 @@ File Menu
 ---------
 
 :icon:`blank` New Project
-  Select a working directory for a project.  A project directory must be set
-  before the tools in the Compute menu can be run.  These tool will write files
-  into the project working directory.  A configuration file with the same name
-  as the directory is also created in the directory.  The project configuration
+  Select a working directory for a project. A project directory must be set
+  before the tools in the Compute menu can be run. These tool will write files
+  into the project working directory. A configuration file with the same name
+  as the directory is also created in the directory. The project configuration
   file stores references to the project data such as the source video and
   computed results like cameras, tracks, or landmarks that will be loaded back
   in when a project is opened.
 
-:icon:`open` Open
-  Presents a dialog that allows the selection of one or more data files to be
-  loaded into the session.  Open is used to open a project config file, but can
-  also be used to open other files for inspection, like cameras and videos.
-  Once a project is created, this is how you open a video to be process.
+:icon:`open` Open Project
+  Select an existing project configuration. The project configuration will
+  often include references to various data files which are frequently stored in
+  the same directory as the project configuration.
+
+:icon:`blank` Import
+  Provides options for importing/loading various types of data into the current
+  project. The user must select the type of data to be loaded, as some data
+  files use the same file extension.
 
 :icon:`blank` Export
   Provides options for exporting various data.
@@ -492,50 +493,51 @@ Compute Menu
 :icon:`blank` Track Features
   Run feature tracking on the loaded video starting from the current frame.
   Features and descriptors are detected and each frame and cached into a file
-  in the project directory.  Features are then matched between adjacent frames
-  as well as between the current frame as past keyframes.  These feature
+  in the project directory. Features are then matched between adjacent frames
+  as well as between the current frame as past keyframes. These feature
   matches form "tracks" through time, and each track has the potential to
   become a landmark.
 
 :icon:`blank` Estimate Cameras/Landmarks
-  Estimates cameras and landmarks starting with tracks and metadata.  This also
-  runs bundle adjustment (refinement) along the way.  The goal is to
-  incrementally add cameras and landmarks, while optimizing, to build up
-  a consistent solution.
+  Estimates cameras and landmarks starting with tracks and metadata. This also
+  runs bundle adjustment (refinement) along the way. The goal is to
+  incrementally add cameras and landmarks, while optimizing, to build up a
+  consistent solution.
 
 :icon:`blank` Save Frames
   Iterate through a video and save every frame as an image file in a
-  subdirectory of the project directory.  This is needed when exporting
-  the data to other tools that do not support video files.  This option
-  must be run before importing a project into SketchUp.
+  subdirectory of the project directory. This is needed when exporting the data
+  to other tools that do not support video files. This option must be run
+  before importing a project into SketchUp.
 
 :icon:`blank` Batch Compute Depth Maps
   Estimates several dense depth maps and corresponding point clouds on several
-  frames spaced throughout the video.  This requires valid cameras and
-  computes the results in the active ROI.  The algorithm run on each frame
-  is the same as "Compute Single Depth Map", but intermediate solutions of
-  each depth map are not rendered.
+  frames spaced throughout the video. This requires valid cameras and computes
+  the results in the active ROI. The algorithm run on each frame is the same as
+  `Advanced <#compute-menu-advanced>`_ |->|
+  :action:`- Compute Single Depth Map`, but intermediate solutions of each
+  depth map are not rendered.
 
 :icon:`blank` Fuse Depth Maps
   Fuse all computed depth maps into a single mesh surface using an integration
-  volume specified by the ROI.  Note that this step requires an Nvidia GPU
-  and may not be able to run of the ROI is too large for the GPU memory.
+  volume specified by the ROI. Note that this step requires an NVIDIA GPU and
+  may not be able to run if the ROI is too large for the GPU memory.
 
-Compute Menu -> Advanced
-------------------------
+Compute Menu |->| Advanced
+--------------------------
 
 :icon:`blank` Filter Tracks
   Filter the tracks to retain a smaller subset of tracks that is still
-  representative of the original set.  The intent is to make bundle adjustment
-  (refine solution tool) faster without loosing critical constraints.  The
-  filter attempts to remove the shortest tracks that span the same frames
+  representative of the original set. The intent is to make bundle adjustment
+  (:action:`- Refine Solution`) faster without loosing critical constraints.
+  The filter attempts to remove the shortest tracks that span the same frames
   already covered by longer tracks.
 
 :icon:`blank` Triangulate Landmarks
   For each available feature track, back project rays from the cameras that
   contain each track state and intersect those rays in 3D to estimate the
-  location of a 3D landmark.  This requires both feature tracks and a
-  reasonably accurate set of cameras.
+  location of a 3D landmark. This requires both feature tracks and a reasonably
+  accurate set of cameras.
 
 :icon:`blank` Refine Solution
   Applies bundle adjustment to the cameras and landmarks in order to refine the
@@ -548,8 +550,8 @@ Compute Menu -> Advanced
   refinement process out of a degenerate optimization (which can occur due to
   the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
   landmarks, mirroring the landmarks about said plane, and rotating the cameras
-  180\ |deg| about their respective optical axes and 180\ |deg| about the
-  best fit plane normal where each camera's optical axis intersects said plane.
+  180 |deg| about their respective optical axes and 180 |deg| about the best
+  fit plane normal where each camera's optical axis intersects said plane.
 
 :icon:`blank` Align
   Applies a similarity transformation to the camera and landmark data so that
@@ -561,14 +563,14 @@ Compute Menu -> Advanced
 
 :icon:`blank` Save Key Frames
   Iterate through a video and save every key frame as an image file in a
-  subdirectory of the project directory.  Key frames are marked by the
-  feature tracking algorithm.
+  subdirectory of the project directory. Key frames are marked by the feature
+  tracking algorithm.
 
 :icon:`blank` Compute Single Depth Map
-  Estimate a dense depth map and corresponding point cloud from the current
-  frame.  This requires a valid camera on the current frame as well as cameras
-  on other frames for triangulation.  It computes the solution within the
-  active ROI and shows an incremental visualization of how the solution evolves.
+  Estimate a dense depth map and corresponding point cloud for the current
+  frame. This requires a valid camera on the current frame as well as cameras
+  on other frames for triangulation. It computes the solution within the active
+  ROI and shows an incremental visualization of how the solution evolves.
 
 View Menu
 ---------
@@ -586,6 +588,18 @@ View Menu
 
 :icon:`blank` Background Color
   Changes the background color of the world and camera views.
+
+:icon:`blank` World Axes
+  TODO
+
+:icon:`blank` Keyframes Only
+  TODO
+
+:icon:`blank` Antialias Views
+  Toggles use of an anti-aliasing filter in the world, camera and depth views.
+  Anti-aliasing is accomplished via a post-processing filter (FXAA) that may
+  produce undesirable artifacts. At this time, anti-aliasing via multi-sampling
+  (MSAA) is not supported.
 
 Help Menu
 ---------
@@ -625,5 +639,7 @@ Residual:
 .. [#nc] https://en.wikipedia.org/wiki/Necker_cube
 .. [#er] https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics
 
+.. |->|  unicode:: U+02192 .. rightwards arrow
 .. |--|  unicode:: U+02014 .. em dash
 .. |deg| unicode:: U+000B0 .. degree sign
+   :ltrim:

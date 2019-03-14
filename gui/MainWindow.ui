@@ -502,10 +502,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Antialias views</string>
+    <string>Antialias Views</string>
    </property>
    <property name="toolTip">
-    <string>Enable antialiasing for smoother geometry in each view</string>
+    <string>Enable anti-aliasing filter for smoother geometry in each view (may produce artifacts)</string>
    </property>
   </action>
   <action name="actionImportImagery">
