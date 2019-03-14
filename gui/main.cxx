@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
   // Create application instance and set icon
   QApplication app(args.qtArgc(), args.qtArgv());
-  qtUtil::setApplicationIcon("TeleSculptor");
+  qtUtil::setApplicationIcon("telesculptor");
 
   // Load KWIVER plugins
   auto const exeDir = QDir{QApplication::applicationDirPath()};
