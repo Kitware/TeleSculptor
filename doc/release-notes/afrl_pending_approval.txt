@@ -50,3 +50,6 @@ TeleSculptor
    broken.  Fixing the camera path rendering also fixed this.  Also adjusted
    the camera scaling range to make it more reasonable.
 
+ * Fixed a crash in the GUI that occured when the video reader plugin returned
+   a nullptr instead of a valid frame.
+
