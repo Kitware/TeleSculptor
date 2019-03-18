@@ -1151,7 +1151,14 @@ void MainWindowPrivate::loadImage(FrameData frame)
       videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    auto sourceImg = videoSource->frame_image()->get_image();
+    auto frameImg = videoSource->frame_image();
+    if (!frameImg)
+    {
+      qWarning() << "Failed to read image for frame " << frame.id;
+      this->loadEmptyImage(frame.camera);
+      return;
+    }
+    auto sourceImg = frameImg->get_image();
     auto imageData = vitalToVtkImage(sourceImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
