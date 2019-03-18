@@ -47,5 +47,6 @@ TeleSculptor
  * The camera path was not showing since the upgrade to VTK 8, now it is.
 
  * Camera scaling had been broken since it relied on camera path, which was
-   broken.  Fixing the camera path rendering also fixed this.
+   broken.  Fixing the camera path rendering also fixed this.  Also adjusted
+   the camera scaling range to make it more reasonable.
 

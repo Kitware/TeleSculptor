@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1368,8 +1368,8 @@ void WorldView::updateScale()
     // triggered by setting the active camera with only images loaded)
     if (bbox.IsValid())
     {
-      // Compute base scale (20% of scale factor)
-      auto const cameraScale = 0.2 * bbox.GetDiagonalLength();
+      // Compute base scale
+      auto const cameraScale = 0.9 * bbox.GetDiagonalLength();
 
       // Update camera scale
       d->cameraOptions->setBaseCameraScale(cameraScale);
