@@ -2591,6 +2591,16 @@ void MainWindow::executeTool(QObject* object)
   auto const tool = qobject_cast<AbstractTool*>(object);
   if (tool && !d->activeTool)
   {
+    // try to reset the ROI if invalid
+    kv::vector_3d min_pt, max_pt;
+    d->roi->GetXMin(min_pt.data());
+    d->roi->GetXMax(max_pt.data());
+    if (((max_pt - min_pt).array() <= 0.0).any())
+    {
+      d->UI.worldView->resetROI();
+      d->project->config->set_value("ROI", d->roiToString());
+    }
+
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
     tool->setTracks(d->tracks);
