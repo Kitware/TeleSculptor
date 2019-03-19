@@ -261,6 +261,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons/icons.qrc">
      <normaloff>:/icons/22x22/depthmap</normaloff>:/icons/22x22/depthmap</iconset>
@@ -277,6 +280,9 @@
   </action>
   <action name="actionShowVolume">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="enabled">
