@@ -1672,21 +1672,21 @@ void WorldView::resetROI()
 {
   QTE_D();
 
-  if (d->boxWidget && d->landmarkPoints->GetNumberOfPoints() > 1)
+  if (d->roi && d->landmarkPoints->GetNumberOfPoints() > 2)
   {
-    vtkBoxRepresentation* rep =
-      vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
-    if (rep)
+    d->setRobustROI();
+    if (d->boxWidget)
     {
-      if (d->roi)
+      vtkBoxRepresentation* rep =
+        vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
+      if (rep)
       {
-        d->setRobustROI();
         rep->PlaceWidget(d->roi->GetBounds());
-        d->updateScale(this);
       }
     }
+    d->updateScale(this);
+    this->render();
   }
-  this->render();
 }
 
 //-----------------------------------------------------------------------------
