@@ -1682,6 +1682,7 @@ void WorldView::resetROI()
       {
         d->setRobustROI();
         rep->PlaceWidget(d->roi->GetBounds());
+        d->updateScale(this);
       }
     }
   }
@@ -1699,6 +1700,7 @@ void WorldView::setROI(vtkBox* box, bool init)
   QTE_D();
   d->roi = box;
   d->initroi = init;
+  d->updateScale(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -1715,6 +1717,7 @@ void WorldView::updateROI(vtkObject* caller,
   if (rep && d->roi)
   {
     d->roi->SetBounds(rep->GetBounds());
+    d->updateScale(this);
   }
 }
 
