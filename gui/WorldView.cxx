@@ -142,6 +142,7 @@ public:
   void updateAxes(WorldView*, bool immediate = false);
 
   void setRobustROI();
+  bool computeRobustROI(double bounds[6]);
 
   void
   vtkToPointList(vtkSmartPointer<vtkPolyData> mesh,
@@ -324,50 +325,62 @@ void WorldViewPrivate::setRobustROI()
 {
   if (this->roi)
   {
-    constexpr double percentile = 0.1;
-    // use a different percentile for z-max, that's typically where you have
-    // small structures (poles, towers) with few points.
-    constexpr double zmax_percentile = 0.01;
-    constexpr double margin = 0.5;
-    this->landmarkActor->GetMapper()->Update();
-    vtkIdType numPts = this->landmarkPoints->GetNumberOfPoints();
-    if (numPts < 2)
+    double bounds[6];
+    if (this->computeRobustROI(bounds))
     {
-      return;
+      this->roi->SetBounds(bounds);
     }
-    std::vector<double> x, y, z;
-    x.reserve(numPts);
-    y.reserve(numPts);
-    z.reserve(numPts);
-    for (vtkIdType i = 0; i < numPts; ++i)
-    {
-      double pt[3];
-      this->landmarkPoints->GetPoint(i, pt);
-      x.push_back(pt[0]);
-      y.push_back(pt[1]);
-      z.push_back(pt[2]);
-    }
-    std::sort(x.begin(), x.end());
-    std::sort(y.begin(), y.end());
-    std::sort(z.begin(), z.end());
-    vtkIdType minIdx = static_cast<vtkIdType>(percentile * (numPts - 1));
-    vtkIdType maxIdx = static_cast<vtkIdType>(numPts - 1 - minIdx);
-    vtkIdType zmaxIdx = static_cast<vtkIdType>((numPts - 1) *
-                                               (1.0 - zmax_percentile));
-    double bounds[6] = { x[minIdx], x[maxIdx],
-                         y[minIdx], y[maxIdx],
-                         z[minIdx], z[zmaxIdx] };
-    for (unsigned i = 0; i < 3; ++i)
-    {
-      unsigned i_min = 2 * i;
-      unsigned i_max = i_min + 1;
-      double offset = (bounds[i_max] - bounds[i_min]) * margin;
-      bounds[i_min] -= offset;
-      bounds[i_max] += offset;
-    }
-
-    this->roi->SetBounds(bounds);
   }
+}
+
+//-----------------------------------------------------------------------------
+bool WorldViewPrivate::computeRobustROI(double bounds[6])
+{
+  constexpr double percentile = 0.1;
+  // use a different percentile for z-max, that's typically where you have
+  // small structures (poles, towers) with few points.
+  constexpr double zmax_percentile = 0.01;
+  constexpr double margin = 0.5;
+  this->landmarkActor->GetMapper()->Update();
+  vtkIdType numPts = this->landmarkPoints->GetNumberOfPoints();
+  if (numPts < 2)
+  {
+    return false;
+  }
+  std::vector<double> x, y, z;
+  x.reserve(numPts);
+  y.reserve(numPts);
+  z.reserve(numPts);
+  for (vtkIdType i = 0; i < numPts; ++i)
+  {
+    double pt[3];
+    this->landmarkPoints->GetPoint(i, pt);
+    x.push_back(pt[0]);
+    y.push_back(pt[1]);
+    z.push_back(pt[2]);
+  }
+  std::sort(x.begin(), x.end());
+  std::sort(y.begin(), y.end());
+  std::sort(z.begin(), z.end());
+  vtkIdType minIdx = static_cast<vtkIdType>(percentile * (numPts - 1));
+  vtkIdType maxIdx = static_cast<vtkIdType>(numPts - 1 - minIdx);
+  vtkIdType zmaxIdx = static_cast<vtkIdType>((numPts - 1) *
+                                              (1.0 - zmax_percentile));
+  bounds[0] = x[minIdx];
+  bounds[1] = x[maxIdx];
+  bounds[2] = y[minIdx];
+  bounds[3] = y[maxIdx];
+  bounds[4] = z[minIdx];
+  bounds[5] = z[zmaxIdx];
+  for (unsigned i = 0; i < 3; ++i)
+  {
+    unsigned i_min = 2 * i;
+    unsigned i_max = i_min + 1;
+    double offset = (bounds[i_max] - bounds[i_min]) * margin;
+    bounds[i_min] -= offset;
+    bounds[i_max] += offset;
+  }
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1336,17 +1349,14 @@ void WorldView::updateScale()
     vtkBoundingBox bbox;
 
     // Add ROI bounds (if ROI set) otherwise estimate robust ROI and use that
-    double* bounds = d->roi->GetBounds();
-    if ( bounds[1] >= bounds[0] &&
-         bounds[3] >= bounds[2] &&
-         bounds[5] >= bounds[4] )
+    double bounds[6];
+    d->roi->GetBounds(bounds);
+    if ( ( bounds[1] >= bounds[0] &&
+           bounds[3] >= bounds[2] &&
+           bounds[5] >= bounds[4] ) ||
+         d->computeRobustROI(bounds))
     {
       bbox.AddBounds(bounds);
-    }
-    else
-    {
-      d->setRobustROI();
-      bbox.AddBounds(d->roi->GetBounds());
     }
 
     // If landmarks are not valid, then get ground scale from the cameras
