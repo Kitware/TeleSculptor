@@ -36,6 +36,10 @@ TeleSculptor
    the world and camera view. Placing the end-points of the ruler also uses the
    smart guess initial position approach employed by ground control points.
 
+ * The default state of the depth map and volume visibility in the World View
+   is now "visible".  So you no longer need to turn them on manually to see
+   these results.
+
 Fixes since last public release
 -------------------------------
 
