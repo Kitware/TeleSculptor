@@ -430,9 +430,12 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
 {
   auto lgcs = sfmConstraints->get_local_geo_cs();
   lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
-  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
-                                  + kv::vector_2d(offset[0], offset[1]),
-                                lgcs.origin().crs()));
+  if (!sfmConstraints->get_local_geo_cs().origin().is_empty())
+  {
+    lgcs.set_origin(kv::geo_point(lgcs.origin().location()
+                                    + kv::vector_2d(offset[0], offset[1]),
+                                  lgcs.origin().crs()));
+  }
   sfmConstraints->set_local_geo_cs(lgcs);
 
   if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
