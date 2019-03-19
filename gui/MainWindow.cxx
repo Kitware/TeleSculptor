@@ -444,6 +444,20 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     saveGeoOrigin(project->geoOriginFile);
   }
 
+  // shift the ROI
+  kv::vector_3d min_pt, max_pt;
+  this->roi->GetXMin(min_pt.data());
+  this->roi->GetXMax(max_pt.data());
+  if (((max_pt - min_pt).array() > 0.0).all())
+  {
+    min_pt -= offset;
+    this->roi->SetXMin(min_pt.data());
+    max_pt -= offset;
+    this->roi->SetXMax(min_pt.data());
+    UI.worldView->setROI(roi.GetPointer(), true);
+    project->config->set_value("ROI", roiToString());
+  }
+
   // shift the landmarks
   for (auto lm : this->landmarks->landmarks())
   {
@@ -475,17 +489,6 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
   this->groundControlPointsHelper->pointsReloaded();
-
-  // shift the ROI
-  kv::vector_3d pt;
-  this->roi->GetXMin(pt.data());
-  pt -= offset;
-  this->roi->SetXMin(pt.data());
-  this->roi->GetXMax(pt.data());
-  pt -= offset;
-  this->roi->SetXMax(pt.data());
-  UI.worldView->setROI(roi.GetPointer(), true);
-  project->config->set_value("ROI", roiToString());
 }
 
 //-----------------------------------------------------------------------------
