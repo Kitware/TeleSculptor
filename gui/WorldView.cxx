@@ -181,7 +181,7 @@ public:
   RulerWidget* rulerWidget;
 
   VolumeOptions* volumeOptions;
-  vtkFlyingEdges3D* contourFilter;
+  vtkNew<vtkFlyingEdges3D> contourFilter;
 
   vtkNew<vtkMatrix4x4> imageProjection;
   vtkNew<vtkMatrix4x4> imageLocalTransform;
@@ -191,7 +191,7 @@ public:
   vtkNew<vtkActor> depthMapActor;
 
   vtkNew<vtkActor> volumeActor;
-  vtkStructuredGrid* volume;
+  vtkSmartPointer<vtkStructuredGrid> volume;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -862,7 +862,6 @@ void WorldView::loadVolume(QString const& path)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(
     transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
@@ -903,7 +902,6 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter = vtkFlyingEdges3D::New();
   d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.5);
