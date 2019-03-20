@@ -57,3 +57,6 @@ TeleSculptor
  * Fixed a crash in the GUI that occured when the video reader plugin returned
    a nullptr instead of a valid frame.
 
+ * Switched from calling get_image() in a loop during the depth_to_vtk function to
+   outside the loop.  This improves processing speed by eliminating unnecessary
+   image allocations for certain underlying image classes.
