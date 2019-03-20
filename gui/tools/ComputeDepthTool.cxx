@@ -195,16 +195,19 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
 
   vtkIdType pt_id = 0;
 
+  auto dep_im = depth_img->get_image();
+  auto col_im = color_img->get_image();
+
   for (int y = nj - 1; y >= 0; y--)
   {
     for (int x = 0; x < ni; x++)
     {
       uniquenessRatios->SetValue(pt_id, 0);
       bestCost->SetValue(pt_id, 0);
-      depths->SetValue(pt_id, depth_img->get_image().at<double>(x, y));
-      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 0),
-                              (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 1),
-                              (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 2));
+      depths->SetValue(pt_id, dep_im.at<double>(x, y));
+      color->SetTuple3(pt_id, (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
+                              (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
+                              (int)col_im.at<unsigned char>(x + i0, y + j0, 2));
       pt_id++;
     }
   }
