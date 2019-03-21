@@ -873,7 +873,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   // Apply contour
   d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
-  d->contourFilter->SetValue(0, 0.5);
+  d->contourFilter->SetValue(0, 0.0);
   // Declare which table will be use for the contour
   d->contourFilter->SetInputArrayToProcess(0, 0, 0,
     vtkDataObject::FIELD_ASSOCIATION_POINTS,
