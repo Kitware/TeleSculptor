@@ -19,6 +19,8 @@ TeleSculptor
    apply mostly to documentation and user-facing names.  The name "maptk"
    is still used heavily in the code itself.
 
+ * Added High-DPI icons for display on higher resolution displays.
+
  * Placing ground control points in the view uses a smart guess initial position
    method. When placing points in the world view, a point placer is used which
    snaps the point to a nearby landmark or the ground plane. When placing points
@@ -56,6 +58,11 @@ TeleSculptor
 
  * Fixed a crash in the GUI that occured when the video reader plugin returned
    a nullptr instead of a valid frame.
+
+ * Fixed issues with ROI initialization and the use of the ROI in deteremining
+   display scale.  If not manually set, the ROI is automatically initialized
+   before running tools.  When set, the ROI (not landmarks) is used to set the
+   scene scale for drawing cameras.
 
  * Switched from calling get_image() in a loop during the depth_to_vtk function to
    outside the loop.  This improves processing speed by eliminating unnecessary
