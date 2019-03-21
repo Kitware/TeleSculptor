@@ -859,44 +859,13 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 //-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString const& path)
 {
-  QTE_D();
-
-  d->UI.actionShowVolume->setEnabled(true);
-
   // Create the vtk pipeline
   // Read volume
   vtkNew<vtkXMLStructuredGridReader> readerV;
   readerV->SetFileName(qPrintable(path));
 
-  d->volume = readerV->GetOutput();
-  // Transform cell data to point data for contour filter
-  vtkNew<vtkCellDataToPointData> transformCellToPointData;
-  transformCellToPointData->SetInputConnection(readerV->GetOutputPort());
-  transformCellToPointData->PassCellDataOn();
-
-  // Apply contour
-  d->contourFilter->SetInputConnection(
-    transformCellToPointData->GetOutputPort());
-  d->contourFilter->SetNumberOfContours(1);
-  d->contourFilter->SetValue(0, 0.5);
-  // Declare which table will be use for the contour
-  d->contourFilter->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
-    "reconstruction_scalar");
-
-  // Create mapper
-  vtkNew<vtkPolyDataMapper> contourMapper;
-  contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
-  contourMapper->SetColorModeToDirectScalars();
-
-  // Set the actor's mapper
-  d->volumeActor->SetMapper(contourMapper.Get());
-  d->volumeActor->SetVisibility(false);
-  d->volumeOptions->setActor(d->volumeActor.Get());
-
-  // Add this actor to the renderer
-  d->renderer->AddActor(d->volumeActor.Get());
-  emit contourChanged();
+  vtkSmartPointer<vtkStructuredGrid> volume = readerV->GetOutput();
+  this->setVolume(volume);
 }
 
 //-----------------------------------------------------------------------------
@@ -917,7 +886,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   // Apply contour
   d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
   d->contourFilter->SetNumberOfContours(1);
-  d->contourFilter->SetValue(0, 0.5);
+  d->contourFilter->SetValue(0, 0.0);
   // Declare which table will be use for the contour
   d->contourFilter->SetInputArrayToProcess(0, 0, 0,
     vtkDataObject::FIELD_ASSOCIATION_POINTS,
@@ -926,12 +895,16 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
   contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
-  contourMapper->SetColorModeToDirectScalars();
+  contourMapper->ScalarVisibilityOff();
 
   // Set the actor's mapper
   d->volumeActor->SetMapper(contourMapper.Get());
-  d->volumeActor->SetVisibility(false);
+  d->volumeActor->GetProperty()->SetColor(0.7, 0.7, 0.7);
+  d->volumeActor->GetProperty()->SetAmbient(0.25);
+  d->volumeActor->GetProperty()->SetDiffuse(0.75);
+  d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setEnabled(true);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
