@@ -882,10 +882,13 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
   contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
-  contourMapper->SetColorModeToDirectScalars();
+  contourMapper->ScalarVisibilityOff();
 
   // Set the actor's mapper
   d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->GetProperty()->SetColor(0.7, 0.7, 0.7);
+  d->volumeActor->GetProperty()->SetAmbient(0.25);
+  d->volumeActor->GetProperty()->SetDiffuse(0.75);
   d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor.Get());
   d->volumeOptions->setEnabled(true);
