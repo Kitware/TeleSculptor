@@ -359,10 +359,13 @@ void vtkMaptkCameraRepresentation::Update()
   if (this->Internal->PathNeedsUpdate)
   {
     this->Internal->PathPolyData->Reset();
-    this->Internal->PathPolyData->Modified();
-    vtkPoints* points = this->Internal->PathPolyData->GetPoints();
+
+    vtkNew<vtkPoints> points;
+    this->Internal->PathPolyData->SetPoints(points.GetPointer());
     points->Allocate(this->Internal->Cameras.size());
-    vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
+
+    vtkNew<vtkCellArray> lines;
+    this->Internal->PathPolyData->SetLines(lines.GetPointer());
     lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
 
     for(auto const& camData : this->Internal->Cameras)
@@ -371,7 +374,8 @@ void vtkMaptkCameraRepresentation::Update()
       camData.second->GetPosition(position);
       lines->InsertCellPoint(points->InsertNextPoint(position));
     }
-    lines->Modified();
+    this->Internal->PathPolyData->Modified();
+    this->Internal->PathNeedsUpdate = false;
   }
 }
 
