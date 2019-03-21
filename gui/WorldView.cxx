@@ -886,8 +886,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
 
   // Set the actor's mapper
   d->volumeActor->SetMapper(contourMapper.Get());
-  d->volumeActor->SetVisibility(false);
+  d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setEnabled(true);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
