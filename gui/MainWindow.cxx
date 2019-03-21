@@ -430,15 +430,32 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
 {
   auto lgcs = sfmConstraints->get_local_geo_cs();
   lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
-  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
-                                  + kv::vector_2d(offset[0], offset[1]),
-                                lgcs.origin().crs()));
+  if (!sfmConstraints->get_local_geo_cs().origin().is_empty())
+  {
+    lgcs.set_origin(kv::geo_point(lgcs.origin().location()
+                                    + kv::vector_2d(offset[0], offset[1]),
+                                  lgcs.origin().crs()));
+  }
   sfmConstraints->set_local_geo_cs(lgcs);
 
   if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
       !project->geoOriginFile.isEmpty())
   {
     saveGeoOrigin(project->geoOriginFile);
+  }
+
+  // shift the ROI
+  kv::vector_3d min_pt, max_pt;
+  this->roi->GetXMin(min_pt.data());
+  this->roi->GetXMax(max_pt.data());
+  if (((max_pt - min_pt).array() > 0.0).all())
+  {
+    min_pt -= offset;
+    this->roi->SetXMin(min_pt.data());
+    max_pt -= offset;
+    this->roi->SetXMax(min_pt.data());
+    UI.worldView->setROI(roi.GetPointer(), true);
+    project->config->set_value("ROI", roiToString());
   }
 
   // shift the landmarks
@@ -472,17 +489,6 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
   this->groundControlPointsHelper->pointsReloaded();
-
-  // shift the ROI
-  kv::vector_3d pt;
-  this->roi->GetXMin(pt.data());
-  pt -= offset;
-  this->roi->SetXMin(pt.data());
-  this->roi->GetXMax(pt.data());
-  pt -= offset;
-  this->roi->SetXMax(pt.data());
-  UI.worldView->setROI(roi.GetPointer(), true);
-  project->config->set_value("ROI", roiToString());
 }
 
 //-----------------------------------------------------------------------------
@@ -2585,6 +2591,16 @@ void MainWindow::executeTool(QObject* object)
   auto const tool = qobject_cast<AbstractTool*>(object);
   if (tool && !d->activeTool)
   {
+    // try to reset the ROI if invalid
+    kv::vector_3d min_pt, max_pt;
+    d->roi->GetXMin(min_pt.data());
+    d->roi->GetXMax(max_pt.data());
+    if (((max_pt - min_pt).array() <= 0.0).any())
+    {
+      d->UI.worldView->resetROI();
+      d->project->config->set_value("ROI", d->roiToString());
+    }
+
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
     tool->setTracks(d->tracks);
