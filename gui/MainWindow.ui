@@ -93,6 +93,7 @@
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
     <addaction name="actionKeyframesOnly"/>
+    <addaction name="actionTrackedFramesOnly"/>
     <addaction name="actionAntialiasing"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
@@ -478,6 +479,17 @@
    </property>
    <property name="text">
     <string>Keyframes Only</string>
+   </property>
+  </action>
+  <action name="actionTrackedFramesOnly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Tracked Frames Only</string>
    </property>
   </action>
   <action name="actionExportGroundControlPoints">

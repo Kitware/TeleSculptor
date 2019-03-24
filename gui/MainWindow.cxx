@@ -912,7 +912,14 @@ void MainWindowPrivate::setActiveCamera(int id)
 {
   //if only keyframes are to be displayed in the camera view
   bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
+  bool only_tracked_frames = this->UI.actionTrackedFramesOnly->isChecked();
   bool next_frame_found = false;
+
+  std::set<kwiver::vital::frame_id_t> tracked_frames;
+  if (only_tracked_frames)
+  {
+    tracked_frames = tracks->all_frame_ids();
+  }
 
   if (id >= this->activeCameraIndex)
   { //positive movement in sequence
@@ -927,6 +934,14 @@ void MainWindowPrivate::setActiveCamera(int id)
           tracks->frame_data(id));
 
         if (fd && fd->is_keyframe)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      else if (only_tracked_frames)
+      {
+        if (tracked_frames.find(id) != tracked_frames.end())
         {
           next_frame_found = true;
           break;
@@ -954,6 +969,14 @@ void MainWindowPrivate::setActiveCamera(int id)
           tracks->frame_data(id));
 
         if (fd && fd->is_keyframe)
+        {
+          next_frame_found = true;
+          break;
+        }
+      }
+      else if (only_tracked_frames)
+      {
+        if (tracked_frames.find(id) != tracked_frames.end())
         {
           next_frame_found = true;
           break;
@@ -2017,6 +2040,7 @@ void MainWindow::loadTracks(QString const& path)
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
       d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
+      d->UI.actionTrackedFramesOnly->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (std::exception const& e)
@@ -2807,6 +2831,7 @@ void MainWindow::updateToolResults()
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
+    d->UI.actionTrackedFramesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
   if (d->toolUpdateTrackChanges)
