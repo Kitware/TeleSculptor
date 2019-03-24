@@ -1298,8 +1298,11 @@ void MainWindowPrivate::updateProgress(QObject* object,
   int taskId = -1;
   if (!this->progressIds.contains(object))
   {
-    taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
-    this->progressIds.insert(object, taskId);
+    if (value < 100)
+    {
+      taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
+      this->progressIds.insert(object, taskId);
+    }
     return;
   }
   else
