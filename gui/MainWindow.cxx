@@ -910,88 +910,35 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveCamera(int id)
 {
-  //if only keyframes are to be displayed in the camera view
-  bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
-  bool only_tracked_frames = this->UI.actionTrackedFramesOnly->isChecked();
-  bool next_frame_found = false;
-
-  std::set<kwiver::vital::frame_id_t> tracked_frames;
-  if (only_tracked_frames)
+  // collect the set of frames to select from
+  // TODO compute this set of frames only when it changes,
+  // not every time the active camera changes.
+  auto all_frames = this->frames.keys();
+  std::set<kwiver::vital::frame_id_t> select_frames(all_frames.begin(),
+                                                    all_frames.end());
+  if (this->UI.actionTrackedFramesOnly->isChecked())
   {
-    tracked_frames = tracks->all_frame_ids();
+    select_frames = tracks->all_frame_ids();
+  }
+  if (this->UI.actionKeyframesOnly->isChecked())
+  {
+    select_frames = tracks->keyframes();
   }
 
-  if (id >= this->activeCameraIndex)
-  { //positive movement in sequence
-    //find the next keyframe in the sequence
-    int lastFrameId =
-      this->frames.isEmpty() ? 1 : this->frames.lastKey();
-    while (id <= lastFrameId)
+  bool next_frame_found = false;
+  auto itr = select_frames.lower_bound(id);
+  if (itr != select_frames.end())
+  {
+    // if stepping backwards we need to go back one iterator step
+    // if we found the a frame greater than the one requested
+    if (id < this->activeCameraIndex &&
+        *itr >= this->activeCameraIndex &&
+        itr != select_frames.begin())
     {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
-
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else if (only_tracked_frames)
-      {
-        if (tracked_frames.find(id) != tracked_frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (this->frames.find(id) != this->frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      ++id;
+      --itr;
     }
-  }
-  else
-  { //going backward in sequence
-    //find the previous keyframe in the sequence
-    while (id >= 1)
-    {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
-
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else if (only_tracked_frames)
-      {
-        if (tracked_frames.find(id) != tracked_frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (this->frames.find(id) != this->frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      --id;
-    }
+    next_frame_found = true;
+    id = *itr;
   }
   if (!next_frame_found)
   {
