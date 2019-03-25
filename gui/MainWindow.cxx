@@ -349,6 +349,7 @@ public:
   kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame = -1;
+  int currentDepthFrame = -1;
 
   kv::sfm_constraints_sptr sfmConstraints;
 
@@ -1007,6 +1008,8 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
+
+    this->currentDepthFrame = id;
   }
   else // load from file
   {
@@ -1015,6 +1018,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       if (!fr->depthMapPath.isEmpty())
       {
         this->loadDepthMap(fr->depthMapPath);
+        this->currentDepthFrame = id;
       }
     }
   }
@@ -2842,6 +2846,7 @@ void MainWindow::updateToolResults()
   {
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
+    d->currentDepthFrame = d->toolUpdateActiveFrame;
 
     // In batch depth, each update is a full depth map from a different ref
     // frame that must be saved
