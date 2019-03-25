@@ -78,5 +78,8 @@ TeleSculptor
  * Fixed the colorize checkbox for the volume to return the model to solid color
    when unchecked.
 
+ * Fixed a bug in which the active camera would sometimes flicker or disappear
+   when updating information without changing the active frame.
+
  * Fixed a bug in which a progress bar would sometimes not go away after a job
    was completed.
