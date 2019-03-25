@@ -942,8 +942,21 @@ void MainWindowPrivate::setActiveCamera(int id)
   }
   if (!next_frame_found)
   {
-    // There was not a keyframe to move to in the direction we're going.
-    // So set the active camera back to what it was.
+    // handle video playback
+    if (this->UI.actionSlideshowPlay->isChecked())
+    {
+      if (this->UI.actionSlideshowLoop->isChecked())
+      {
+        this->UI.camera->setValue(*select_frames.begin());
+        this->UI.cameraSpin->setValue(*select_frames.begin());
+        return;
+      }
+      else
+      {
+        this->UI.actionSlideshowPlay->setChecked(false);
+      }
+    }
+    // Set the active camera back to what it was.
     this->UI.camera->setValue(this->activeCameraIndex);
     this->UI.cameraSpin->setValue(this->activeCameraIndex);
     return;
