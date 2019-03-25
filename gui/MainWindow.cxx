@@ -2075,8 +2075,11 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Landmarks", QString(),
+    this, "Export Landmarks", name + QString("_landmarks.ply"),
     "Landmark file (*.ply);;"
     "LAS file (*.las);;"
     "All Files (*)");
@@ -2124,8 +2127,11 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 //-----------------------------------------------------------------------------
 void MainWindow::saveGroundControlPoints()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Ground Control Points", QString(),
+    this, "Export Ground Control Points", name + QString("_gcps.json"),
     "GeoJSON file (*.json);;"
     "All Files (*)");
 
@@ -2170,8 +2176,11 @@ void MainWindow::saveGroundControlPoints(
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Tracks", QString(),
+    this, "Export Tracks", name + QString("_tracks.txt"),
     "Track file (*.txt);;"
     "All Files (*)");
 
@@ -2367,8 +2376,15 @@ void MainWindow::enableSaveDepthPoints(bool state)
 //-----------------------------------------------------------------------------
 void MainWindow::saveDepthPoints()
 {
+  QTE_D();
+
+  QString name;
+  if (d->currentDepthFrame > 0)
+  {
+    name = qtString(d->getFrameName(d->currentDepthFrame) + "_depth.ply");
+  }
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Depth Point Cloud", QString(),
+    this, "Export Depth Point Cloud", name,
     "PLY file (*.ply);;"
     "LAS file (*.las);;"
     "All Files (*)");
@@ -2450,8 +2466,9 @@ void MainWindow::saveMesh()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Mesh", QString("mesh.vtp"),
+    this, "Export Mesh", name + QString("_mesh.vtp"),
     "Mesh file (*.vtp);;"
     "All Files (*)");
 
@@ -2466,8 +2483,9 @@ void MainWindow::saveVolume()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", QString("volume.vts"),
+    this, "Export Volume", name + QString("_volume.vts"),
     "Mesh file (*.vts);;"
     "All Files (*)");
 
@@ -2488,11 +2506,12 @@ void MainWindow::saveColoredMesh()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Colored Mesh", QString("colored_mesh.vtp"),
+    this, "Export Colored Mesh", name + QString("_fused_mesh.ply"),
+    "PLY File (*.ply);;"
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
-    "PLY File (*.ply);;"
     "All Files (*)");
 
   try
