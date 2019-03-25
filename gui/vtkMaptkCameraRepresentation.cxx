@@ -286,15 +286,16 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
 {
   auto camIter = this->Internal->Cameras.find(id);
-  if (camIter == this->Internal->Cameras.end() ||
-      this->ActiveCamera == camIter->second)
+  if (camIter == this->Internal->Cameras.end())
   {
     this->ActiveCamera = nullptr;
     return;
   }
-
-  this->ActiveCamera = camIter->second;
-  this->Modified();
+  if (this->ActiveCamera != camIter->second)
+  {
+    this->ActiveCamera = camIter->second;
+    this->Modified();
+  }
 }
 
 //-----------------------------------------------------------------------------
