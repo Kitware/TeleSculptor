@@ -429,13 +429,14 @@ kv::vector_3d MainWindowPrivate::centerLandmarks() const
 void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
 {
   auto lgcs = sfmConstraints->get_local_geo_cs();
-  lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
-  if (!sfmConstraints->get_local_geo_cs().origin().is_empty())
+  if (lgcs.origin().is_empty())
   {
-    lgcs.set_origin(kv::geo_point(lgcs.origin().location()
-                                    + kv::vector_2d(offset[0], offset[1]),
-                                  lgcs.origin().crs()));
+    return;
   }
+  lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
+  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
+                                  + kv::vector_2d(offset[0], offset[1]),
+                                lgcs.origin().crs()));
   sfmConstraints->set_local_geo_cs(lgcs);
 
   if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
@@ -2863,8 +2864,13 @@ void MainWindow::updateToolResults()
 
   if (updated_landmarks)
   {
-    auto offset = d->centerLandmarks();
-    d->shiftGeoOrigin(offset);
+    // if a local geo coordinate system exists,
+    // recompute the origin to center the points
+    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty())
+    {
+      auto offset = d->centerLandmarks();
+      d->shiftGeoOrigin(offset);
+    }
   }
 
   if (!d->frames.isEmpty())
