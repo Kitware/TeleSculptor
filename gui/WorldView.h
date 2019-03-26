@@ -84,8 +84,7 @@ signals:
 
   void contourChanged();
   void updateThresholds(double,double,double,double);
-  void meshEnabled(bool);
-  void coloredMeshEnabled(bool);
+  void fusedMeshEnabled(bool);
   void pointPlacementEnabled(bool);
   void rulerEnabled(bool);
   void rulerReset();
@@ -132,10 +131,9 @@ public slots:
                        kwiver::vital::local_geo_cs const & lgcs);
   void exportWebGLScene(QString const& path);
 
-  void saveMesh(QString const& path);
   void saveVolume(QString const& path);
-  void saveColoredMesh(QString const& path,
-                       kwiver::vital::local_geo_cs const & lgcs);
+  void saveFusedMesh(QString const& path,
+                     kwiver::vital::local_geo_cs const & lgcs);
 
   void invalidateGeometry();
 

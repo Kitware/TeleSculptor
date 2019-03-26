@@ -396,7 +396,11 @@ WorldViewPrivate::vtkToPointList(vtkSmartPointer<vtkPolyData> data,
   points.resize(numPts);
   colors.clear();
 
-  vtkDataArray* da = data->GetPointData()->GetArray(colorArrayName.c_str());
+  vtkDataArray* da = nullptr;
+  if (this->volumeOptions->isColorOptionsEnabled())
+  {
+    da = data->GetPointData()->GetArray(colorArrayName.c_str());
+  }
   vtkUnsignedCharArray* rgbArray = nullptr;
   if (da != nullptr && da->GetNumberOfComponents() == 3)
   {
@@ -468,8 +472,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->depthMapOptions->setEnabled(false);
 
-  connect(d->UI.actionShowVolume, &QAction::triggered,
-          this, &WorldView::meshEnabled);
   connect(d->depthMapOptions, &DepthMapOptions::displayModeChanged,
           this, &WorldView::updateDepthMapDisplayMode);
   connect(d->depthMapOptions,
@@ -483,9 +485,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->volumeOptions, &VolumeOptions::modified,
           this, &WorldView::render);
-
-  connect(d->volumeOptions, &VolumeOptions::colorOptionsEnabled,
-          this, &WorldView::coloredMeshEnabled);
 
   connect(this, &WorldView::contourChanged,
           this, &WorldView::render);
@@ -547,10 +546,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   connect(d->UI.actionShowVolume, &QAction::toggled,
           this, &WorldView::setVolumeVisible);
-  connect(d->UI.actionShowVolume, &QAction::toggled,
-          this, &WorldView::meshEnabled);
-  connect(d->volumeOptions, &VolumeOptions::colorOptionsEnabled,
-          this, &WorldView::coloredMeshEnabled);
 
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
@@ -905,6 +900,15 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor.Get());
   d->volumeOptions->setEnabled(true);
+
+  if (d->UI.actionShowVolume->isChecked())
+  {
+    this->fusedMeshEnabled(true);
+  }
+  connect(d->UI.actionShowVolume, &QAction::triggered,
+          this, &WorldView::fusedMeshEnabled);
+  connect(d->UI.actionShowVolume, &QAction::toggled,
+          this, &WorldView::fusedMeshEnabled);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
@@ -1468,29 +1472,6 @@ void WorldView::exportWebGLScene(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveMesh(const QString &path)
-{
-  QTE_D();
-
-  vtkPolyData* mesh = d->contourFilter->GetOutput();
-
-  for (int i = 0; i < mesh->GetPointData()->GetNumberOfArrays(); ++i)
-  {
-    mesh->GetPointData()->RemoveArray(i);;
-  }
-
-  vtkNew<vtkXMLPolyDataWriter> writer;
-
-  writer->SetFileName(qPrintable(path));
-  writer->AddInputDataObject(mesh);
-  writer->SetDataModeToBinary();
-  writer->Write();
-
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
-
-}
-
-//-----------------------------------------------------------------------------
 void WorldView::saveVolume(const QString &path)
 {
   QTE_D();
@@ -1509,20 +1490,23 @@ void WorldView::saveVolume(const QString &path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveColoredMesh(const QString &path,
-                                kwiver::vital::local_geo_cs const& lgcs)
+void WorldView::saveFusedMesh(const QString &path,
+                              kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
   namespace kv = kwiver::vital;
   const QString ext = QFileInfo(path).suffix().toLower();
-  if(ext == "ply")
+  if (ext == "ply")
   {
     vtkNew<vtkPLYWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetColorMode(0);
     vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
-    writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
-    writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
+    if (d->volumeOptions->isColorOptionsEnabled())
+    {
+      writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
+      writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
+    }
     writer->AddInputDataObject(mesh);
     writer->Write();
   }

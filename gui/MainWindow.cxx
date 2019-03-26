@@ -1436,10 +1436,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, QOverload<>::of(&MainWindow::saveGroundControlPoints));
   connect(d->UI.actionExportVolume, &QAction::triggered,
           this, &MainWindow::saveVolume);
-  connect(d->UI.actionExportMesh, &QAction::triggered,
-          this, &MainWindow::saveMesh);
-  connect(d->UI.actionExportColoredMesh, &QAction::triggered,
-          this, &MainWindow::saveColoredMesh);
+  connect(d->UI.actionExportFusedMesh, &QAction::triggered,
+          this, &MainWindow::saveFusedMesh);
   connect(d->UI.actionExportDepthPoints, &QAction::triggered,
           this, QOverload<>::of(&MainWindow::saveDepthPoints));
   connect(d->UI.actionExportTracks, &QAction::triggered,
@@ -1471,11 +1469,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, &QAbstractSlider::valueChanged,
           this, &MainWindow::setActiveCamera);
 
-  connect(d->UI.worldView, &WorldView::meshEnabled,
-          this, &MainWindow::enableSaveMesh);
-
-  connect(d->UI.worldView, &WorldView::coloredMeshEnabled,
-          this, &MainWindow::enableSaveColoredMesh);
+  connect(d->UI.worldView, &WorldView::fusedMeshEnabled,
+          this, &MainWindow::enableSaveFusedMesh);
 
   connect(d->UI.worldView, &WorldView::depthMapThresholdsChanged,
           d->UI.depthMapView, &DepthMapView::updateThresholds);
@@ -2425,36 +2420,12 @@ void MainWindow::saveWebGLScene()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::enableSaveMesh(bool state)
+void MainWindow::enableSaveFusedMesh(bool state)
 {
   QTE_D();
 
   d->UI.actionExportVolume->setEnabled(state);
-  d->UI.actionExportMesh->setEnabled(state);
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::enableSaveColoredMesh(bool state)
-{
-  QTE_D();
-
-  d->UI.actionExportColoredMesh->setEnabled(state);
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::saveMesh()
-{
-  QTE_D();
-
-  auto const path = QFileDialog::getSaveFileName(
-    this, "Export Mesh", QString("mesh.vtp"),
-    "Mesh file (*.vtp);;"
-    "All Files (*)");
-
-  if (!path.isEmpty())
-  {
-    d->UI.worldView->saveMesh(path);
-  }
+  d->UI.actionExportFusedMesh->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -2480,12 +2451,12 @@ void MainWindow::saveVolume()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveColoredMesh()
+void MainWindow::saveFusedMesh()
 {
   QTE_D();
 
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Colored Mesh", QString("colored_mesh.vtp"),
+    this, "Export Fused Mesh", QString("mesh.vtp"),
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "PLY File (*.ply);;"
@@ -2496,7 +2467,7 @@ void MainWindow::saveColoredMesh()
     if (!path.isEmpty())
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
-      d->UI.worldView->saveColoredMesh(path, lgcs);
+      d->UI.worldView->saveFusedMesh(path, lgcs);
     }
   }
   catch (...)
