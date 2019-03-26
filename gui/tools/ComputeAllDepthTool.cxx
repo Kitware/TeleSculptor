@@ -150,7 +150,7 @@ bool ComputeAllDepthTool::execute(QWidget* window)
   d->end_frame = config->get_value<int>("batch_depth:end_frame", -1);
   d->num_depth = config->get_value<int>("batch_depth:num_depth", -1);
 
-  d->num_support = config->get_value<int>("compute_depth:num_support", 10);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 20);
 
 
   return AbstractTool::execute(window);

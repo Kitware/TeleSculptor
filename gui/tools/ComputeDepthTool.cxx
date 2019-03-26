@@ -72,6 +72,7 @@ public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
   unsigned int max_iterations;
+  int num_support;
   kwiver::vital::image_container_sptr ref_img;
   kwiver::vital::frame_id_t ref_frame;
   kwiver::vital::bounding_box<int> crop;
@@ -151,6 +152,7 @@ bool ComputeDepthTool::execute(QWidget* window)
   // TODO: find a more general way to get the number of iterations
   std::string iterations_key = ":super3d:iterations";
   d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 20);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
@@ -239,7 +241,7 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   std::vector<kwiver::vital::frame_id_t> frame_ids;
-  const int halfsupport = 10;
+  const int halfsupport = d->num_support;
   int ref_frame = 0;
 
   this->setDescription("Collecting Video Frames");
