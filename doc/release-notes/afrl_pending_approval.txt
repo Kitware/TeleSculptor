@@ -51,6 +51,8 @@ TeleSculptor
  * Added an option to the display to only show frames that have feature
    tracking data.
 
+ * Set default filenames in save dialog boxes.
+
 
 Fixes since last public release
 -------------------------------
