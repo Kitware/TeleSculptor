@@ -153,7 +153,7 @@ bool ComputeDepthTool::execute(QWidget* window)
   // TODO: find a more general way to get the number of iterations
   std::string iterations_key = ":super3d:iterations";
   d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
-  d->num_support = config->get_value<int>("compute_depth:num_support", 20);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 10);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
