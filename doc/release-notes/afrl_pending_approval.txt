@@ -49,6 +49,8 @@ TeleSculptor
  * Set the default surface threshold to 0.0 (instead of 0.5) as it should be
    and set the spin box increments to 0.1.
 
+ * Set default filenames in save dialog boxes.
+
 
 Fixes since last public release
 -------------------------------

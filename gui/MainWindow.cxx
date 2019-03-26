@@ -349,6 +349,7 @@ public:
   kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame = -1;
+  int currentDepthFrame = -1;
 
   kv::sfm_constraints_sptr sfmConstraints;
 
@@ -1007,6 +1008,8 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
+
+    this->currentDepthFrame = id;
   }
   else // load from file
   {
@@ -1015,6 +1018,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       if (!fr->depthMapPath.isEmpty())
       {
         this->loadDepthMap(fr->depthMapPath);
+        this->currentDepthFrame = id;
       }
     }
   }
@@ -2066,8 +2070,11 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Landmarks", QString(),
+    this, "Export Landmarks", name + QString("_landmarks.ply"),
     "Landmark file (*.ply);;"
     "LAS file (*.las);;"
     "All Files (*)");
@@ -2115,8 +2122,11 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 //-----------------------------------------------------------------------------
 void MainWindow::saveGroundControlPoints()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Ground Control Points", QString(),
+    this, "Export Ground Control Points", name + QString("_gcps.json"),
     "GeoJSON file (*.json);;"
     "All Files (*)");
 
@@ -2161,8 +2171,11 @@ void MainWindow::saveGroundControlPoints(
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Tracks", QString(),
+    this, "Export Tracks", name + QString("_tracks.txt"),
     "Track file (*.txt);;"
     "All Files (*)");
 
@@ -2358,8 +2371,15 @@ void MainWindow::enableSaveDepthPoints(bool state)
 //-----------------------------------------------------------------------------
 void MainWindow::saveDepthPoints()
 {
+  QTE_D();
+
+  QString name;
+  if (d->currentDepthFrame > 0)
+  {
+    name = qtString(d->getFrameName(d->currentDepthFrame) + "_depth.ply");
+  }
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Depth Point Cloud", QString(),
+    this, "Export Depth Point Cloud", name,
     "PLY file (*.ply);;"
     "LAS file (*.las);;"
     "All Files (*)");
@@ -2433,8 +2453,9 @@ void MainWindow::saveVolume()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", QString("volume.vts"),
+    this, "Export Volume", name + QString("_volume.vts"),
     "Mesh file (*.vts);;"
     "All Files (*)");
 
@@ -2455,11 +2476,12 @@ void MainWindow::saveFusedMesh()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Fused Mesh", QString("mesh.vtp"),
+    this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
+    "PLY File (*.ply);;"
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
-    "PLY File (*.ply);;"
     "All Files (*)");
 
   try
@@ -2813,6 +2835,7 @@ void MainWindow::updateToolResults()
   {
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
+    d->currentDepthFrame = d->toolUpdateActiveFrame;
 
     // In batch depth, each update is a full depth map from a different ref
     // frame that must be saved
