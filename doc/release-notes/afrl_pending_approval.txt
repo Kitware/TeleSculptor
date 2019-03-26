@@ -83,3 +83,7 @@ TeleSculptor
 
  * Fixed a bug in which a progress bar would sometimes not go away after a job
    was completed.
+
+ * Fixed an issue in which the depth map computation was only using support
+   frame coming after the reference frame.  The algorithm now uses equal frames
+   both before and after the reference frame.
