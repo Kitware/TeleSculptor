@@ -19,6 +19,10 @@ TeleSculptor
    apply mostly to documentation and user-facing names.  The name "maptk"
    is still used heavily in the code itself.
 
+ * Combined the "Mesh" and "Colored Mesh" export options into a single option
+   named "Fused Mesh".  This will save the mesh with or without color depending
+   on whether color is enabled when saving.
+
  * Added High-DPI icons for display on higher resolution displays.
 
  * Placing ground control points in the view uses a smart guess initial position

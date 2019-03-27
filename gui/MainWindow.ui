@@ -59,8 +59,7 @@
      <addaction name="actionWebGLScene"/>
      <addaction name="separator"/>
      <addaction name="actionExportVolume"/>
-     <addaction name="actionExportMesh"/>
-     <addaction name="actionExportColoredMesh"/>
+     <addaction name="actionExportFusedMesh"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -406,20 +405,12 @@
     <string>Volume...</string>
    </property>
   </action>
-  <action name="actionExportMesh">
+  <action name="actionExportFusedMesh">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Mesh...</string>
-   </property>
-  </action>
-  <action name="actionExportColoredMesh">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Colored Mesh...</string>
+    <string>Fused Mesh...</string>
    </property>
   </action>
   <action name="actionShowWorldAxes">
