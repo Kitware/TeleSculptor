@@ -912,70 +912,53 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveCamera(int id)
 {
-  //if only keyframes are to be displayed in the camera view
-  bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
-  bool next_frame_found = false;
-
-  if (id >= this->activeCameraIndex)
-  { //positive movement in sequence
-    //find the next keyframe in the sequence
-    int lastFrameId =
-      this->frames.isEmpty() ? 1 : this->frames.lastKey();
-    while (id <= lastFrameId)
-    {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
-
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (this->frames.find(id) != this->frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      ++id;
-    }
+  // collect the set of frames to select from
+  // TODO compute this set of frames only when it changes,
+  // not every time the active camera changes.
+  auto all_frames = this->frames.keys();
+  std::set<kwiver::vital::frame_id_t> select_frames(all_frames.begin(),
+                                                    all_frames.end());
+  if (this->UI.actionTrackedFramesOnly->isChecked())
+  {
+    select_frames = tracks->all_frame_ids();
   }
-  else
-  { //going backward in sequence
-    //find the previous keyframe in the sequence
-    while (id >= 1)
-    {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
+  if (this->UI.actionKeyframesOnly->isChecked())
+  {
+    select_frames = tracks->keyframes();
+  }
 
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (this->frames.find(id) != this->frames.end())
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      --id;
+  bool next_frame_found = false;
+  auto itr = select_frames.lower_bound(id);
+  if (itr != select_frames.end())
+  {
+    // if stepping backwards we need to go back one iterator step
+    // if we found the a frame greater than the one requested
+    if (id < this->activeCameraIndex &&
+        *itr >= this->activeCameraIndex &&
+        itr != select_frames.begin())
+    {
+      --itr;
     }
+    next_frame_found = true;
+    id = *itr;
   }
   if (!next_frame_found)
   {
-    // There was not a keyframe to move to in the direction we're going.
-    // So set the active camera back to what it was.
+    // handle video playback
+    if (this->UI.actionSlideshowPlay->isChecked())
+    {
+      if (this->UI.actionSlideshowLoop->isChecked())
+      {
+        this->UI.camera->setValue(*select_frames.begin());
+        this->UI.cameraSpin->setValue(*select_frames.begin());
+        return;
+      }
+      else
+      {
+        this->UI.actionSlideshowPlay->setChecked(false);
+      }
+    }
+    // Set the active camera back to what it was.
     this->UI.camera->setValue(this->activeCameraIndex);
     this->UI.cameraSpin->setValue(this->activeCameraIndex);
     return;
@@ -2025,6 +2008,7 @@ void MainWindow::loadTracks(QString const& path)
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
       d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
+      d->UI.actionTrackedFramesOnly->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (std::exception const& e)
@@ -2834,6 +2818,7 @@ void MainWindow::updateToolResults()
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
+    d->UI.actionTrackedFramesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
   if (d->toolUpdateTrackChanges)

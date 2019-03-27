@@ -45,6 +45,12 @@ TeleSculptor
  * Set the default surface threshold to 0.0 (instead of 0.5) as it should be
    and set the spin box increments to 0.1.
 
+ * Added an option to the feature tracking tool to provide a maximum number
+   of frames to track on.  These frames are selected uniformly from the video.
+
+ * Added an option to the display to only show frames that have feature
+   tracking data.
+
  * Set default filenames in save dialog boxes.
 
 
