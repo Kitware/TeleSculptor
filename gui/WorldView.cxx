@@ -848,6 +848,7 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
+  d->cameraRep->CamerasModified();
   d->volumeOptions->setCameras(cameras);
 }
 

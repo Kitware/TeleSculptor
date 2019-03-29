@@ -283,6 +283,14 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::CamerasModified()
+{
+  this->Internal->PathNeedsUpdate = true;
+  this->Internal->CameraNonActivePolyData.clear();
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
 {
   auto camIter = this->Internal->Cameras.find(id);
