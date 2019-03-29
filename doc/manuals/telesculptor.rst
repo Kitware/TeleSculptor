@@ -11,10 +11,16 @@ Overview
 ========
 
 The TeleSculptor graphical application provides a means of computing
-structure-from-motion and visualizing the results, as well as loading results
-from the MAP-Tk command line tools. Entities available for display include the
-images or video frames, tracked feature points, cameras frustums, 3D landmark
-points, dense depth maps, and surfaces extracted from volumetric data.
+3D models from video, especially aerial video. It includes tools for
+computing structure-from-motion to recover camera trajectory and internal
+camera parameters while estimating 3D scene points. It also has tools for
+multi-view stereo estimation of dense depth maps and tools for fusion of
+multiple depth maps into a full 3D surface. TeleSculptor also provides
+interactive visualization of these various products including tools for
+editting ground control points and measuring 3D distances. Entities available
+for display include the video frames (or image sequence), tracked 2D feature
+points, cameras frustums, 3D landmark points, dense depth maps, and surfaces
+extracted from the volumetric fusion of depth map data.
 
 The GUI consists of a primary (world) view, secondary (camera and depth) views,
 a frame selection panel, and various other ancillary views and panels. The
@@ -30,23 +36,25 @@ preference.
 World View
 ==========
 
-The world view provides a three dimensional view showing the computed landmarks
-and all of the cameras in a single, homogeneous coordinate space that is
-especially useful for seeing the landmarks in 3D, and seeing the spatial
-relations between cameras, and between cameras and landmarks.
+The world view provides a three dimensional view showing all three dimensional
+products in a common coordinate system. It is that is especially useful for
+seeing the spatial relationships between cameras and 3D landmarks, ground
+control points, dense point clouds, or surface meshes.
 
 Landmarks are displayed as points, while cameras are displayed as frustums of
 semi-arbitrary length, with the active camera highlighted (see
 `Camera Options`_). The "camera path", which is a line connecting the camera
 centers, can also be displayed. Ground control points are displayed as "jacks";
-three short lines meeting at right angles in 3D.
+three short lines meeting at right angles in 3D.  Double clicking in the world
+view re-centers the view of the scene around the closest scene point.
 
 Additionally, the world view can display a representation of the ground plane
-(i.e. the world coordinate plane :f:`z = 0`), and can display the frame image
+(i.e. the local coordinate plane :f:`z = 0`), and can display the frame image
 for the active camera projected to that plane. These projections result in a
 stabilized view of the video if the scene is largely planar and that plane has
-been aligned with :f:`z = 0`. There is a tool available to reorient the data
-for this purpose.
+been aligned with :f:`z = 0`. Products from video with geospatial metadata are
+automatically translated to the :f:`z = 0` plane. For data without geospatial
+metadata, there is a tool available to reorient the data for this purpose.
 
 The world view also supports visualization of the depth image for the current
 frame as either a dense RGB point cloud or a surface mesh. It also can render a
@@ -58,13 +66,14 @@ Tool Bar
 --------
 
 :icon:`view-reset` Reset View
-  Resets the view extents so that the entire scene is visible. Additional
-  actions are available via the action's associated pop-up.
+  Resets the view extents so that the entire scene is visible. The keyboard
+  shortcut **R** provides the same effect. Additional actions are available via
+  the action's associated pop-up.
 
 :icon:`blank` Zoom to Landmarks
   Resets the view extents so that all landmarks are visible. This action is
   available via the :action:`view-reset Reset View` button's associated pop-up
-  menu.
+  menu.  The keyboard short cut is **Shift + R**.
 
 :icon:`blank` View to World Top/Left/Right/Front/Back
   Resets the view rotation to a "standard" rotation, such that the view axes
@@ -79,8 +88,8 @@ Tool Bar
   :action:`view-reset Reset View` button's associated pop-up menu.
 
 :icon:`image` Show Camera Frame Image
-  Toggles visibility of the projected camera frame image. The associated
-  pop-up allows the opacity of the same to be adjusted.
+  Toggles visibility of the camera frame image projected onto the ground plane.
+  The associated pop-up allows the opacity of the same to be adjusted.
 
 :icon:`camera` Show Cameras
   Toggles visibility of cameras and related visualizations. The associated
@@ -96,7 +105,7 @@ Tool Bar
 
 :icon:`grid` Show Ground Plane Grid
   Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
-  plane in world coordinates. The grid is centered about :f:`x = y = 0`,
+  plane in local 3D coordinates. The grid is centered about :f:`x = y = 0`,
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
@@ -106,8 +115,8 @@ Tool Bar
   six handles on the faces of the ROI box.
 
 :icon:`blank` Reset Region of Interest
-  Resets the region of interest to the axis-aligned bounds of the entire
-  data set. This action is available via the
+  Resets the region of interest to the axis-aligned box containing 80% of the
+  landmark points plus an additional 50% padding. This action is available via the
   :action:`roi Show/Edit Region of Interest` button's associated pop-up menu.
 
 :icon:`depthmap` Show 3D Depth Map
@@ -115,9 +124,8 @@ Tool Bar
   cloud or mesh; see `3D Depth Map Options`_.
 
 :icon:`volume` Show Surface from Volume
-  Toggles the visibility of the surface mesh extracted from volumetric data.
-  This option is disabled if no volume data is loaded; see
-  `Volume Surface Options`_.
+  Toggles the visibility of the surface mesh extracted from volumetric data;
+  see `Volume Surface Options`_.
 
 :icon:`ruler` Enable Measurement Tool
   Toggles placing or editing of the ruler measurement tool. Initially |--| when
@@ -143,12 +151,10 @@ camera path, changing the size of the camera frustums, and toggling visibility
 of the inactive cameras and camera path separate from the overall camera
 visibility.
 
-The camera scale controls are logarithmic, and are relative to a "base size"
-that is computed from the scene data. (This is used to minimize the perceptual
-difference in camera frustum size relative to the numerical scale of the data,
-which can be arbitrary, and significantly different across various data sets.)
-The inactive camera scale is relative to the active camera scale, with the
-maximum allowed value giving active and inactive camera frustums the same size.
+The camera scale controls are relative to a "base size" that is computed from
+the extents of the scene data. The inactive camera scale is relative to the
+active camera scale, with the maximum allowed value giving active and inactive
+camera frustums the same size.
 
 Point Options
 -------------
@@ -323,8 +329,12 @@ Camera Selection
 The camera selection panel contains a large slider used to select the active
 camera. The active camera is highlighted in the world view, and used to control
 which camera's imagery and feature points are displayed in the camera view. A
-spin box next to the slider shows the active camera number, and can also be
-used to select the active camera.
+spin box next to the slider shows the active frame number, and can also be
+used to select the active camera. Note that the frame numbers need not be
+consecutive.  Some video readers are configured to only read every `N`-th frame,
+where `N` may be 10, for example.  This help cut down on data redundancy in
+video.  The frame sampling rate can be configured by opening the project
+configuration file (``.conf``) in a text editor.
 
 The controls to the right of the panel control the application's slideshow
 mode. Slideshow mode automatically increments through the loaded cameras at a
@@ -336,14 +346,21 @@ source.
 The slideshow action controls are also available via the `View <#view-menu>`_
 menu. The small slider controls the delay between slides. The slider response
 is logarithmic, with single steps in one-tenth powers of ten. The slider tool
-tip includes the current delay in human readable units.
+tip includes the current delay in human readable units. Several frame filters
+are also available in the `View <#view-menu>`_ menu.  These filters allow
+limiting the frames show to a specific subset, such as key frames or frames
+with tracking data.
 
 Metadata
 ========
 
 The metadata panel displays the collection of video metadata for the current
 frame, if available. The set of fields is selected from the entire data set;
-individual frames may be missing some or all fields.
+individual frames may be missing some or all fields. The metadata itself is
+provied by the video reader.  For encoded video files, TeleSculptor supports
+key-length-value (KLV) encoding following the motion imagery standards board
+(MISB) 0104 and 0601 standards.  Customized video readers can read metadata
+from other sources, just as supplimentary text files or EXIF data.
 
 Ground Control Points
 =====================
@@ -437,13 +454,18 @@ match matrix view also allows the image to be exported to a file.
 Data Files
 ==========
 
-The most convenient way to load data is to open the configuration file
-(``.conf``) that is provided to the bundle adjustment tool. This file specifies
-the locations of all relevant data and outputs, including camera KRTD files,
-imagery, feature tracks and landmarks. It is also possible to load individual
-images, cameras (via their KRTD files), track files, and landmark files. (Using
-the feature detection/tracking configuration file is also supported; this
-typically only provides images and, if already computed, feature tracks.)
+TeleSculptor supports visualization of various data files (landmarks, cameras,
+etc.) that are computed in other tools. However the recommended workflow for
+most users is to simply load a video and derive all other product from it.
+Video files are loaded using `File` |->| `Import` |->| `Imagery...`.
+
+Before computing any products from video, a "Project" directory is needed to
+store the results. A project is created with `File` |->| `New Project` which
+asks the user to provide a path to a working directory.  Inside this directory
+a "Project File" is created (name matching the directory name plus extension
+``.conf``) to store project settings. Various other result files are also
+written to the project directory.  To open an existing project,
+use `File` |->| `Open Project...` and navigate to an existing ``.conf`` file.
 
 .. notice::
   When loading cameras or images individually, cameras and images are
@@ -590,10 +612,24 @@ View Menu
   Changes the background color of the world and camera views.
 
 :icon:`blank` World Axes
-  TODO
+  Toggles visibility of `X`, `Y`, and `Z` axes in the world view showing
+  numerical values for distances at regular intervals on these axes.
+  The size of these axes is set to span all visible scene objects, including
+  the camera path.  If the axes are too large, hiding scene objects like
+  cameras and the ground plane will shrink the coverage to the remaining
+  visible data.
 
 :icon:`blank` Keyframes Only
-  TODO
+  Limit frame numbers in the camera selection pane to allow only frames that
+  were designated as "keyframes" by the feature tracker.  The number of
+  keyframes is typically very small.
+
+:icon:`blank` Tracked Frames Only
+  Limit frame numbers in the camera selection pane to allow only frames that
+  contain feature tracking results.  The feature tracker only processes a fixed
+  number of frames (default, 500) distributed through the video.  Enabling this
+  option skips unprocessed frames during playback, which avoids flicker of the
+  display that occurs when unprocessed frames are drawn.
 
 :icon:`blank` Antialias Views
   Toggles use of an anti-aliasing filter in the world, camera and depth views.
