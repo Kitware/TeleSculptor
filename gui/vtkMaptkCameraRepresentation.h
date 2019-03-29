@@ -50,6 +50,9 @@ public:
   void AddCamera(int id, vtkCamera* camera);
   void RemoveCamera(int id);
 
+  // Mark the existing cameras as modified
+  void CamerasModified();
+
   // Description:
   // Get/Set the camera to be displayed as the active camera
   void SetActiveCamera(int id);
