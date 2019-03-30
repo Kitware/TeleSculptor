@@ -66,6 +66,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/io/camera_io.h>
+#include <vital/io/camera_from_metadata.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/camera_perspective.h>
@@ -748,13 +749,26 @@ void MainWindowPrivate::updateFrames(
       if (init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
+        K->set_image_width(static_cast<unsigned>(im->width()));
+        K->set_image_height(static_cast<unsigned>(im->height()));
+        baseCamera.set_intrinsics(K);
 
         bool init_intrinsics_with_metadata =
           this->freestandingConfig->get_value<bool>(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
-          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+          for (auto mdp : mdMap)
+          {
+            auto md_K = kv::intrinsics_from_metadata( *mdp.second,
+              static_cast<unsigned>(im->width()),
+              static_cast<unsigned>(im->height()) );
+            if (md_K != nullptr)
+            {
+              baseCamera.set_intrinsics(md_K);
+              break;
+            }
+          }
         }
 
         kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
