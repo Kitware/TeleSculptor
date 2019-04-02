@@ -2938,6 +2938,12 @@ void MainWindow::showUserManual()
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::applySimilarityTransform()
+{
+  std::cout << "Need implementation!" << std::endl;
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::updateVideoImportProgress(QString const& desc, int progress)
 {
   QTE_D();

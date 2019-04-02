@@ -60,6 +60,8 @@ public:
   CameraView* cameraView();
   kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
+  void applySimilarityTransform();
+
 public slots:
   void newProject();
 

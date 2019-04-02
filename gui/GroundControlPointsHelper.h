@@ -78,6 +78,8 @@ public slots:
 
   void setActivePoint(kwiver::vital::ground_control_point_id_t);
 
+  void applySimilarityTransform();
+
 signals:
   void pointsReloaded();
   void pointsRecomputed();

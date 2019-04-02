@@ -148,6 +148,7 @@
    </item>
    <item>
     <widget class="QToolBar" name="toolBar">
+     <addaction name="actionApplySimilarity"/>
      <addaction name="actionRevert"/>
      <addaction name="actionDelete"/>
     </widget>
@@ -201,6 +202,21 @@
    </property>
    <property name="toolTip">
     <string>Delete the active point</string>
+   </property>
+  </action>
+  <action name="actionApplySimilarity">
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/16x16/reset</normaloff>:/icons/16x16/reset</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Apply Similarity Transform</string>
+   </property>
+   <property name="iconText">
+    <string>Revert</string>
+   </property>
+   <property name="toolTip">
+    <string>Apply Similarity Transform to correct geo-locations</string>
    </property>
   </action>
  </widget>
