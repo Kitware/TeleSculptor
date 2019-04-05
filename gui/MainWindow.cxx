@@ -63,6 +63,7 @@
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
 #include <vital/algo/video_input.h>
+#include <vital/algo/estimate_similarity_transform.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -2962,6 +2963,38 @@ void MainWindow::applySimilarityTransform()
     to_pt(2) = gcp.second->elevation() - lgcs.origin_altitude();
     to_pts.push_back( to_pt );
   }
+
+  // Merge project config with default config file
+  auto const config = readConfig("gui_st_estimator.conf");
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "No configuration data was found for similarity estimator. "
+      "Please check your installation.");
+    return;
+  }
+
+  config->merge_config(d->project->config);
+  if (! kv::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config) )
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "An error was found in the similarity estimator configuration.");
+    return;
+  }
+
+  // Create the similarity transform from the ground control points
+  kv::algo::estimate_similarity_transform_sptr st_estimator;
+  kv::algo::estimate_similarity_transform::set_nested_algo_configuration(
+      "st_estimator", config, st_estimator);
+
+  // initialize identity transform
+  kwiver::vital::similarity_d sim_transform;
+
+  sim_transform = st_estimator->estimate_transform( from_pts, to_pts );
 }
 
 //-----------------------------------------------------------------------------
