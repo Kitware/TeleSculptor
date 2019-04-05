@@ -2940,7 +2940,28 @@ void MainWindow::showUserManual()
 //-----------------------------------------------------------------------------
 void MainWindow::applySimilarityTransform()
 {
-  std::cout << "Need implementation!" << std::endl;
+  QTE_D();
+
+  auto lgcs = d->sfmConstraints->get_local_geo_cs();
+  if (lgcs.origin().is_empty())
+  {
+    qWarning() << "Can't apply similarity transform without local coordinate system";
+    return;
+  }
+
+  auto local_crs = lgcs.origin().crs();
+
+  std::vector<kwiver::vital::vector_3d> from_pts, to_pts;
+  auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
+  for ( auto gcp : gcp_map )
+  {
+    from_pts.push_back( gcp.second->loc() );
+    kwiver::vital::vector_3d to_pt;
+    to_pt.block< 2, 1>( 0, 0 ) =
+      gcp.second->geo_loc().location( local_crs ) - lgcs.origin().location();
+    to_pt(2) = gcp.second->elevation() - lgcs.origin_altitude();
+    to_pts.push_back( to_pt );
+  }
 }
 
 //-----------------------------------------------------------------------------
