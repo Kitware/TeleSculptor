@@ -2707,8 +2707,22 @@ void MainWindow::acceptToolResults(
 
   if (isFinal)
   {
+    bool update_origin = d->toolUpdateLandmarks != nullptr;
+
     // Force immediate update on tool finish so we ensure update before saving
     updateToolResults();
+
+    // If the landmarks changed, then update the geo coordinate system
+    if (update_origin)
+    {
+      // if a local geo coordinate system exists,
+      // recompute the origin to center the points
+      if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty())
+      {
+        auto offset = d->centerLandmarks();
+        d->shiftGeoOrigin(offset);
+      }
+    }
   }
   else if (updateNeeded)
   {
@@ -2842,17 +2856,6 @@ void MainWindow::updateToolResults()
     d->UI.camera->setValue(d->toolUpdateActiveFrame);
     this->setActiveCamera(d->toolUpdateActiveFrame);
     d->toolUpdateActiveFrame = -1;
-  }
-
-  if (updated_landmarks)
-  {
-    // if a local geo coordinate system exists,
-    // recompute the origin to center the points
-    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty())
-    {
-      auto offset = d->centerLandmarks();
-      d->shiftGeoOrigin(offset);
-    }
   }
 
   if (!d->frames.isEmpty())
