@@ -62,6 +62,7 @@
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
+#include <arrows/core/transform.h>
 #include <vital/algo/video_input.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/io/camera_io.h>
@@ -2994,7 +2995,22 @@ void MainWindow::applySimilarityTransform()
   // initialize identity transform
   kwiver::vital::similarity_d sim_transform;
 
-  sim_transform = st_estimator->estimate_transform( from_pts, to_pts );
+  sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
+
+  // Transform landmarks
+  d->landmarks = kwiver::arrows::transform(d->landmarks, sim_transform);
+
+  // Transform cameras
+  auto camera_map = d->cameraMap();
+  camera_map = kwiver::arrows::transform(camera_map, sim_transform);
+  d->updateCameras(camera_map);
+
+  // Transform GCP's
+  for ( auto gcp : gcp_map )
+  {
+    auto gcp_loc = gcp.second->loc();
+    gcp.second->set_loc(sim_transform*gcp_loc);
+  }
 }
 
 //-----------------------------------------------------------------------------
