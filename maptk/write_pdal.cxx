@@ -129,7 +129,6 @@ write_pdal(vital::path_t const& filename,
     view = std::make_shared<pdal::PointView>(table, srs);
   }
 
-  unsigned int id = 0;
   for( unsigned int id=0; id < points.size(); ++id )
   {
     kv::vector_3d pt = points[id];
