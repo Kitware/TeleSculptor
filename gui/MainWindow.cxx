@@ -2957,12 +2957,25 @@ void MainWindow::applySimilarityTransform()
   auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
   for ( auto gcp : gcp_map )
   {
-    from_pts.push_back( gcp.second->loc() );
-    kwiver::vital::vector_3d to_pt;
-    to_pt.block< 2, 1>( 0, 0 ) =
-      gcp.second->geo_loc().location( local_crs ) - lgcs.origin().location();
-    to_pt(2) = gcp.second->elevation() - lgcs.origin_altitude();
-    to_pts.push_back( to_pt );
+    if ( gcp.second->is_geo_loc_user_provided() )
+    {
+      from_pts.push_back( gcp.second->loc() );
+      kwiver::vital::vector_3d to_pt;
+      to_pt.block< 2, 1>( 0, 0 ) =
+        gcp.second->geo_loc().location( local_crs ) - lgcs.origin().location();
+      to_pt(2) = gcp.second->elevation() - lgcs.origin_altitude();
+      to_pts.push_back( to_pt );
+    }
+  }
+
+  // TODO: enforce by disabling button if there is not enough points
+  if (from_pts.size() < 3)
+  {
+    QMessageBox::information(
+      this, "",
+      "Must have at least three user defined ground control points to"
+      " apply similarity transform.");
+    return;
   }
 
   // Merge project config with default config file
