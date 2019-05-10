@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,7 +209,7 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, kwiver::vital::vector_
 
   for (unsigned int k = 0; k < volume->depth(); k++)
   {
-    for (int j = 0; j < volume->height(); j++)
+    for (unsigned int j = 0; j < volume->height(); j++)
     {
       for (unsigned int i = 0; i < volume->width(); i++)
       {

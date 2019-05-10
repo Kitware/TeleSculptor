@@ -2772,7 +2772,6 @@ void MainWindow::saveToolResults()
 void MainWindow::updateToolResults()
 {
   QTE_D();
-  bool updated_landmarks = false;
 
   if (d->toolUpdateCameras)
   {
@@ -2787,7 +2786,6 @@ void MainWindow::updateToolResults()
     d->UI.actionExportLandmarks->setEnabled(
       d->landmarks && d->landmarks->size());
     d->toolUpdateLandmarks = NULL;
-    updated_landmarks = true;
   }
   if (d->toolUpdateTracks)
   {
