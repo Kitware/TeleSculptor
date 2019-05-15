@@ -149,6 +149,52 @@ TeleSculptor
  * Added metrics for rms error by camera and a check that the rays meeting at a
    point have some minimum angle.
 
+ * Switched the iso-surfacing algorithm to
+   [flying edges](https://ieeexplore.ieee.org/document/7348069).
+
+ * Rebranded "MAP-Tk TeleSculptor" to simply "TeleSculptor".  These changes
+   apply mostly to documentation and user-facing names.  The name "maptk"
+   is still used heavily in the code itself.
+
+ * Combined the "Mesh" and "Colored Mesh" export options into a single option
+   named "Fused Mesh".  This will save the mesh with or without color depending
+   on whether color is enabled when saving.
+
+ * Added High-DPI icons for display on higher resolution displays.
+
+ * Placing ground control points in the view uses a smart guess initial position
+   method. When placing points in the world view, a point placer is used which
+   snaps the point to a nearby landmark or the ground plane. When placing points
+   in the camera view, the depth of the 3D point in the world view is determined
+   by picking along the active camera direction vector for landmarks or the
+   ground plane.
+
+ * We now recompute the geographic origin whenever the landmarks are updated.
+   This keeps the ground plane aligned with the data.
+
+ * Use robust bounds fit to the landmarks when setting or resetting the ROI.
+
+ * Added a new ruler measurement for measuring the distance between two points
+   in the view. The ruler measurement displays two synchronized rulers between
+   the world and camera view. Placing the end-points of the ruler also uses the
+   smart guess initial position approach employed by ground control points.
+
+ * The default state of the depth map and volume visibility in the World View
+   is now "visible".  So you no longer need to turn them on manually to see
+   these results.
+
+ * Set the default surface threshold to 0.0 (instead of 0.5) as it should be
+   and set the spin box increments to 0.1.
+
+ * Added an option to the feature tracking tool to provide a maximum number
+   of frames to track on.  These frames are selected uniformly from the video.
+
+ * Added an option to the display to only show frames that have feature
+   tracking data.
+
+ * Set default filenames in save dialog boxes.
+
+
 Fixes since v0.10.0
 ------------------
 
@@ -168,6 +214,43 @@ TeleSculptor
    has now been fixed to work with video_input.  It now works as it did
    before.  It also no longer requires camera files to loaded again from
    KRTD files and instead uses the in memory cameras.
+
+ * Increased the number of significant digits used to 12 when writing the camera
+   parameters to a krtd file with the Blender plugin.
+
+ * The camera path was not showing since the upgrade to VTK 8, now it is.
+
+ * Camera scaling had been broken since it relied on camera path, which was
+   broken.  Fixing the camera path rendering also fixed this.  Also adjusted
+   the camera scaling range to make it more reasonable.
+
+ * Fixed a crash in the GUI that occured when the video reader plugin returned
+   a nullptr instead of a valid frame.
+
+ * Fixed issues with ROI initialization and the use of the ROI in deteremining
+   display scale.  If not manually set, the ROI is automatically initialized
+   before running tools.  When set, the ROI (not landmarks) is used to set the
+   scene scale for drawing cameras.
+
+ * Switched from calling get_image() in a loop during the depth_to_vtk function to
+   outside the loop.  This improves processing speed by eliminating unnecessary
+   image allocations for certain underlying image classes.
+
+ * Fixed the volume surface mesh to use a solid color when not in colorize mode
+   previously the color would change with the surface threshold.
+
+ * Fixed the colorize checkbox for the volume to return the model to solid color
+   when unchecked.
+
+ * Fixed a bug in which the active camera would sometimes flicker or disappear
+   when updating information without changing the active frame.
+
+ * Fixed a bug in which a progress bar would sometimes not go away after a job
+   was completed.
+
+ * Fixed an issue in which the depth map computation was only using support
+   frame coming after the reference frame.  The algorithm now uses equal frames
+   both before and after the reference frame.
 
 Tests
 
