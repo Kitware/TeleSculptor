@@ -22,7 +22,7 @@ ExternalProject_Add(fletch
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
     -Dfletch_BUILD_CXX11:BOOL=ON
-    -Dfletch_BUILD_WITH_PYTHON:BOOL=ON
+    -Dfletch_BUILD_WITH_PYTHON:BOOL=${MAPTK_BUILD_WITH_PYTHON}
     -Dfletch_ENABLE_Boost:BOOL=ON
     -DBoost_SELECT_VERSION:STRING=1.65.1
     -Dfletch_ENABLE_Caffe:BOOL=OFF
@@ -75,7 +75,7 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_log4cplus:BOOL=ON
     -Dfletch_ENABLE_openjpeg:BOOL=OFF
     -Dfletch_ENABLE_qtExtensions:BOOL=${MAPTK_ENABLE_GUI}
-    -Dfletch_ENABLE_pybind11:BOOL=OFF
+    -Dfletch_ENABLE_pybind11:BOOL=${MAPTK_BUILD_WITH_PYTHON}
     -Dfletch_ENABLE_shapelib:BOOL=OFF
     -Dfletch_BUILD_WITH_CUDA:BOOL=${MAPTK_BUILD_WITH_CUDA}
     -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}

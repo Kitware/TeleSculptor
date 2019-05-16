@@ -10,6 +10,15 @@ if (MAPTK_BUILD_WITH_CUDA)
 endif()
 
 ###
+# Option for Python
+#
+option(MAPTK_BUILD_WITH_PYTHON "Build with Python support" FALSE)
+if (MAPTK_BUILD_WITH_PYTHON)
+  find_package(PythonInterp 3.4 QUIET REQUIRED )
+  find_package(PythonLibs 3.4 QUIET REQUIRED )
+endif()
+
+###
 # Dependencies
 #
 include(CMake/maptk-external-fletch.cmake)
