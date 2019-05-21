@@ -3024,6 +3024,41 @@ void MainWindow::applySimilarityTransform()
     auto gcp_loc = gcp.second->loc();
     gcp.second->set_loc(sim_transform*gcp_loc);
   }
+
+  // Transform ROI
+  kwiver::vital::vector_3d minPt;
+  kwiver::vital::vector_3d maxPt;
+  d->roi->GetXMin(minPt.data());
+  d->roi->GetXMax(maxPt.data());
+  std::vector<kwiver::vital::vector_3d> boundPts = {minPt, maxPt};
+
+  for (int i=0; i < 2; ++i)
+  {
+    for (int j=0; j < 2; ++j)
+    {
+      for (int k =0; k < 2; ++k)
+      {
+        kwiver::vital::vector_3d currPt(boundPts[i][0],
+                                        boundPts[j][1],
+                                        boundPts[k][3]);
+        kwiver::vital::vector_3d newPt = sim_transform*currPt;
+        for (int l = 0; l < 3; ++l)
+        {
+          if (newPt[l] < minPt[l])
+          {
+            minPt[l] = newPt[l];
+          }
+          if (newPt[l] > maxPt[l])
+          {
+            maxPt[l] = newPt[l];
+          }
+        }
+      }
+    }
+  }
+
+  d->roi->SetXMin(minPt.data());
+  d->roi->SetXMax(maxPt.data());
 }
 
 //-----------------------------------------------------------------------------
