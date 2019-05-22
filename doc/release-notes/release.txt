@@ -24,3 +24,6 @@ TeleSculptor Application
  * Fixed a visualization bug in which a frame with an invalid camera was still
    rendered in the world view by borrowing the camera from the most recently
    displayed valid frame.
+
+ * Fixed a visualization bug in which camera frustums were not rendered when
+   built with GCC with compiler optimizations turned on.

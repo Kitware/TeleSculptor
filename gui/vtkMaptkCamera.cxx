@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -218,7 +218,7 @@ bool vtkMaptkCamera::Update()
   if (this->ImageDimensions[0] == -1 || this->ImageDimensions[1] == -1)
   {
     // Guess image size
-    auto const& s = ci->principal_point() * 2.0;
+    const kwiver::vital::vector_2d s = ci->principal_point() * 2.0;
     this->ImageDimensions[0] = s[0];
     this->ImageDimensions[1] = s[1];
   }
