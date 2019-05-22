@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,12 @@
 // Forward declarations
 class GroundControlPointsWidgetPrivate;
 class vtkAbstractWidget;
+class vtkHandleWidget;
 class vtkMatrix4x4;
 class vtkObject;
+class vtkPointPlacer;
 class vtkRenderWindowInteractor;
+class vtkRenderer;
 
 class GroundControlPointsWidget : public QObject
 {
@@ -60,10 +63,21 @@ public:
 
   void setInteractor(vtkRenderWindowInteractor* iren);
 
+  void setPointPlacer(vtkPointPlacer* placer);
+
+  // Get the renderer
+  vtkRenderer* renderer();
+
   // Get active handle and point coordintes
   int activeHandle() const;
   kwiver::vital::vector_3d activePoint();
   kwiver::vital::vector_3d point(int handle) const;
+
+  // Get access to the underlying handle widget
+  vtkHandleWidget* handleWidget(int handleId) const;
+
+  // Get ID of underlying handle widget
+  int findHandleWidget(vtkHandleWidget* handle) const;
 
   // Add a point
   void addDisplayPoint(double pt[3]);
@@ -106,7 +120,6 @@ protected slots:
   // void addInternalPoint();
   void movePointEvent();
   void pointDeletedCallback(vtkObject*, unsigned long, void*, void*);
-  void cursorChangedCallback(vtkObject*, unsigned long, void*, void*);
   void activeHandleChangedCallback(vtkObject*, unsigned long, void*, void*);
 
 private:

@@ -36,7 +36,7 @@
   </layout>
   <action name="actionDisplayMode">
    <property name="text">
-    <string>Display mode</string>
+    <string>Display Mode</string>
    </property>
   </action>
   <action name="actionViewReset">

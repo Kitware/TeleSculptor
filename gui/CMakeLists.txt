@@ -1,5 +1,5 @@
 set(CMAKE_AUTOMOC ON)
-set(Qt5_MODULES Core Designer UiPlugin Widgets Xml)
+set(Qt5_MODULES Core Designer UiPlugin Widgets Svg Xml)
 find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 set(QT_LIBRARIES )
 foreach(module ${Qt5_MODULES})
@@ -63,6 +63,7 @@ include_directories(
 
 set(gui_am_ui
   CameraView.ui
+  GroundControlPointsView.ui
   MainWindow.ui
   MatchMatrixWindow.ui
   WorldView.ui
@@ -105,6 +106,8 @@ set(gui_sources
   FeatureOptions.cxx
   GradientSelector.cxx
   GroundControlPointsHelper.cxx
+  GroundControlPointsModel.cxx
+  GroundControlPointsView.cxx
   GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
@@ -114,6 +117,8 @@ set(gui_sources
   MetadataView.cxx
   PointOptions.cxx
   Project.cxx
+  RulerHelper.cxx
+  RulerWidget.cxx
   Utils.cxx
   VideoImport.cxx
   VolumeOptions.cxx
@@ -121,10 +126,15 @@ set(gui_sources
   main.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
+  vtkMaptkDistanceRepresentation2D.cxx
+  vtkMaptkDistanceWidget.cxx
   vtkMaptkFeatureTrackRepresentation.cxx
   vtkMaptkImageDataGeometryFilter.cxx
   vtkMaptkImageUnprojectDepth.cxx
   vtkMaptkInteractorStyle.cxx
+  vtkMaptkPointHandleRepresentation3D.cxx
+  vtkMaptkPointPicker.cxx
+  vtkMaptkPointPlacer.cxx
   vtkMaptkScalarDataFilter.cxx
   vtkMaptkScalarsToGradient.cxx
   vtkMaptkSeedWidget.cxx
@@ -213,8 +223,8 @@ if(APPLE)
 
   set_target_properties(TeleSculptor PROPERTIES
     OUTPUT_NAME TeleSculptor
-    MACOSX_BUNDLE_NAME "MAP-Tk TeleSculptor"
-    MACOSX_BUNDLE_INFO_STRING "MAP-Tk v${MAPTK_VERSION} TeleSculptor Application"
+    MACOSX_BUNDLE_NAME "TeleSculptor"
+    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${MAPTK_VERSION} Application"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${MAPTK_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
     )
@@ -318,6 +328,9 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
   install(DIRECTORY "${fletch_ROOT}/share/proj"
+          DESTINATION share COMPONENT Runtime)
+
+  install(DIRECTORY "${fletch_ROOT}/share/gdal"
           DESTINATION share COMPONENT Runtime)
 
   set(kwiver_tools

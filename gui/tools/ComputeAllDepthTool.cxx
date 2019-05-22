@@ -63,7 +63,6 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_CD = "compute_depth";
-static char const* const BLOCK_BD = "batch_depth";
 }
 
 //-----------------------------------------------------------------------------
@@ -167,20 +166,22 @@ void ComputeAllDepthTool::run()
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
   const int halfsupport = d->num_support;
-  const int ref_frame = 0; //local ref frame
+  const int total_support = 2 * halfsupport + 1;
+
 
   std::vector<kwiver::vital::frame_id_t> frames_in_range;
   for (auto itr = cm.begin(); itr != cm.end(); itr++)
   {
     if (itr->first >= d->start_frame && (d->end_frame < 0 || itr->first <= d->end_frame))
       frames_in_range.push_back(itr->first);
-  }  
-  
-  kwiver::vital::frame_id_t total_frames = frames_in_range.size() - halfsupport;
+  }
 
-  int stride = 1;
-  if (d->num_depth > 0 && d->num_depth < total_frames)
-    stride = (int)total_frames / d->num_depth;
+  kwiver::vital::frame_id_t num_frames =
+    frames_in_range.size() - 2 * halfsupport;
+
+  const size_t num_depth_maps =
+    std::min(static_cast<size_t>(d->num_depth),
+             static_cast<size_t>(num_frames));
 
   d->video_reader->open(this->data()->videoPath);
 
@@ -196,67 +197,67 @@ void ComputeAllDepthTool::run()
   auto data = std::make_shared<ToolData>();
   data->activeFrame = 0;
   emit updated(data);
-  for (unsigned int f = 0; f < total_frames; f+=stride)
+  for (size_t c = 0; c < num_depth_maps; ++c)
   {
-    this->updateProgress(f, total_frames);
-    int frame = frames_in_range[f];
+    size_t curr_frame_idx = halfsupport + (c * num_frames) / (num_depth_maps-1);
+    this->updateProgress(c, num_depth_maps);
+    auto fitr = frames_in_range.begin() + curr_frame_idx;
+
+    // Compute an iterator range containing total_support entries and
+    // centered at the current frame.  When at the boundary the window
+    // shifts to be not centered, but retains the same size.
+    auto fitr_begin = (fitr - frames_in_range.begin() > halfsupport) ?
+      fitr - halfsupport : frames_in_range.begin();
+    auto fitr_end = frames_in_range.end();
+    if (fitr_end - fitr_begin > total_support)
+    {
+      fitr_end = fitr_begin + total_support;
+    }
+    else
+    {
+      // if cut off at the end, back up the beginning
+      fitr_begin = (fitr_end - frames_in_range.begin() > total_support) ?
+        fitr_end - total_support : frames_in_range.begin();
+    }
 
     std::vector<kwiver::vital::image_container_sptr> frames_out;
     std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
     std::vector<kwiver::vital::frame_id_t> frame_ids;
+    int ref_frame = 0; //local ref frame
 
     kwiver::vital::timestamp currentTimestamp;
-    d->video_reader->seek_frame(currentTimestamp, frame);
-    LOG_DEBUG(this->data()->logger,
-              "Reference frame is " << currentTimestamp.get_frame());
-    auto cam = cm.find(currentTimestamp.get_frame());
-    if (cam == cm.end() || !cam->second)
+    d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
+    // collect all the frames
+    for (auto f = fitr_begin; f < fitr_end; ++f)
     {
-      LOG_DEBUG(this->data()->logger,
-                "No camera available on the selected frame");
-      return;
-    }
-
-    auto const image = d->video_reader->frame_image();
-    if (!image)
-    {
-      LOG_DEBUG(this->data()->logger,
-                "No image available on the selected frame");
-      return;
-    }
-    auto const mdv = d->video_reader->frame_metadata();
-    if (!mdv.empty())
-    {
-      image->set_metadata(mdv[0]);
-    }
-    frames_out.push_back(image);
-    cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
-    frame_ids.push_back(currentTimestamp.get_frame());
-
-    // find halfsupport more frames with valid cameras and images
-    while (d->video_reader->good() && frames_out.size() <= halfsupport)
-    {
-      d->video_reader->next_frame(currentTimestamp);
-      cam = cm.find(currentTimestamp.get_frame());
-      if (cam == cm.end() || !cam->second)
+      while (currentTimestamp.get_frame() < *f)
       {
+        d->video_reader->next_frame(currentTimestamp);
+      }
+      if (currentTimestamp.get_frame() != *f)
+      {
+        LOG_WARN(this->data()->logger, "Could not find frame " << *f);
         continue;
       }
+      auto cam = cm.find(*f);
       auto const image = d->video_reader->frame_image();
       if (!image)
       {
+        LOG_WARN(this->data()->logger, "No image available on frame " << *f);
         continue;
       }
-      LOG_DEBUG(this->data()->logger,
-                "Adding support frame " << currentTimestamp.get_frame());
       auto const mdv = d->video_reader->frame_metadata();
       if (!mdv.empty())
       {
         image->set_metadata(mdv[0]);
       }
+      if (*f == *fitr)
+      {
+        ref_frame = static_cast<int>(frames_out.size());
+      }
       frames_out.push_back(image);
       cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
-      frame_ids.push_back(currentTimestamp.get_frame());
+      frame_ids.push_back(*f);
     }
 
     kwiver::vital::image_container_sptr ref_img = frames_out[ref_frame];
@@ -269,7 +270,9 @@ void ComputeAllDepthTool::run()
     kwiver::vital::vector_3d maxpt(maxptd);
 
     kwiver::vital::bounding_box<int> crop = kwiver::arrows::core::project_3d_bounds(
-      minpt, maxpt, *cameras_out[ref_frame], ref_img->width(), ref_img->height());
+      minpt, maxpt, *cameras_out[ref_frame],
+      static_cast<int>(ref_img->width()),
+      static_cast<int>(ref_img->height()));
 
     double height_min, height_max;
     kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
@@ -283,7 +286,7 @@ void ComputeAllDepthTool::run()
 
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
-    data->activeFrame = frame;
+    data->activeFrame = *fitr;
     emit updated(data);
     if (this->isCanceled())
       return;

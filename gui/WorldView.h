@@ -33,6 +33,7 @@
 
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
+#include <vital/types/local_geo_cs.h>
 
 #include <qtGlobal.h>
 
@@ -49,6 +50,7 @@ class vtkStructuredGrid;
 namespace kwiver { namespace vital { class landmark_map; } }
 
 class GroundControlPointsWidget;
+class RulerWidget;
 class vtkMaptkCamera;
 
 class WorldViewPrivate;
@@ -75,15 +77,17 @@ public:
   void setROI(vtkBox*, bool init = false);
 
   GroundControlPointsWidget* groundControlPointsWidget() const;
+  RulerWidget* rulerWidget() const;
 signals:
   void depthMapThresholdsChanged();
   void depthMapEnabled(bool);
 
   void contourChanged();
   void updateThresholds(double,double,double,double);
-  void meshEnabled(bool);
-  void coloredMeshEnabled(bool);
+  void fusedMeshEnabled(bool);
   void pointPlacementEnabled(bool);
+  void rulerEnabled(bool);
+  void rulerReset();
 
 public slots:
   void setBackgroundColor(QColor const&);
@@ -122,12 +126,14 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
-  void saveDepthPoints(QString const& path);
+
+  void saveDepthPoints(QString const & path,
+                       kwiver::vital::local_geo_cs const & lgcs);
   void exportWebGLScene(QString const& path);
 
-  void saveMesh(QString const& path);
   void saveVolume(QString const& path);
-  void saveColoredMesh(QString const& path);
+  void saveFusedMesh(QString const& path,
+                     kwiver::vital::local_geo_cs const & lgcs);
 
   void invalidateGeometry();
 

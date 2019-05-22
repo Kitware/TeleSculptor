@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -196,6 +196,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
   this->ActiveActor->GetProperty()->SetLighting(false);
   this->ActiveActor->GetProperty()->SetLineWidth(2.0);
+  this->ActiveActor->PickableOff();
 
   this->Internal->NonActiveAppendPolyData->AddInputData(
     this->Internal->DummyPolyData.GetPointer());
@@ -208,6 +209,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
   this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
   this->NonActiveActor->GetProperty()->SetLineWidth(2.0);
+  this->NonActiveActor->PickableOff();
 
   // Set up path actor and data
   vtkNew<vtkPoints> points;
@@ -221,6 +223,7 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
 
   this->PathActor = vtkActor::New();
   this->PathActor->SetMapper(pathMapper.GetPointer());
+  this->PathActor->PickableOff();
 }
 
 //-----------------------------------------------------------------------------
@@ -280,18 +283,27 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 }
 
 //-----------------------------------------------------------------------------
+void vtkMaptkCameraRepresentation::CamerasModified()
+{
+  this->Internal->PathNeedsUpdate = true;
+  this->Internal->CameraNonActivePolyData.clear();
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
 void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
 {
   auto camIter = this->Internal->Cameras.find(id);
-  if (camIter == this->Internal->Cameras.end() ||
-      this->ActiveCamera == camIter->second)
+  if (camIter == this->Internal->Cameras.end())
   {
     this->ActiveCamera = nullptr;
     return;
   }
-
-  this->ActiveCamera = camIter->second;
-  this->Modified();
+  if (this->ActiveCamera != camIter->second)
+  {
+    this->ActiveCamera = camIter->second;
+    this->Modified();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -356,10 +368,13 @@ void vtkMaptkCameraRepresentation::Update()
   if (this->Internal->PathNeedsUpdate)
   {
     this->Internal->PathPolyData->Reset();
-    this->Internal->PathPolyData->Modified();
-    vtkPoints* points = this->Internal->PathPolyData->GetPoints();
+
+    vtkNew<vtkPoints> points;
+    this->Internal->PathPolyData->SetPoints(points.GetPointer());
     points->Allocate(this->Internal->Cameras.size());
-    vtkCellArray* lines = this->Internal->PathPolyData->GetLines();
+
+    vtkNew<vtkCellArray> lines;
+    this->Internal->PathPolyData->SetLines(lines.GetPointer());
     lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
 
     for(auto const& camData : this->Internal->Cameras)
@@ -368,6 +383,8 @@ void vtkMaptkCameraRepresentation::Update()
       camData.second->GetPosition(position);
       lines->InsertCellPoint(points->InsertNextPoint(position));
     }
+    this->Internal->PathPolyData->Modified();
+    this->Internal->PathNeedsUpdate = false;
   }
 }
 

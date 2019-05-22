@@ -70,6 +70,11 @@ public:
   void DeleteSeed(int n);
 
   /**
+   * Find the index of the seed with the specified handle.
+   */
+  int FindSeed(vtkHandleWidget* handle);
+
+  /**
    * Custom event fired to notify that the active seed has changed.
    */
   enum vtkMaptkSeedWidgetEvents
@@ -84,7 +89,8 @@ protected:
   // Callback interface to capture events when
   // placing the widget.
   static void AddPointAction(vtkAbstractWidget*);
-  static void MoveAction(vtkAbstractWidget*);
+  static void DeleteAction(vtkAbstractWidget*);
+  static void EndSelectAction(vtkAbstractWidget*);
 
 private:
   vtkMaptkSeedWidget(const vtkMaptkSeedWidget&) = delete;

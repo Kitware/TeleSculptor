@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MAP-Tk TeleSculptor</string>
+   <string>TeleSculptor</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -59,8 +59,7 @@
      <addaction name="actionWebGLScene"/>
      <addaction name="separator"/>
      <addaction name="actionExportVolume"/>
-     <addaction name="actionExportMesh"/>
-     <addaction name="actionExportColoredMesh"/>
+     <addaction name="actionExportFusedMesh"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -93,6 +92,7 @@
     <addaction name="actionSetBackgroundColor"/>
     <addaction name="actionShowWorldAxes"/>
     <addaction name="actionKeyframesOnly"/>
+    <addaction name="actionTrackedFramesOnly"/>
     <addaction name="actionAntialiasing"/>
    </widget>
    <widget class="qtMenu" name="menuHelp">
@@ -239,6 +239,15 @@
     </property>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="groundControlPointsDock">
+   <property name="windowTitle">
+    <string>&amp;Ground Control Points</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="GroundControlPointsView" name="groundControlPoints"/>
+  </widget>
   <action name="actionNewProject">
    <property name="text">
     <string>&amp;New Project</string>
@@ -313,7 +322,7 @@
      <normaloff>:/icons/16x16/help-manual</normaloff>:/icons/16x16/help-manual</iconset>
    </property>
    <property name="text">
-    <string>MAP-Tk TeleSculptor User &amp;Manual</string>
+    <string>TeleSculptor User &amp;Manual</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -325,7 +334,7 @@
      <normaloff>:/icons/16x16/telesculptor</normaloff>:/icons/16x16/telesculptor</iconset>
    </property>
    <property name="text">
-    <string>&amp;About MAP-Tk TeleSculptor</string>
+    <string>&amp;About TeleSculptor</string>
    </property>
   </action>
   <action name="actionShowMatchMatrix">
@@ -347,10 +356,10 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLY &amp;Landmarks...</string>
+    <string>&amp;Landmarks...</string>
    </property>
    <property name="toolTip">
-    <string>Export the landmarks in the current project to a PLY file</string>
+    <string>Export the landmarks in the current project to a file</string>
    </property>
   </action>
   <action name="actionExportCameras">
@@ -396,20 +405,12 @@
     <string>Volume...</string>
    </property>
   </action>
-  <action name="actionExportMesh">
+  <action name="actionExportFusedMesh">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Mesh...</string>
-   </property>
-  </action>
-  <action name="actionExportColoredMesh">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Colored Mesh...</string>
+    <string>Fused Mesh...</string>
    </property>
   </action>
   <action name="actionShowWorldAxes">
@@ -440,13 +441,13 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>PLY &amp;Depth Map...</string>
+    <string>&amp;Depth Map...</string>
    </property>
    <property name="iconText">
-    <string>PLY Depth Map</string>
+    <string>Depth Map</string>
    </property>
    <property name="toolTip">
-    <string>Export the current back projected depth map as a PLY file</string>
+    <string>Export the current back projected depth map to a point cloud file</string>
    </property>
   </action>
   <action name="actionExportTracks">
@@ -471,15 +472,26 @@
     <string>Keyframes Only</string>
    </property>
   </action>
+  <action name="actionTrackedFramesOnly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Tracked Frames Only</string>
+   </property>
+  </action>
   <action name="actionExportGroundControlPoints">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Ground Control Points</string>
+    <string>&amp;Ground Control Points...</string>
    </property>
    <property name="toolTip">
-    <string>Export the ground control points in the current project</string>
+    <string>Export the ground control points as a GeoJSON file</string>
    </property>
   </action>
   <action name="actionAntialiasing">
@@ -493,10 +505,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Antialias views</string>
+    <string>Antialias Views</string>
    </property>
    <property name="toolTip">
-    <string>Enable antialiasing for smoother geometry in each view</string>
+    <string>Enable anti-aliasing filter for smoother geometry in each view (may produce artifacts)</string>
    </property>
   </action>
   <action name="actionImportImagery">
@@ -533,7 +545,7 @@
   </action>
   <action name="actionImportLandmarks">
    <property name="text">
-    <string>&amp;Landmarks</string>
+    <string>&amp;Landmarks...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O, L</string>
@@ -541,10 +553,7 @@
   </action>
   <action name="actionImportGroundControlPoints">
    <property name="text">
-    <string>&amp;Ground Control Points</string>
-   </property>
-   <property name="toolTip">
-    <string>Ground Control Points</string>
+    <string>&amp;Ground Control Points...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O, G</string>
@@ -585,6 +594,12 @@
    <class>qtProgressWidget</class>
    <extends>QWidget</extends>
    <header>qtProgressWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GroundControlPointsView</class>
+   <extends>QWidget</extends>
+   <header>GroundControlPointsView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -44,6 +44,7 @@ namespace kwiver { namespace vital { class track; } }
 
 class vtkMaptkCamera;
 class GroundControlPointsWidget;
+class RulerWidget;
 
 class CameraViewPrivate;
 
@@ -57,6 +58,7 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
   GroundControlPointsWidget* groundControlPointsWidget() const;
+  RulerWidget* rulerWidget() const;
 
   void enableAntiAliasing(bool enable);
 public slots:

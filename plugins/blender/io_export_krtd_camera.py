@@ -89,8 +89,8 @@ def writeCameras(context, filepath, frame_start, frame_end,
 
         focal_len = camera.data.lens * width / camera.data.sensor_width
         # write the camera calibration matrix
-        fw("%g 0 %g\n" % (focal_len, width / 2.0))
-        fw("0 %g %g\n" % (focal_len, height / 2.0))
+        fw("%.12g 0 %.12g\n" % (focal_len, width / 2.0))
+        fw("0 %.12g %.12g\n" % (focal_len, height / 2.0))
         fw("0 0 1\n\n")
 
         mat = camera.matrix_world.copy()
@@ -101,12 +101,12 @@ def writeCameras(context, filepath, frame_start, frame_end,
         Rflip = mathutils.Matrix.Rotation(radians(180), 3, 'X')
         R = Rflip * R
         # write the rotation matrix
-        fw("%g %g %g\n" % R[0][:])
-        fw("%g %g %g\n" % R[1][:])
-        fw("%g %g %g\n\n" % R[2][:])
+        fw("%.12g %.12g %.12g\n" % R[0][:])
+        fw("%.12g %.12g %.12g\n" % R[1][:])
+        fw("%.12g %.12g %.12g\n\n" % R[2][:])
         # compute the translation vector
         t = -1 * (R * c)
-        fw("%g %g %g\n\n" % t[:])
+        fw("%.12g %.12g %.12g\n\n" % t[:])
         # write the empty lens distortion coefficients
         fw("0\n")
 

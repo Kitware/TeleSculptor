@@ -185,6 +185,9 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
 
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
   d->colorizeSurfaceOptions->enableMenu(state);
+  d->volumeActor->GetMapper()->SetScalarVisibility(state);
+
+  emit modified();
 }
 
 //-----------------------------------------------------------------------------

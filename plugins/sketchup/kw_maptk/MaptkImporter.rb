@@ -13,7 +13,7 @@ module KW
   unless file_loaded?(__FILE__)
     @@kw_tools_menu = UI.menu("Plugins").add_submenu("Kitware")
     maptk_conf_import = MaptkConfImporter.new
-    @@kw_tools_menu.add_item("Import MAP-Tk Config"){maptk_conf_import.get_file}
+    @@kw_tools_menu.add_item("Import TeleSculptor Project"){maptk_conf_import.get_file}
     @@kw_tools_menu.add_separator
     @@kw_tools_menu.add_item("KWIVER Website"){UI.openURL "http://www.kwiver.org"}
   end

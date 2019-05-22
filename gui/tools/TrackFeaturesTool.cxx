@@ -42,6 +42,8 @@
 #include <vital/types/metadata.h>
 #include <vital/types/metadata_traits.h>
 
+#include <algorithm>
+
 #include <QMessageBox>
 
 using kwiver::vital::algo::image_io;
@@ -71,6 +73,7 @@ public:
   track_features_sptr feature_tracker;
   video_input_sptr video_reader;
   video_input_sptr mask_reader;
+  unsigned int max_frames = 500;
 };
 
 QTE_IMPLEMENT_D_FUNC(TrackFeaturesTool)
@@ -92,11 +95,11 @@ kwiver::vital::image_container_sptr TrackFeaturesToolPrivate::getImage(
 TrackFeaturesTool::TrackFeaturesTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new TrackFeaturesToolPrivate)
 {
-  this->setText("&Track Features Dense");
+  this->setText("&Track Features");
   this->setToolTip(
     "<nobr>Detect feature points in the images, compute feature descriptors, "
-    "</nobr>and track the features across images.  Also run loop closure if "
-    "configured to do so.  This is slower than the primary tracking algorithm.");
+    "</nobr>and match the features across images.  Also run loop closure if "
+    "configured to do so.");
 }
 
 //-----------------------------------------------------------------------------
@@ -154,6 +157,10 @@ bool TrackFeaturesTool::execute(QWidget* window)
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
 
+  // The maximum number of frames to track
+  d->max_frames = config->get_value<unsigned int>("feature_tracker:max_frames",
+                                                  d->max_frames);
+
   return AbstractTool::execute(window);
 }
 
@@ -165,8 +172,16 @@ void TrackFeaturesTool::run()
   auto const maxFrame = this->data()->maxFrame;
   auto const hasMask = !this->data()->maskPath.empty();
 
+  kwiver::vital::metadata_map_sptr md_map;
+  // get metadata from the tool, if possible, so we do not
+  // need to scan the whole video again
+  if (this->sfmConstraints())
+  {
+    md_map = this->sfmConstraints()->get_metadata();
+  }
+
   auto tracks = this->tracks();
-  kwiver::vital::frame_id_t frame = this->activeFrame();
+  kwiver::vital::frame_id_t start_frame = this->activeFrame();
   kwiver::vital::timestamp currentTimestamp;
 
   d->video_reader->open(this->data()->videoPath);
@@ -175,37 +190,84 @@ void TrackFeaturesTool::run()
     d->mask_reader->open(this->data()->maskPath);
   }
 
-  // Seek to just before active frame TODO: check status?
-  if (frame > 1)
+  if (!md_map)
   {
-    d->video_reader->seek_frame(currentTimestamp, frame - 1);
+    md_map = d->video_reader->metadata_map();
+  }
+
+  std::vector<kwiver::vital::frame_id_t> valid_frames;
+  if (md_map)
+  {
+    auto fs = md_map->frames();
+    valid_frames = std::vector<kwiver::vital::frame_id_t>(fs.begin(), fs.end());
+  }
+
+  const size_t num_frames = valid_frames.size();
+  std::vector<kwiver::vital::frame_id_t> selected_frames;
+  if (num_frames > d->max_frames)
+  {
+    // select max_frames distributed throughout the video
+    for (unsigned i = 0; i < d->max_frames; ++i)
+    {
+      size_t idx = (i * num_frames) / d->max_frames;
+      if (valid_frames[idx] >= start_frame)
+      {
+        selected_frames.push_back(valid_frames[idx]);
+      }
+    }
+  }
+  else
+  {
+    selected_frames = valid_frames;
+  }
+
+  // seek to the valid frame before the current frame
+  // so that the first advance will bring us to the start frame
+  auto frame_itr = std::lower_bound(valid_frames.begin(),
+                                    valid_frames.end(), start_frame);
+  if (frame_itr != valid_frames.end() &&
+      frame_itr != valid_frames.begin())
+  {
+    auto sf = *(frame_itr - 1);
+    d->video_reader->seek_frame(currentTimestamp, sf);
     if (hasMask)
     {
       kwiver::vital::timestamp dummyTimestamp;
-      d->mask_reader->seek_frame(dummyTimestamp, frame - 1);
+      d->mask_reader->seek_frame(dummyTimestamp, sf);
     }
   }
 
-  this->updateProgress(static_cast<int>(frame), maxFrame);
+  this->updateProgress(static_cast<int>(start_frame), maxFrame);
 
-  while (d->video_reader->next_frame(currentTimestamp))
+  for (auto target_frame : selected_frames)
   {
-    if (hasMask)
+    bool valid = true;
+    kwiver::vital::frame_id_t frame = 0;
+
+    // step to find the next target frame
+    do
     {
-      kwiver::vital::timestamp dummyTimestamp;
-      d->mask_reader->next_frame(dummyTimestamp);
+      valid = d->video_reader->next_frame(currentTimestamp);
+      if (hasMask)
+      {
+        kwiver::vital::timestamp dummyTimestamp;
+        valid = valid && d->mask_reader->next_frame(dummyTimestamp);
+      }
+      frame = currentTimestamp.get_frame();
+    } while (valid && frame < target_frame);
+    if (!valid)
+    {
+      break;
     }
 
     auto const image = d->getImage(d->video_reader);
     auto const mask = d->getImage(d->mask_reader, hasMask);
 
     auto const mdv = d->video_reader->frame_metadata();
-    if( !mdv.empty() )
+    if (!mdv.empty())
     {
-      image->set_metadata( mdv[0] );
+      image->set_metadata(mdv[0]);
     }
-
-    frame = currentTimestamp.get_frame();
 
     // Update tool progress
     this->updateProgress(static_cast<int>(frame), maxFrame);
@@ -235,5 +297,7 @@ void TrackFeaturesTool::run()
     d->mask_reader->close();
   }
   this->updateTracks(tracks);
-  this->setActiveFrame(frame);
+  this->setActiveFrame(start_frame);
+  // mark progress 100% complete
+  this->updateProgress(100);
 }

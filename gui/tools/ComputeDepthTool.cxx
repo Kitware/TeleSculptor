@@ -36,6 +36,7 @@
 #include <vital/algo/compute_depth.h>
 #include <vital/algo/video_input.h>
 #include <vital/config/config_block_io.h>
+#include <vital/exceptions/base.h>
 #include <vital/types/metadata.h>
 
 #include <qtStlUtil.h>
@@ -72,6 +73,7 @@ public:
   video_input_sptr video_reader;
   compute_depth_sptr depth_algo;
   unsigned int max_iterations;
+  int num_support;
   kwiver::vital::image_container_sptr ref_img;
   kwiver::vital::frame_id_t ref_frame;
   kwiver::vital::bounding_box<int> crop;
@@ -86,7 +88,7 @@ ComputeDepthTool::ComputeDepthTool(QObject* parent)
   this->data()->logger =
     kwiver::vital::get_logger("telesculptor.tools.compute_depth");
 
-  this->setText("&Compute Depth Map");
+  this->setText("&Compute Single Depth Map");
   this->setToolTip("Computes depth map on current image.");
 }
 
@@ -151,6 +153,7 @@ bool ComputeDepthTool::execute(QWidget* window)
   // TODO: find a more general way to get the number of iterations
   std::string iterations_key = ":super3d:iterations";
   d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 10);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
@@ -195,16 +198,19 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
 
   vtkIdType pt_id = 0;
 
+  auto dep_im = depth_img->get_image();
+  auto col_im = color_img->get_image();
+
   for (int y = nj - 1; y >= 0; y--)
   {
     for (int x = 0; x < ni; x++)
     {
       uniquenessRatios->SetValue(pt_id, 0);
       bestCost->SetValue(pt_id, 0);
-      depths->SetValue(pt_id, depth_img->get_image().at<double>(x, y));
-      color->SetTuple3(pt_id, (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 0),
-                              (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 1),
-                              (int)color_img->get_image().at<unsigned char>(x + i0, y + j0, 2));
+      depths->SetValue(pt_id, dep_im.at<double>(x, y));
+      color->SetTuple3(pt_id, (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
+                              (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
+                              (int)col_im.at<unsigned char>(x + i0, y + j0, 2));
       pt_id++;
     }
   }
@@ -236,7 +242,8 @@ void ComputeDepthTool::run()
   std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   std::vector<kwiver::vital::frame_id_t> frame_ids;
-  const int halfsupport = 10;
+  const int halfsupport = d->num_support;
+  const int total_support = 2*d->num_support+1;
   int ref_frame = 0;
 
   this->setDescription("Collecting Video Frames");
@@ -244,61 +251,79 @@ void ComputeDepthTool::run()
   data->activeFrame = frame;
   emit updated(data);
 
+  // get a sorted list of all frames which have cameras
+  std::vector<kwiver::vital::frame_id_t> frames;
+  frames.reserve(cm.size());
+  for (auto const p : cm)
+  {
+    frames.push_back(p.first);
+  }
+  // find an iterator for the current frame
+  auto fitr = std::lower_bound(frames.begin(), frames.end(), frame);
+  if (fitr == frames.end() || *fitr != frame)
+  {
+    const std::string msg = "No camera available on the selected frame";
+    LOG_DEBUG(this->data()->logger, msg);
+    throw kwiver::vital::invalid_value(msg);
+  }
+
+  // Compute an iterator range containing total_support entries and
+  // centered at the current frame.  When at the boundary the window
+  // shifts to be not centered, but retains the same size.
+  auto fitr_begin = (fitr - frames.begin() > halfsupport) ?
+                    fitr - halfsupport : frames.begin();
+  auto fitr_end = frames.end();
+  if (fitr_end - fitr_begin > total_support)
+  {
+    fitr_end = fitr_begin + total_support;
+  }
+  else
+  {
+    // if cut off at the end, back up the beginning
+    fitr_begin = (fitr_end - frames.begin() > total_support) ?
+                 fitr_end - total_support : frames.begin();
+  }
+
   d->video_reader->open(this->data()->videoPath);
-
   kwiver::vital::timestamp currentTimestamp;
-  d->video_reader->seek_frame(currentTimestamp, frame);
-  LOG_DEBUG(this->data()->logger,
-    "Reference frame is " << currentTimestamp.get_frame());
-  auto cam = cm.find(currentTimestamp.get_frame());
-  if (cam == cm.end() || !cam->second)
-  {
-    LOG_DEBUG(this->data()->logger,
-      "No camera available on the selected frame");
-    return;
-  }
+  // seek to the first frame
+  d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
 
-  auto const image = d->video_reader->frame_image();
-  if (!image)
+  // collect all the frames
+  for (auto f = fitr_begin; f < fitr_end; ++f)
   {
-    LOG_DEBUG(this->data()->logger,
-      "No image available on the selected frame");
-    return;
-  }
-  auto const mdv = d->video_reader->frame_metadata();
-  if (!mdv.empty())
-  {
-    image->set_metadata(mdv[0]);
-  }
-  frames_out.push_back(image);
-  cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
-  frame_ids.push_back(currentTimestamp.get_frame());
-
-  // find halfsupport more frames with valid cameras and images
-  while (d->video_reader->good() && frames_out.size() <= halfsupport)
-  {
-    d->video_reader->next_frame(currentTimestamp);
-    cam = cm.find(currentTimestamp.get_frame());
-    if (cam == cm.end() || !cam->second)
+    while (currentTimestamp.get_frame() < *f)
     {
+      d->video_reader->next_frame(currentTimestamp);
+    }
+    if (currentTimestamp.get_frame() != *f)
+    {
+      LOG_WARN(this->data()->logger, "Could not find frame " << *f);
       continue;
     }
+    auto cam = cm.find(*f);
     auto const image = d->video_reader->frame_image();
     if (!image)
     {
+      LOG_WARN(this->data()->logger, "No image available on frame " << *f);
       continue;
     }
-    LOG_DEBUG(this->data()->logger,
-      "Adding support frame " << currentTimestamp.get_frame());
     auto const mdv = d->video_reader->frame_metadata();
     if (!mdv.empty())
     {
       image->set_metadata(mdv[0]);
     }
+    if (*f == frame)
+    {
+      ref_frame = static_cast<int>(frames_out.size());
+    }
     frames_out.push_back(image);
     cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
-    frame_ids.push_back(currentTimestamp.get_frame());
+    frame_ids.push_back(*f);
   }
+
+  LOG_DEBUG(this->data()->logger, "ref frame at index " << ref_frame
+                                  << " out of " << frames_out.size());
 
   // Convert landmarks to vector
   landmarks_out.reserve(lm.size());
@@ -318,11 +343,12 @@ void ComputeDepthTool::run()
   kwiver::vital::vector_3d maxpt(maxptd);
 
   d->crop =  kwiver::arrows::core::project_3d_bounds(minpt, maxpt, *cameras_out[ref_frame],
-    d->ref_img->width(), d->ref_img->height());
-  
+    static_cast<int>(d->ref_img->width()),
+    static_cast<int>(d->ref_img->height()));
+
   double height_min, height_max;
   kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
-  
+
   //compute depth
   this->setDescription("Computing Cost Volume");
   data = std::make_shared<ToolData>();

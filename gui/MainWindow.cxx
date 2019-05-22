@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@
 #include "tools/NeckerReversalTool.h"
 #include "tools/SaveFrameTool.h"
 #include "tools/SaveKeyFrameTool.h"
-#include "tools/TrackFeaturesSprokitTool.h"
 #include "tools/TrackFeaturesTool.h"
 #include "tools/TrackFilterTool.h"
 #include "tools/TriangulateTool.h"
@@ -52,12 +51,14 @@
 #include "GroundControlPointsHelper.h"
 #include "MatchMatrixWindow.h"
 #include "Project.h"
+#include "RulerHelper.h"
 #include "VideoImport.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 
 #include <maptk/version.h>
+#include <maptk/write_pdal.h>
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
@@ -286,7 +287,8 @@ public:
   bool updateCamera(kv::frame_id_t frame,
                     kv::camera_perspective_sptr cam);
 
-  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> depthLookup() const;
+  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>>
+  depthLookup() const;
 
   void setActiveCamera(int);
   void updateCameraView();
@@ -304,6 +306,8 @@ public:
                       int value = 0);
 
   void saveGeoOrigin(QString const& path);
+  kv::vector_3d centerLandmarks() const;
+  void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
 
@@ -339,13 +343,13 @@ public:
   kv::timestamp currentVideoTimestamp;
   kv::metadata_map_sptr videoMetadataMap =
     std::make_shared<kv::simple_metadata_map>();
-  kv::frame_id_t advanceInterval = 1;
 
   QMap<kv::frame_id_t, FrameData> frames;
   kv::feature_track_set_sptr tracks;
   kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
   int activeDepthFrame = -1;
+  int currentDepthFrame = -1;
 
   kv::sfm_constraints_sptr sfmConstraints;
 
@@ -370,6 +374,7 @@ public:
 
   // Manual landmarks
   GroundControlPointsHelper* groundControlPointsHelper;
+  RulerHelper* rulerHelper;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -392,7 +397,100 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 {
   project->config->set_value("geo_origin_file", kvPath(
     project->getContingentRelativePath(path)));
-  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(), stdString(path));
+  kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(),
+                                 stdString(path));
+}
+
+//-----------------------------------------------------------------------------
+kv::vector_3d MainWindowPrivate::centerLandmarks() const
+{
+  std::vector<double> x, y, z;
+  x.reserve(this->landmarks->size());
+  y.reserve(this->landmarks->size());
+  z.reserve(this->landmarks->size());
+  for (auto lm : this->landmarks->landmarks())
+  {
+    auto v = lm.second->loc();
+    x.push_back(v[0]);
+    y.push_back(v[1]);
+    z.push_back(v[2]);
+  }
+  // compute the median in x and y
+  size_t mid = x.size() / 2;
+  std::nth_element(x.begin(), x.begin() + mid, x.end());
+  std::nth_element(y.begin(), y.begin() + mid, y.end());
+  // compute 5th percentile for z
+  size_t pct5 = static_cast<size_t>(x.size() * 0.05);
+  std::nth_element(z.begin(), z.begin() + pct5, z.end());
+
+  return kv::vector_3d(x[mid], y[mid], z[pct5]);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
+{
+  auto lgcs = sfmConstraints->get_local_geo_cs();
+  if (lgcs.origin().is_empty())
+  {
+    return;
+  }
+  lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
+  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
+                                  + kv::vector_2d(offset[0], offset[1]),
+                                lgcs.origin().crs()));
+  sfmConstraints->set_local_geo_cs(lgcs);
+
+  if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
+      !project->geoOriginFile.isEmpty())
+  {
+    saveGeoOrigin(project->geoOriginFile);
+  }
+
+  // shift the ROI
+  kv::vector_3d min_pt, max_pt;
+  this->roi->GetXMin(min_pt.data());
+  this->roi->GetXMax(max_pt.data());
+  if (((max_pt - min_pt).array() > 0.0).all())
+  {
+    min_pt -= offset;
+    this->roi->SetXMin(min_pt.data());
+    max_pt -= offset;
+    this->roi->SetXMax(min_pt.data());
+    UI.worldView->setROI(roi.GetPointer(), true);
+    project->config->set_value("ROI", roiToString());
+  }
+
+  // shift the landmarks
+  for (auto lm : this->landmarks->landmarks())
+  {
+    auto lmd = std::dynamic_pointer_cast<kv::landmark_d>(lm.second);
+    if (lmd)
+    {
+      lmd->set_loc(lm.second->loc() - offset);
+    }
+  }
+  this->UI.worldView->setLandmarks(*landmarks);
+  this->UI.cameraView->setLandmarksData(*landmarks);
+
+  // shift the cameras
+  auto cameras = this->cameraMap();
+  for (auto cam : cameras->cameras())
+  {
+    auto cam_ptr =
+      std::dynamic_pointer_cast<kv::simple_camera_perspective>(cam.second);
+    if (cam_ptr)
+    {
+      cam_ptr->set_center(cam_ptr->center() - offset);
+    }
+  }
+  this->updateCameras(cameras);
+
+  // shift the GCPs
+  for (auto gcp : this->groundControlPointsHelper->groundControlPoints())
+  {
+    gcp.second->set_loc(gcp.second->loc() - offset);
+  }
+  this->groundControlPointsHelper->pointsReloaded();
 }
 
 //-----------------------------------------------------------------------------
@@ -485,22 +583,6 @@ void MainWindowPrivate::addVideoSource(
     if (this->videoSource)
     {
       this->videoSource->open(stdString(videoPath));
-    }
-
-    // Set the skip value if present
-    // TODO: fix kwiver so this is done with an adapter and it not in the video source
-    if (this->videoSource)
-    {
-      if (config->has_value("video_reader:vidl_ffmpeg:output_nth_frame"))
-      {
-        this->advanceInterval =
-          config->get_value<int>("video_reader:vidl_ffmpeg:output_nth_frame");
-      }
-      else if (config->has_value("video_reader:splice:output_nth_frame"))
-      {
-        this->advanceInterval =
-          config->get_value<int>("video_reader:splice:output_nth_frame");
-      }
     }
 
     foreach (auto const& tool, this->tools)
@@ -726,8 +808,7 @@ kv::camera_map_sptr MainWindowPrivate::cameraMap() const
   {
     if (cd.camera)
     {
-      map.insert(std::make_pair(static_cast<kv::frame_id_t>(cd.id),
-                                cd.camera->GetCamera()));
+      map.emplace(static_cast<kv::frame_id_t>(cd.id), cd.camera->GetCamera());
     }
   }
 
@@ -735,16 +816,18 @@ kv::camera_map_sptr MainWindowPrivate::cameraMap() const
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> MainWindowPrivate::depthLookup() const
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>>
+MainWindowPrivate::depthLookup() const
 {
-  std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> lookup(new std::map<kwiver::vital::frame_id_t, std::string>());
+  auto lookup =
+    std::make_shared<std::map<kwiver::vital::frame_id_t, std::string>>();
 
   for (auto cd : this->frames)
   {
     if (!cd.depthMapPath.isEmpty())
     {
-      lookup->insert(std::make_pair(static_cast<kwiver::vital::frame_id_t>(cd.id),
-                                    qPrintable(cd.depthMapPath)));
+      lookup->emplace(static_cast<kwiver::vital::frame_id_t>(cd.id),
+                      qPrintable(cd.depthMapPath));
     }
   }
 
@@ -829,70 +912,53 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::setActiveCamera(int id)
 {
-  //if only keyframes are to be displayed in the camera view
-  bool only_keyframes = this->UI.actionKeyframesOnly->isChecked();
-  bool next_frame_found = false;
-
-  if (id >= this->activeCameraIndex)
-  { //positive movement in sequence
-    //find the next keyframe in the sequence
-    int lastFrameId =
-      this->frames.isEmpty() ? 1 : this->frames.lastKey();
-    while (id <= lastFrameId)
-    {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
-
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (id == 1 || (id - 1) % this->advanceInterval == 0)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      ++id;
-    }
+  // collect the set of frames to select from
+  // TODO compute this set of frames only when it changes,
+  // not every time the active camera changes.
+  auto all_frames = this->frames.keys();
+  std::set<kwiver::vital::frame_id_t> select_frames(all_frames.begin(),
+                                                    all_frames.end());
+  if (this->UI.actionTrackedFramesOnly->isChecked())
+  {
+    select_frames = tracks->all_frame_ids();
   }
-  else
-  { //going backward in sequence
-    //find the previous keyframe in the sequence
-    while (id >= 1)
-    {
-      if (only_keyframes)
-      {
-        auto fd = std::dynamic_pointer_cast<kv::feature_track_set_frame_data>(
-          tracks->frame_data(id));
+  if (this->UI.actionKeyframesOnly->isChecked())
+  {
+    select_frames = tracks->keyframes();
+  }
 
-        if (fd && fd->is_keyframe)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      else
-      {
-        if (id == 1 || (id - 1) % this->advanceInterval == 0)
-        {
-          next_frame_found = true;
-          break;
-        }
-      }
-      --id;
+  bool next_frame_found = false;
+  auto itr = select_frames.lower_bound(id);
+  if (itr != select_frames.end())
+  {
+    // if stepping backwards we need to go back one iterator step
+    // if we found the a frame greater than the one requested
+    if (id < this->activeCameraIndex &&
+        *itr >= this->activeCameraIndex &&
+        itr != select_frames.begin())
+    {
+      --itr;
     }
+    next_frame_found = true;
+    id = *itr;
   }
   if (!next_frame_found)
   {
-    // There was not a keyframe to move to in the direction we're going.
-    // So set the active camera back to what it was.
+    // handle video playback
+    if (this->UI.actionSlideshowPlay->isChecked())
+    {
+      if (this->UI.actionSlideshowLoop->isChecked())
+      {
+        this->UI.camera->setValue(*select_frames.begin());
+        this->UI.cameraSpin->setValue(*select_frames.begin());
+        return;
+      }
+      else
+      {
+        this->UI.actionSlideshowPlay->setChecked(false);
+      }
+    }
+    // Set the active camera back to what it was.
     this->UI.camera->setValue(this->activeCameraIndex);
     this->UI.cameraSpin->setValue(this->activeCameraIndex);
     return;
@@ -925,6 +991,8 @@ void MainWindowPrivate::setActiveCamera(int id)
     this->UI.worldView->updateDepthMap();
     this->UI.depthMapView->updateView(true);
     this->UI.actionExportDepthPoints->setEnabled(true);
+
+    this->currentDepthFrame = id;
   }
   else // load from file
   {
@@ -933,6 +1001,7 @@ void MainWindowPrivate::setActiveCamera(int id)
       if (!fr->depthMapPath.isEmpty())
       {
         this->loadDepthMap(fr->depthMapPath);
+        this->currentDepthFrame = id;
       }
     }
   }
@@ -1024,6 +1093,7 @@ void MainWindowPrivate::updateCameraView()
   }
 
   this->groundControlPointsHelper->updateCameraViewPoints();
+  this->rulerHelper->updateCameraViewRuler();
   this->UI.cameraView->render();
 }
 
@@ -1075,7 +1145,14 @@ void MainWindowPrivate::loadImage(FrameData frame)
       videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    auto sourceImg = videoSource->frame_image()->get_image();
+    auto frameImg = videoSource->frame_image();
+    if (!frameImg)
+    {
+      qWarning() << "Failed to read image for frame " << frame.id;
+      this->loadEmptyImage(frame.camera);
+      return;
+    }
+    auto sourceImg = frameImg->get_image();
     auto imageData = vitalToVtkImage(sourceImg);
     int dimensions[3];
     imageData->GetDimensions(dimensions);
@@ -1209,8 +1286,11 @@ void MainWindowPrivate::updateProgress(QObject* object,
   int taskId = -1;
   if (!this->progressIds.contains(object))
   {
-    taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
-    this->progressIds.insert(object, taskId);
+    if (value < 100)
+    {
+      taskId = this->UI.progressWidget->addTask(desc, 0, 0, 0);
+      this->progressIds.insert(object, taskId);
+    }
     return;
   }
   else
@@ -1258,7 +1338,8 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
 {
   double minpt[3], maxpt[3];
   std::istringstream stream(roistr);
-  stream >> minpt[0] >> minpt[1] >> minpt[2] >> maxpt[0] >> maxpt[1] >> maxpt[2];
+  stream >> minpt[0] >> minpt[1] >> minpt[2]
+         >> maxpt[0] >> maxpt[1] >> maxpt[2];
   this->roi->SetXMin(minpt);
   this->roi->SetXMax(maxpt);
   UI.worldView->setROI(roi.GetPointer(), true);
@@ -1285,27 +1366,27 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
 
   d->addTool(new TrackFeaturesTool(this), this);
-  d->addTool(new TriangulateTool(this), this);
-  d->addTool(new BundleAdjustTool(this), this);
+  d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
-  d->addTool(new ComputeDepthTool(this), this);
   d->addTool(new ComputeAllDepthTool(this), this);
   d->addTool(new FuseDepthTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
     d->UI.menuAdvanced->addSeparator();
-  d->addTool(new TrackFeaturesSprokitTool(this), this);
-  d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new TrackFilterTool(this), this);
-  d->addTool(new InitCamerasLandmarksTool(this), this);
-  d->addTool(new SaveKeyFrameTool(this), this);
+  d->addTool(new TriangulateTool(this), this);
+  d->addTool(new BundleAdjustTool(this), this);
+  d->addTool(new NeckerReversalTool(this), this);
   d->addTool(new CanonicalTransformTool(this), this);
+  d->addTool(new SaveKeyFrameTool(this), this);
+  d->addTool(new ComputeDepthTool(this), this);
 
   d->UI.menuView->addSeparator();
   d->UI.menuView->addAction(d->UI.cameraViewDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.cameraSelectorDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.metadataDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.groundControlPointsDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
@@ -1342,10 +1423,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, QOverload<>::of(&MainWindow::saveGroundControlPoints));
   connect(d->UI.actionExportVolume, &QAction::triggered,
           this, &MainWindow::saveVolume);
-  connect(d->UI.actionExportMesh, &QAction::triggered,
-          this, &MainWindow::saveMesh);
-  connect(d->UI.actionExportColoredMesh, &QAction::triggered,
-          this, &MainWindow::saveColoredMesh);
+  connect(d->UI.actionExportFusedMesh, &QAction::triggered,
+          this, &MainWindow::saveFusedMesh);
   connect(d->UI.actionExportDepthPoints, &QAction::triggered,
           this, QOverload<>::of(&MainWindow::saveDepthPoints));
   connect(d->UI.actionExportTracks, &QAction::triggered,
@@ -1377,11 +1456,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, &QAbstractSlider::valueChanged,
           this, &MainWindow::setActiveCamera);
 
-  connect(d->UI.worldView, &WorldView::meshEnabled,
-          this, &MainWindow::enableSaveMesh);
-
-  connect(d->UI.worldView, &WorldView::coloredMeshEnabled,
-          this, &MainWindow::enableSaveColoredMesh);
+  connect(d->UI.worldView, &WorldView::fusedMeshEnabled,
+          this, &MainWindow::enableSaveFusedMesh);
 
   connect(d->UI.worldView, &WorldView::depthMapThresholdsChanged,
           d->UI.depthMapView, &DepthMapView::updateThresholds);
@@ -1432,12 +1508,20 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->groundControlPointsHelper = new GroundControlPointsHelper(this);
   connect(d->groundControlPointsHelper,
           &GroundControlPointsHelper::pointCountChanged,
-          this, [d](int count) {
+          this, [d](size_t count) {
             d->UI.actionExportGroundControlPoints->setEnabled(count > 0);
           });
   connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
           d->groundControlPointsHelper,
           &GroundControlPointsHelper::enableWidgets);
+  d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
+
+  // Ruler widget
+  d->rulerHelper = new RulerHelper(this);
+  connect(d->UI.worldView, &WorldView::rulerEnabled,
+          d->rulerHelper, &RulerHelper::enableWidgets);
+  connect(d->UI.worldView, &WorldView::rulerReset,
+          d->rulerHelper, &RulerHelper::resetRuler);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,
@@ -1562,7 +1646,7 @@ void MainWindow::openGroundControlPoints()
 {
   auto const paths = QFileDialog::getOpenFileNames(
     this, "Open Ground Control Points", QString(),
-    "Ground Control Point Files (*.ply);;"
+    "GeoJSON Files (*.json);;"
     "All Files (*)");
 
   for (auto const& path : paths)
@@ -1598,8 +1682,9 @@ void MainWindow::newProject()
     }
 
     saveCameras(d->project->cameraPath);
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
@@ -1632,8 +1717,9 @@ void MainWindow::loadProject(QString const& path)
   // Set the current working directory to the project directory
   if (!QDir::setCurrent(d->project->workingDir.absolutePath()))
   {
-    qWarning() << "Unable to set current working directory to "
-               << "project directory: " << d->project->workingDir.absolutePath();
+    qWarning() << "Unable to set current working directory "
+                  "to project directory"
+               << d->project->workingDir.absolutePath();
   }
 
   // Get the video and mask sources
@@ -1789,8 +1875,9 @@ void MainWindow::loadVideo(QString const& path)
   if (d->project)
   {
     saveCameras(d->project->cameraPath);
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(d->project->cameraPath)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(d->project->cameraPath)));
 
     if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
         !d->project->geoOriginFile.isEmpty())
@@ -1916,6 +2003,7 @@ void MainWindow::loadTracks(QString const& path)
 
       d->UI.actionShowMatchMatrix->setEnabled(!tracks->tracks().empty());
       d->UI.actionKeyframesOnly->setEnabled(!tracks->tracks().empty());
+      d->UI.actionTrackedFramesOnly->setEnabled(!tracks->tracks().empty());
     }
   }
   catch (std::exception const& e)
@@ -1956,30 +2044,23 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 {
   QTE_D();
 
-  try
+  if (d->groundControlPointsHelper->readGroundControlPoints(path))
   {
-    auto const& gcp = kv::read_ply_file(kvPath(path));
-    if (gcp)
-    {
-      d->groundControlPointsHelper->setGroundControlPoints(*gcp);
-
-      d->UI.actionExportGroundControlPoints->setEnabled(
-        d->groundControlPointsHelper->groundControlPoints() &&
-        d->groundControlPointsHelper->groundControlPoints()->size());
-    }
-  }
-  catch (...)
-  {
-    qWarning() << "failed to read landmarks from" << path;
+    d->UI.actionExportGroundControlPoints->setEnabled(
+      d->groundControlPointsHelper->groundControlPoints().size());
   }
 }
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Landmarks", QString(),
+    this, "Export Landmarks", name + QString("_landmarks.ply"),
     "Landmark file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -1995,12 +2076,21 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 
   try
   {
-    kv::write_ply_file(d->landmarks, kvPath(path));
-
-    if (writeToProject && d->project)
+    if (QFileInfo(path).suffix() == "las")
     {
-      d->project->config->set_value("output_ply_file", kvPath(
-                                                         d->project->getContingentRelativePath(path)));
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      kwiver::maptk::write_pdal(stdString(path), lgcs, d->landmarks);
+    }
+    else
+    {
+      kv::write_ply_file(d->landmarks, kvPath(path));
+
+      if (writeToProject && d->project)
+      {
+        d->project->config->set_value(
+          "output_ply_file",
+          kvPath(d->project->getContingentRelativePath(path)));
+      }
     }
   }
   catch (...)
@@ -2016,9 +2106,12 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
 //-----------------------------------------------------------------------------
 void MainWindow::saveGroundControlPoints()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Ground Control Points", QString(),
-    "Landmark file (*.ply);;"
+    this, "Export Ground Control Points", name + QString("_gcps.json"),
+    "GeoJSON file (*.json);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -2028,41 +2121,45 @@ void MainWindow::saveGroundControlPoints()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveGroundControlPoints(QString const& path, bool writeToProject)
+void MainWindow::saveGroundControlPoints(
+  QString const& path, bool writeToProject)
 {
   QTE_D();
 
-  try
+  if (d->groundControlPointsHelper->writeGroundControlPoints(path, this))
   {
-    kv::write_ply_file(
-      d->groundControlPointsHelper->groundControlPoints(),
-      kvPath(path));
-
-    if (writeToProject && d->project)
+    try
     {
-      d->project->groundControlPath =
-        d->project->getContingentRelativePath(path);
-      d->project->config->set_value(
-        "ground_control_points_file",
-        kvPath(d->project->groundControlPath));
-      d->project->write();
+      if (writeToProject && d->project)
+      {
+        d->project->groundControlPath =
+          d->project->getContingentRelativePath(path);
+        d->project->config->set_value(
+          "ground_control_points_file",
+          kvPath(d->project->groundControlPath));
+        d->project->write();
+      }
     }
-  }
-  catch (...)
-  {
-    auto const msg =
-      QString("An error occurred while exporting ground control points to \"%1\". "
-              "The output file may not have been written correctly.");
-    QMessageBox::critical(this, "Export error",
-                          msg.arg(d->project->groundControlPath));
+    catch (...)
+    {
+      auto const msg =
+        QStringLiteral("An error occurred while exporting "
+                       "ground control points to \"%1\". "
+                       "The output file may not have been written correctly.");
+      QMessageBox::critical(this, QStringLiteral("Export error"),
+                            msg.arg(d->project->groundControlPath));
+    }
   }
 }
 
 //-----------------------------------------------------------------------------
 void MainWindow::saveTracks()
 {
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Tracks", QString(),
+    this, "Export Tracks", name + QString("_tracks.txt"),
     "Track file (*.txt);;"
     "All Files (*)");
 
@@ -2083,8 +2180,9 @@ void MainWindow::saveTracks(QString const& path, bool writeToProject)
 
     if (writeToProject && d->project)
     {
-      d->project->config->set_value("output_tracks_file", kvPath(
-                                                            d->project->getContingentRelativePath(path)));
+      d->project->config->set_value(
+        "output_tracks_file",
+        kvPath(d->project->getContingentRelativePath(path)));
     }
   }
   catch (...)
@@ -2187,8 +2285,9 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 
   if (writeToProject && d->project)
   {
-    d->project->config->set_value("output_krtd_dir", kvPath(
-                                                       d->project->getContingentRelativePath(path)));
+    d->project->config->set_value(
+      "output_krtd_dir",
+      kvPath(d->project->getContingentRelativePath(path)));
   }
 
   if (!errors.isEmpty())
@@ -2256,9 +2355,17 @@ void MainWindow::enableSaveDepthPoints(bool state)
 //-----------------------------------------------------------------------------
 void MainWindow::saveDepthPoints()
 {
+  QTE_D();
+
+  QString name;
+  if (d->currentDepthFrame > 0)
+  {
+    name = qtString(d->getFrameName(d->currentDepthFrame) + "_depth.ply");
+  }
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Depth Point Cloud", QString(),
+    this, "Export Depth Point Cloud", name,
     "PLY file (*.ply);;"
+    "LAS file (*.las);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -2274,9 +2381,11 @@ void MainWindow::saveDepthPoints(QString const& path)
 
   try
   {
-    d->UI.worldView->saveDepthPoints(path);
-    d->project->config->set_value("depthmaps_images_file",
-                                  kvPath(d->project->getContingentRelativePath(path)));
+    auto lgcs = d->sfmConstraints->get_local_geo_cs();
+    d->UI.worldView->saveDepthPoints(path, lgcs);
+    d->project->config->set_value(
+      "depthmaps_images_file",
+      kvPath(d->project->getContingentRelativePath(path)));
     d->project->write();
   }
   catch (...)
@@ -2288,6 +2397,7 @@ void MainWindow::saveDepthPoints(QString const& path)
   }
 }
 
+//-----------------------------------------------------------------------------
 void MainWindow::saveGeoOrigin(QString const& path)
 {
   QTE_D();
@@ -2314,36 +2424,12 @@ void MainWindow::saveWebGLScene()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::enableSaveMesh(bool state)
+void MainWindow::enableSaveFusedMesh(bool state)
 {
   QTE_D();
 
   d->UI.actionExportVolume->setEnabled(state);
-  d->UI.actionExportMesh->setEnabled(state);
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::enableSaveColoredMesh(bool state)
-{
-  QTE_D();
-
-  d->UI.actionExportColoredMesh->setEnabled(state);
-}
-
-//-----------------------------------------------------------------------------
-void MainWindow::saveMesh()
-{
-  QTE_D();
-
-  auto const path = QFileDialog::getSaveFileName(
-    this, "Export Mesh", QString("mesh.vtp"),
-    "Mesh file (*.vtp);;"
-    "All Files (*)");
-
-  if (!path.isEmpty())
-  {
-    d->UI.worldView->saveMesh(path);
-  }
+  d->UI.actionExportFusedMesh->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -2351,8 +2437,9 @@ void MainWindow::saveVolume()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", QString("volume.vts"),
+    this, "Export Volume", name + QString("_volume.vts"),
     "Mesh file (*.vts);;"
     "All Files (*)");
 
@@ -2369,19 +2456,32 @@ void MainWindow::saveVolume()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::saveColoredMesh()
+void MainWindow::saveFusedMesh()
 {
   QTE_D();
 
+  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Colored Mesh", QString("colored_mesh.vtp"),
-    "VTK Polydata (*.vtp);;"
+    this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
     "PLY File (*.ply);;"
+    "LAS File (*.las);;"
+    "VTK Polydata (*.vtp);;"
     "All Files (*)");
 
-  if (!path.isEmpty())
+  try
   {
-    d->UI.worldView->saveColoredMesh(path);
+    if (!path.isEmpty())
+    {
+      auto lgcs = d->sfmConstraints->get_local_geo_cs();
+      d->UI.worldView->saveFusedMesh(path, lgcs);
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting the mesh to \"%1\". "
+        "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
 
@@ -2472,6 +2572,16 @@ void MainWindow::executeTool(QObject* object)
   auto const tool = qobject_cast<AbstractTool*>(object);
   if (tool && !d->activeTool)
   {
+    // try to reset the ROI if invalid
+    kv::vector_3d min_pt, max_pt;
+    d->roi->GetXMin(min_pt.data());
+    d->roi->GetXMax(max_pt.data());
+    if (((max_pt - min_pt).array() <= 0.0).any())
+    {
+      d->UI.worldView->resetROI();
+      d->project->config->set_value("ROI", d->roiToString());
+    }
+
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
     tool->setTracks(d->tracks);
@@ -2597,8 +2707,22 @@ void MainWindow::acceptToolResults(
 
   if (isFinal)
   {
+    bool update_origin = d->toolUpdateLandmarks != nullptr;
+
     // Force immediate update on tool finish so we ensure update before saving
     updateToolResults();
+
+    // If the landmarks changed, then update the geo coordinate system
+    if (update_origin)
+    {
+      // if a local geo coordinate system exists,
+      // recompute the origin to center the points
+      if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty())
+      {
+        auto offset = d->centerLandmarks();
+        d->shiftGeoOrigin(offset);
+      }
+    }
   }
   else if (updateNeeded)
   {
@@ -2634,7 +2758,8 @@ void MainWindow::saveToolResults()
       saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    if (!outputs.testFlag(AbstractTool::BatchDepth) && outputs.testFlag(AbstractTool::Depth))
+    if (!outputs.testFlag(AbstractTool::BatchDepth) &&
+        outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
     }
@@ -2675,6 +2800,7 @@ void MainWindow::updateToolResults()
 
     d->UI.actionShowMatchMatrix->setEnabled(!d->tracks->tracks().empty());
     d->UI.actionKeyframesOnly->setEnabled(!d->tracks->tracks().empty());
+    d->UI.actionTrackedFramesOnly->setEnabled(!d->tracks->tracks().empty());
     d->toolUpdateTracks = NULL;
   }
   if (d->toolUpdateTrackChanges)
@@ -2706,8 +2832,10 @@ void MainWindow::updateToolResults()
   {
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
+    d->currentDepthFrame = d->toolUpdateActiveFrame;
 
-    //In batch depth, each update is a full depth map from a different ref frame that must be saved
+    // In batch depth, each update is a full depth map from a different ref
+    // frame that must be saved
     if (d->toolSaveDepthFlag)
     {
       saveDepthImage(d->project->depthPath);
@@ -2831,6 +2959,14 @@ CameraView* MainWindow::cameraView()
   QTE_D();
 
   return d->UI.cameraView;
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::local_geo_cs MainWindow::localGeoCoordinateSystem() const
+{
+  QTE_D();
+
+  return d->sfmConstraints->get_local_geo_cs();
 }
 
 //-----------------------------------------------------------------------------
