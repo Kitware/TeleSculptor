@@ -27,8 +27,8 @@ find_package(VTK REQUIRED
   vtkRenderingAnnotation
   vtkRenderingFreeType
   )
-if(VTK_VERSION VERSION_LESS 8.1)
-  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.1 "
+if(VTK_VERSION VERSION_LESS 8.2)
+  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.2 "
     "(Found ${VTK_VERSION})")
 endif()
 include(${VTK_USE_FILE})
