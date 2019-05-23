@@ -74,11 +74,13 @@
 #include <vital/types/sfm_constraints.h>
 
 #include <vtkBox.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
@@ -3059,6 +3061,38 @@ void MainWindow::applySimilarityTransform()
 
   d->roi->SetXMin(minPt.data());
   d->roi->SetXMax(maxPt.data());
+
+  // Scale all the depth maps
+  for (auto const& f : d->frames)
+  {
+    if (f.depthMapPath.size() > 0)
+    {
+      vtkNew<vtkXMLImageDataReader> imageReader;
+      imageReader->SetFileName(qPrintable(f.depthMapPath));
+      imageReader->Update();
+      vtkSmartPointer<vtkImageData> depthImg = imageReader->GetOutput();
+
+      vtkSmartPointer<vtkDoubleArray> depthData = vtkDoubleArray::FastDownCast(
+          depthImg->GetPointData()->GetAbstractArray("Depths"));
+      auto numValues = depthData->GetNumberOfValues();
+      for (vtkIdType i = 0; i < numValues; ++i)
+      {
+        depthData->SetValue(i, sim_transform.scale()*depthData->GetValue(i));
+      }
+
+      // Replace active depth map if needed
+      if (f.id == d->activeDepthFrame)
+      {
+        d->activeDepth = depthImg;
+      }
+
+      vtkNew<vtkXMLImageDataWriter> imageWriter;
+      imageWriter->SetFileName(qPrintable(f.depthMapPath));
+      imageWriter->AddInputDataObject(depthImg.Get());
+      imageWriter->SetDataModeToBinary();
+      imageWriter->Write();
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
