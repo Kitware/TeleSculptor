@@ -340,9 +340,12 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
       pipeline_runner
       plugin_explorer)
   foreach(tool ${kwiver_tools})
-    install(PROGRAMS "${KWIVER_DIR}/bin/${BINARY_DIR}/${tool}${CMAKE_EXECUTABLE_SUFFIX}"
-            DESTINATION bin
-            COMPONENT Runtime)
+    set(tool_path "${KWIVER_DIR}/bin/${BINARY_DIR}/${tool}${CMAKE_EXECUTABLE_SUFFIX}")
+    if(EXISTS "${tool_path}")
+      install(PROGRAMS "${tool_path}"
+              DESTINATION bin
+              COMPONENT Runtime)
+    endif()
   endforeach()
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
