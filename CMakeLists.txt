@@ -69,6 +69,7 @@ if( APPLE )
 endif()
 
 option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+option(MAPTK_ENABLE_TOOLS "Build command line tools" ON)
 
 if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
@@ -83,7 +84,9 @@ set(kwiver_export_name     maptk_exports)
 add_subdirectory(maptk)
 
 # this is where the executables source code lives
-add_subdirectory(tools)
+if(MAPTK_ENABLE_TOOLS)
+  add_subdirectory(tools)
+endif()
 
 # this is where the algorithm default configuration files live
 add_subdirectory(config)
