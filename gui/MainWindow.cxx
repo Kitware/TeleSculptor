@@ -1079,14 +1079,14 @@ void MainWindowPrivate::updateCameraView()
         continue;
       }
       auto fts = std::dynamic_pointer_cast<kv::feature_track_state>(*state);
-      if (fts && fts->feature && fts->inlier)
+      if (fts && fts->feature)
       {
         auto const id = track->id();
         if (landmarkPoints.contains(id))
         {
           auto const& fp = fts->feature->loc();
           auto const& lp = landmarkPoints[id];
-          this->UI.cameraView->addResidual(id, fp[0], fp[1], lp[0], lp[1]);
+          this->UI.cameraView->addResidual(id, fp[0], fp[1], lp[0], lp[1], fts->inlier);
         }
       }
     }
