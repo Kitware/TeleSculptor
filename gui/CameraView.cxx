@@ -101,9 +101,11 @@ public:
   ResidualsOptions(QString const& settingsGroup, QWidget* parent);
   ~ResidualsOptions() override;
 
-  void setDefaultColor(QColor const&);
+  void setDefaultInlierColor(QColor const&);
+  void setDefaultOutlierColor(QColor const&);
 
-  ActorColorButton* const button;
+  ActorColorButton* const inlierColorButton;
+  ActorColorButton* const outlierColorButton;
   QCheckBox* const inlierCheckbox;
   qtUiState uiState;
 };
@@ -111,14 +113,20 @@ public:
 //-----------------------------------------------------------------------------
 ResidualsOptions::ResidualsOptions(
   QString const& settingsGroup, QWidget* parent)
-  : QWidget(parent), button(new ActorColorButton(this)),
+  : QWidget(parent),
+    inlierColorButton(new ActorColorButton(this)),
+    outlierColorButton(new ActorColorButton(this)),
     inlierCheckbox(new QCheckBox(this))
 {
   auto const layout = new QFormLayout(this);
-  layout->addRow("Color", this->button);
+  layout->addRow("Inlier Color", this->inlierColorButton);
+  layout->addRow("Outlier Color", this->outlierColorButton);
   layout->addRow("Inliers Only", this->inlierCheckbox);
 
-  this->button->persist(this->uiState, settingsGroup + "/Color");
+  this->inlierColorButton->persist(this->uiState,
+                                   settingsGroup + "/InlierColor");
+  this->outlierColorButton->persist(this->uiState,
+                                    settingsGroup + "/OutlierColor");
   this->uiState.mapChecked(settingsGroup + "/Inlier", this->inlierCheckbox);
   this->uiState.restore();
 }
@@ -130,9 +138,16 @@ ResidualsOptions::~ResidualsOptions()
 }
 
 //-----------------------------------------------------------------------------
-void ResidualsOptions::setDefaultColor(QColor const& color)
+void ResidualsOptions::setDefaultInlierColor(QColor const& color)
 {
-  this->button->setColor(color);
+  this->inlierColorButton->setColor(color);
+  this->uiState.restore();
+}
+
+//-----------------------------------------------------------------------------
+void ResidualsOptions::setDefaultOutlierColor(QColor const& color)
+{
+  this->outlierColorButton->setColor(color);
   this->uiState.restore();
 }
 
@@ -464,15 +479,20 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 
   d->residualsOptions =
     new ResidualsOptions("CameraView/Residuals", this);
-  d->residualsOptions->setDefaultColor(QColor(255, 128, 0));
-  d->residualsOptions->button->addActor(d->residualsInlier.actor);
-  d->residualsOptions->button->addActor(d->residualsOutlier.actor);
+  d->residualsOptions->setDefaultInlierColor(QColor(255, 128, 0));
+  d->residualsOptions->setDefaultOutlierColor(QColor(255, 192, 128));
+  d->residualsOptions->inlierColorButton->addActor(d->residualsInlier.actor);
+  d->residualsOptions->outlierColorButton->addActor(d->residualsOutlier.actor);
 
   d->setPopup(d->UI.actionShowResiduals, d->residualsOptions);
   this->setOutlierResidualsVisible(
     d->residualsOptions->inlierCheckbox->isChecked());
 
-  connect(d->residualsOptions->button, &ActorColorButton::colorChanged,
+  connect(d->residualsOptions->inlierColorButton,
+          &ActorColorButton::colorChanged,
+          this, &CameraView::render);
+  connect(d->residualsOptions->outlierColorButton,
+          &ActorColorButton::colorChanged,
           this, &CameraView::render);
   connect(d->residualsOptions->inlierCheckbox, &QCheckBox::toggled,
           this, &CameraView::setOutlierResidualsVisible);
