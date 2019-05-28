@@ -689,7 +689,7 @@ void CameraView::addResidual(
 
   if (inlier)
   {
-    d->residualsInlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
+    d->residualsInlier.addSegment(x1, y1, -0.3, x2, y2, -0.3);
   }
   else
   {
