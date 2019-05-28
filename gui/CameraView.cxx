@@ -67,7 +67,6 @@
 
 #include <qtMath.h>
 #include <qtUiState.h>
-#include <qtUiStateItem.h>
 
 #include <QCheckBox>
 #include <QFormLayout>
@@ -120,9 +119,7 @@ ActorColorOption::ActorColorOption(
   layout->addRow("Inliers Only", this->inlierCheckbox);
 
   this->button->persist(this->uiState, settingsGroup + "/Color");
-  auto const cboxItem = new qtUiState::Item<Qt::CheckState, QCheckBox>(
-    this->inlierCheckbox, &QCheckBox::checkState, &QCheckBox::setCheckState);
-  this->uiState.map(settingsGroup + "/Inlier", cboxItem);
+  this->uiState.mapChecked(settingsGroup + "/Inlier", this->inlierCheckbox);
   this->uiState.restore();
 }
 
