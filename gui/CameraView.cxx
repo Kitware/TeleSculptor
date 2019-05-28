@@ -213,8 +213,8 @@ public:
   vtkNew<vtkMatrix4x4> transformMatrix;
 
   LandmarkCloud landmarks;
-  SegmentCloud residuals_inlier;
-  SegmentCloud residuals_outlier;
+  SegmentCloud residualsInlier;
+  SegmentCloud residualsOutlier;
 
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
@@ -393,8 +393,8 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf);
   this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf);
   this->landmarks.actor->SetUserMatrix(xf);
-  this->residuals_inlier.actor->SetUserMatrix(xf);
-  this->residuals_outlier.actor->SetUserMatrix(xf);
+  this->residualsInlier.actor->SetUserMatrix(xf);
+  this->residualsOutlier.actor->SetUserMatrix(xf);
 }
 
 //-----------------------------------------------------------------------------
@@ -465,8 +465,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->residualsOptions =
     new ActorColorOption("CameraView/Residuals", this);
   d->residualsOptions->setDefaultColor(QColor(255, 128, 0));
-  d->residualsOptions->button->addActor(d->residuals_inlier.actor);
-  d->residualsOptions->button->addActor(d->residuals_outlier.actor);
+  d->residualsOptions->button->addActor(d->residualsInlier.actor);
+  d->residualsOptions->button->addActor(d->residualsOutlier.actor);
 
   d->setPopup(d->UI.actionShowResiduals, d->residualsOptions);
   this->setOutlierResidualsVisible(
@@ -523,8 +523,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->featureRep->GetTrailsWithDescActor());
   d->renderer->AddActor(d->featureRep->GetTrailsWithoutDescActor());
   d->renderer->AddActor(d->landmarks.actor);
-  d->renderer->AddActor(d->residuals_inlier.actor);
-  d->renderer->AddActor(d->residuals_outlier.actor);
+  d->renderer->AddActor(d->residualsInlier.actor);
+  d->renderer->AddActor(d->residualsOutlier.actor);
 
   d->renderer->AddViewProp(d->imageActor);
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
@@ -689,11 +689,11 @@ void CameraView::addResidual(
 
   if (inlier)
   {
-    d->residuals_inlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
+    d->residualsInlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
   }
   else
   {
-    d->residuals_outlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
+    d->residualsOutlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
   }
 }
 
@@ -708,8 +708,8 @@ void CameraView::clearLandmarks()
 void CameraView::clearResiduals()
 {
   QTE_D();
-  d->residuals_inlier.clear();
-  d->residuals_outlier.clear();
+  d->residualsInlier.clear();
+  d->residualsOutlier.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -743,8 +743,8 @@ void CameraView::setResidualsVisible(bool state)
 {
   QTE_D();
 
-  d->residuals_inlier.actor->SetVisibility(state);
-  d->residuals_outlier.actor->SetVisibility(state &&
+  d->residualsInlier.actor->SetVisibility(state);
+  d->residualsOutlier.actor->SetVisibility(state &&
     !d->residualsOptions->inlierCheckbox->isChecked());
   this->render();
 }
@@ -754,8 +754,8 @@ void CameraView::setOutlierResidualsVisible(bool state)
 {
   QTE_D();
 
-  bool overall_state = d->residuals_inlier.actor->GetVisibility();
-  d->residuals_outlier.actor->SetVisibility(overall_state && !state);
+  bool overallState = d->residualsInlier.actor->GetVisibility();
+  d->residualsOutlier.actor->SetVisibility(overallState && !state);
   this->render();
 }
 
