@@ -480,7 +480,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->residualsOptions =
     new ResidualsOptions("CameraView/Residuals", this);
   d->residualsOptions->setDefaultInlierColor(QColor(255, 128, 0));
-  d->residualsOptions->setDefaultOutlierColor(QColor(255, 192, 128));
+  d->residualsOptions->setDefaultOutlierColor(QColor(0, 128, 255));
   d->residualsOptions->inlierColorButton->addActor(d->residualsInlier.actor);
   d->residualsOptions->outlierColorButton->addActor(d->residualsOutlier.actor);
 
