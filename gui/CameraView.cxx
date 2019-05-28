@@ -95,11 +95,11 @@ struct LandmarkData
 };
 
 //-----------------------------------------------------------------------------
-class ActorColorOption : public QWidget
+class ResidualsOptions : public QWidget
 {
 public:
-  ActorColorOption(QString const& settingsGroup, QWidget* parent);
-  ~ActorColorOption() override;
+  ResidualsOptions(QString const& settingsGroup, QWidget* parent);
+  ~ResidualsOptions() override;
 
   void setDefaultColor(QColor const&);
 
@@ -109,7 +109,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-ActorColorOption::ActorColorOption(
+ResidualsOptions::ResidualsOptions(
   QString const& settingsGroup, QWidget* parent)
   : QWidget(parent), button(new ActorColorButton(this)),
     inlierCheckbox(new QCheckBox(this))
@@ -124,13 +124,13 @@ ActorColorOption::ActorColorOption(
 }
 
 //-----------------------------------------------------------------------------
-ActorColorOption::~ActorColorOption()
+ResidualsOptions::~ResidualsOptions()
 {
   this->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
-void ActorColorOption::setDefaultColor(QColor const& color)
+void ResidualsOptions::setDefaultColor(QColor const& color)
 {
   this->button->setColor(color);
   this->uiState.restore();
@@ -219,7 +219,7 @@ public:
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
   PointOptions* landmarkOptions;
-  ActorColorOption* residualsOptions;
+  ResidualsOptions* residualsOptions;
   GroundControlPointsWidget* groundControlPointsWidget;
   RulerWidget* rulerWidget;
 
@@ -463,7 +463,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setComputeDistance(false);
 
   d->residualsOptions =
-    new ActorColorOption("CameraView/Residuals", this);
+    new ResidualsOptions("CameraView/Residuals", this);
   d->residualsOptions->setDefaultColor(QColor(255, 128, 0));
   d->residualsOptions->button->addActor(d->residualsInlier.actor);
   d->residualsOptions->button->addActor(d->residualsOutlier.actor);
