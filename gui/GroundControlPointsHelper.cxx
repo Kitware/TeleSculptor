@@ -40,8 +40,6 @@
 
 #include <vital/types/geodesy.h>
 
-#include <vital/range/transform.h>
-
 #include <vtkHandleWidget.h>
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
@@ -58,7 +56,6 @@
 #include <QMessageBox>
 
 namespace kv = kwiver::vital;
-namespace kvr = kwiver::vital::range;
 
 using id_t = kv::ground_control_point_id_t;
 
@@ -836,16 +833,16 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
   with_expr (qtScopedBlockSignals{this})
   {
     // Read points from feature collection
-    auto getJsonObject = [](QJsonValue const& v){ return v.toObject(); };
-    for (auto const& f : features.toArray() | kvr::transform(getJsonObject))
+    for (auto const& f : features.toArray())
     {
-      if (f.value(TAG_TYPE).toString() != TAG_FEATURE)
+      auto fo = f.toObject();
+      if (fo.value(TAG_TYPE).toString() != TAG_FEATURE)
       {
         qWarning() << "ignoring non-feature object" << f
                    << "in FeatureCollection";
         continue;
       }
-      if (auto gcp = extractGroundControlPoint(f))
+      if (auto gcp = extractGroundControlPoint(fo))
       {
         d->addPoint(d->nextId++, gcp);
         pointsAdded = true;
