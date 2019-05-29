@@ -333,17 +333,29 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   install(DIRECTORY "${fletch_ROOT}/share/gdal"
           DESTINATION share COMPONENT Runtime)
 
-  set(kwiver_tools
-      kwiver
-      pipe_config
-      pipe_to_dot
-      pipeline_runner
-      plugin_explorer)
-  foreach(tool ${kwiver_tools})
-    install(PROGRAMS "${KWIVER_DIR}/bin/${BINARY_DIR}/${tool}${CMAKE_EXECUTABLE_SUFFIX}"
-            DESTINATION bin
-            COMPONENT Runtime)
-  endforeach()
+  if(${MAPTK_ENABLE_TOOLS})
+    set(kwiver_tools
+        kwiver
+        pipe_config
+        pipe_to_dot
+        pipeline_runner
+        plugin_explorer)
+
+    set(KWIVER_BIN_DIR "${KWIVER_DIR}/bin")
+    if(WIN32)
+      set(KWIVER_BIN_DIR "${KWIVER_BIN_DIR}/${BINARY_DIR}")
+    endif()
+    foreach(tool ${kwiver_tools})
+      set(tool_path "${KWIVER_BIN_DIR}/${tool}${CMAKE_EXECUTABLE_SUFFIX}")
+      if(EXISTS "${tool_path}")
+        install(PROGRAMS "${tool_path}"
+                DESTINATION bin
+                COMPONENT Runtime)
+      else()
+        message(WARNING "Could not find ${tool} at ${tool_path}")
+      endif()
+    endforeach()
+  endif()
 
   get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
 

@@ -68,8 +68,8 @@ if( APPLE )
   set(LIBRARY_PATH_VAR "DYLD_FALLBACK_LIBRARY_PATH")
 endif()
 
-option(MAPTK_ENABLE_GUI "Build MAPTK GUI" ON)
 option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
+option(MAPTK_ENABLE_TOOLS "Build command line tools" ON)
 
 if(MAPTK_SUPERBUILD)
   include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
@@ -84,7 +84,9 @@ set(kwiver_export_name     maptk_exports)
 add_subdirectory(maptk)
 
 # this is where the executables source code lives
-add_subdirectory(tools)
+if(MAPTK_ENABLE_TOOLS)
+  add_subdirectory(tools)
+endif()
 
 # this is where the algorithm default configuration files live
 add_subdirectory(config)
@@ -98,23 +100,20 @@ add_subdirectory(examples)
 ###
 # GUI
 #
-if(MAPTK_ENABLE_GUI)
-  if(APPLE)
-    set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
-    # make sure CMAKE_INSTALL_PREFIX ends in /
-    if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
-      set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
-    endif()
-    set(CMAKE_INSTALL_PREFIX
-      "${CMAKE_INSTALL_PREFIX}TeleSculptor.app/Contents")
+if(APPLE)
+  set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
+  # make sure CMAKE_INSTALL_PREFIX ends in /
+  if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
   endif()
-  add_subdirectory(gui)
+  set(CMAKE_INSTALL_PREFIX
+    "${CMAKE_INSTALL_PREFIX}TeleSculptor.app/Contents")
 endif()
+add_subdirectory(gui)
 
 ###
 # Environment Scripts
 #
-
 configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR}/start_MSVC.bat @ONLY)
 configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
 configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
@@ -234,9 +233,7 @@ set(CPACK_NSIS_HELP_LINK "http://www.kitware.com")
 set(CPACK_NSIS_URL_INFO_ABOUT "http://www.kwiver.org")
 set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 
-if(MAPTK_ENABLE_GUI)
-  set (CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
-endif()
+set(CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 
 if(APPLE)
   set(CPACK_BINARY_DRAGNDROP ON)

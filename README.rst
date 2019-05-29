@@ -136,7 +136,7 @@ CMake Options
 ============================== =================================================
 ``CMAKE_BUILD_TYPE``           The compiler mode, usually ``Debug`` or ``Release``
 
-``MAPTK_ENABLE_GUI``           Builds the TeleSculptor GUI
+``MAPTK_SUPERBUILD``           Build as a superbuild (build Fletch and KWIVER)
 ``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation
 ``MAPTK_ENABLE_TESTING``       Build the unit tests
 ============================== =================================================
@@ -166,7 +166,6 @@ TeleSculptor
 
 The TeleSculptor GUI application is enabled by default,
 and all dependencies will be built by the Superbuild.
-You may choose to disable building the GUI by setting ``MAPTK_ENABLE_GUI`` to OFF
 
 Documentation
 '''''''''''''

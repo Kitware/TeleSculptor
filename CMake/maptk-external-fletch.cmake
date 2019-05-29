@@ -7,10 +7,14 @@ message(STATUS "Configuring external fletch")
 list(APPEND KWIVER_DEPENDENCIES fletch)
 list(APPEND MAPTK_DEPENDENCIES fletch)
 
+if(NOT WIN32)
+  set(FLETCH_ADDITIONAL_OPTIONS "-Dfletch_ENABLE_libxml2:BOOL=ON")
+endif()
+
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG c3ba1e0b5b2d18a26d1fb0ffd9f67b388baf7b9e
+  GIT_TAG 2e04bd2d7c3b7ff616c3c320046abcbd298faa52
   #GIT_SHALLOW 1
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
@@ -18,7 +22,7 @@ ExternalProject_Add(fletch
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON
     -Dfletch_BUILD_CXX11:BOOL=ON
-    -Dfletch_BUILD_WITH_PYTHON:BOOL=ON
+    -Dfletch_BUILD_WITH_PYTHON:BOOL=${MAPTK_BUILD_WITH_PYTHON}
     -Dfletch_ENABLE_Boost:BOOL=ON
     -DBoost_SELECT_VERSION:STRING=1.65.1
     -Dfletch_ENABLE_Caffe:BOOL=OFF
@@ -29,8 +33,9 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_Darknet_OpenCV:BOOL=OFF
     -Dfletch_ENABLE_Eigen:BOOL=ON
     -Dfletch_ENABLE_FFmpeg:BOOL=ON
+    -DFFmpeg_SELECT_VERSION:STRING=3.3.3
     -Dfletch_ENABLE_GDAL:BOOL=ON
-    -Dfletch_ENABLE_GEOS:BOOL=OFF
+    -Dfletch_ENABLE_GEOS:BOOL=ON
     -Dfletch_ENABLE_GFlags:BOOL=OFF
     -Dfletch_ENABLE_GLog:BOOL=ON
     -Dfletch_ENABLE_GTest:BOOL=${MAPTK_ENABLE_TESTING}
@@ -45,18 +50,20 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_OpenCV_FFmpeg:BOOL=ON
     -Dfletch_ENABLE_OpenCV_contrib:BOOL=ON
     -Dfletch_ENABLE_OpenCV_highgui:BOOL=ON
+    -Dfletch_ENABLE_PDAL:BOOL=ON
     -Dfletch_ENABLE_PNG:BOOL=ON
     -Dfletch_ENABLE_PROJ4:BOOL=ON
     -Dfletch_ENABLE_PostGIS:BOOL=OFF
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
-    -Dfletch_ENABLE_Qt:BOOL=${MAPTK_ENABLE_GUI}
+    -Dfletch_ENABLE_Qt:BOOL=ON
+    -DBUILD_Qt_MINIMAL:BOOL=ON
     -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=ON
-    -DVTK_SELECT_VERSION:STRING=8.2-pre
+    -DVTK_SELECT_VERSION:STRING=8.2
     -Dfletch_ENABLE_VXL:BOOL=ON
     -Dfletch_ENABLE_YAMLcpp:BOOL=OFF
     -Dfletch_ENABLE_ZLib:BOOL=ON
@@ -65,11 +72,10 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_libjson:BOOL=OFF
     -Dfletch_ENABLE_libkml:BOOL=OFF
     -Dfletch_ENABLE_libtiff:BOOL=ON
-    -Dfletch_ENABLE_libxml2:BOOL=ON
     -Dfletch_ENABLE_log4cplus:BOOL=ON
     -Dfletch_ENABLE_openjpeg:BOOL=OFF
-    -Dfletch_ENABLE_qtExtensions:BOOL=${MAPTK_ENABLE_GUI}
-    -Dfletch_ENABLE_pybind11:BOOL=OFF
+    -Dfletch_ENABLE_qtExtensions:BOOL=ON
+    -Dfletch_ENABLE_pybind11:BOOL=${MAPTK_BUILD_WITH_PYTHON}
     -Dfletch_ENABLE_shapelib:BOOL=OFF
     -Dfletch_BUILD_WITH_CUDA:BOOL=${MAPTK_BUILD_WITH_CUDA}
     -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR}
@@ -86,6 +92,7 @@ ExternalProject_Add(fletch
     -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
     -DADDITIONAL_C_FLAGS:STRING=${ADDITIONAL_C_FLAGS}
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
+    ${FLETCH_ADDITIONAL_OPTIONS}
   INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step."
 )
 
