@@ -73,7 +73,7 @@ TriangulateTool::~TriangulateTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs TriangulateTool::outputs() const
 {
-  return Landmarks;
+  return Landmarks | Tracks;
 }
 
 //-----------------------------------------------------------------------------
@@ -148,5 +148,6 @@ void TriangulateTool::run()
            << " out of " << init_lms.size() << " tracks.");
 
   this->updateLandmarks(lp);
+  this->updateTracks(tp);
 }
 
