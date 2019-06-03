@@ -1,5 +1,5 @@
 #
-# MAPTK Bundle creation support
+# TeleSculptor Bundle creation support
 #
 
 # Provide an override for gp_item_default_embedded_path function

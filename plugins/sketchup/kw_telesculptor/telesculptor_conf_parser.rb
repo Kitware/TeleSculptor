@@ -39,13 +39,13 @@ require File.join(File.dirname(__FILE__),'matchphoto_import_plugin.rb')
 
 
 # These are the keywords that correspond to the relevant values of interest from the
-# maptk configuration file and are the only lines we care about in this file.
+# TeleSculptor configuration file and are the only lines we care about in this file.
 IMAGE_FOLDER_KW = 'output_frames_dir'
 OUTPUT_PLY_FILE_KW = 'output_ply_file'
 OUTPUT_KRTD_DIR_KW = 'output_krtd_dir'
 GCP_FILE_KW = 'ground_control_points_file'
 
-class MaptkConfImporter < Sketchup::Importer
+class TeleSculptorConfImporter < Sketchup::Importer
   def description
     return "TeleSculptor project file (*.conf)"
   end
@@ -55,7 +55,7 @@ class MaptkConfImporter < Sketchup::Importer
   end
 
   def id
-    return "com.kitware.importers.maptkconfimporter"
+    return "com.kitware.importers.telesculptorconfimporter"
   end
 
   def supports_options?
@@ -152,7 +152,7 @@ class MaptkConfImporter < Sketchup::Importer
     output_krtd_dir = kwds[2]
     gcp_file = kwds[3]
     # We delegate the importing of the photos/krtd files to the matchphoto_import_plugin.
-    photo_krtd_importer = MatchphotoMaptkImporter.new
+    photo_krtd_importer = MatchphotoTeleSculptorImporter.new
     photo_krtd_importer.instantiate(output_krtd_dir)
     status_images = photo_krtd_importer.load_file(output_image_folder, 0)
     # Add the ply importing to the PLYImporter plugin.
@@ -173,4 +173,4 @@ class MaptkConfImporter < Sketchup::Importer
 
 end
 
-Sketchup.register_importer(MaptkConfImporter.new)
+Sketchup.register_importer(TeleSculptorConfImporter.new)

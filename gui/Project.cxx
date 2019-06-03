@@ -99,7 +99,7 @@ bool Project::read(QString const& path)
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
     this->config = kwiver::vital::read_config_file(
-      qPrintable(path), "maptk", MAPTK_VERSION, prefix);
+      qPrintable(path), "telesculptor", TELESCULPTOR_VERSION, prefix);
 
     if (config->has_value("working_directory"))
     {

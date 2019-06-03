@@ -1,5 +1,5 @@
 ###
-# use kwiver/fletch/maptk util methods
+# use kwiver/fletch/telesculptor util methods
 #
 
 message(STATUS "Looking for kwiver in : ${kwiver_DIR}")
@@ -15,5 +15,5 @@ if ( IS_DIRECTORY ${fletch_DIR} )
   find_package(fletch REQUIRED)
   message(STATUS "Using fletch from : ${fletch_DIR}")
 endif()
-include( maptk-utils ) # local utilities
+include( telesculptor-utils ) # local utilities
 

@@ -1,5 +1,5 @@
-#Travis CI configuration for MAP-Tk
-# See http://travis-ci.org/Kitware/maptk/
+#Travis CI configuration for TeleSculptor
+# See http://travis-ci.org/Kitware/TeleSculptor/
 
 sudo: false
 
@@ -41,9 +41,8 @@ script:
   - cmake -DCMAKE_C_COMPILER=$C_COMPILER
           -DCMAKE_CXX_COMPILER=$CXX_COMPILER
           -DCMAKE_INSTALL_PREFIX=$HOME/install
-          -DMAPTK_ENABLE_GUI:BOOL=ON
-          -DMAPTK_ENABLE_TESTING:BOOL=ON
-          -DMAPTK_SUPERBUILD:BOOL=OFF
+          -DTELESCULPTOR_ENABLE_TESTING:BOOL=ON
+          -DTELESCULPTOR_SUPERBUILD:BOOL=OFF
           ../
   - make -j2
   - make install

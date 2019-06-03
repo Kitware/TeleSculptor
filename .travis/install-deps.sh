@@ -8,7 +8,7 @@ HASH_DIR=/opt/kitware/hashes
 mkdir -p $HASH_DIR
 mkdir -p $INSTALL_DIR
 
-# Make a directory to test installation of MAP-Tk into
+# Make a directory to test installation of TeleSculptor into
 mkdir -p $HOME/install
 
 # check if directory is cached
@@ -113,7 +113,7 @@ build_repo ()
 }
 
 
-# Build and install KWIVER, minimum need to build MAP-Tk
+# Build and install KWIVER, minimum need to build TeleSculptor
 kwiver_cmake_opts="\
  -DKWIVER_ENABLE_ARROWS=ON \
  -DKWIVER_ENABLE_SPROKIT=ON \

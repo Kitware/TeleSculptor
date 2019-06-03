@@ -34,7 +34,7 @@ require 'sketchup.rb'
 #require_relative isn't supported in SketchUp 8.
 require File.join(File.dirname(__FILE__), 'krtd_importer.rb')
 
-class MatchphotoMaptkImporter < Sketchup::Importer
+class MatchphotoTeleSculptorImporter < Sketchup::Importer
   # This method is not necessarily used by sketchup, but allows us to instantiate
   # an instance of this class for use in conjunction with other importers.
   def instantiate(krtd_prefix)
@@ -58,7 +58,7 @@ class MatchphotoMaptkImporter < Sketchup::Importer
   end
 
   def id
-    return "com.kitware.importers.matchphotomaptkimporter"
+    return "com.kitware.importers.matchphototelesculptorimporter"
   end
 
   def supports_options?
@@ -241,4 +241,4 @@ class MatchphotoMaptkImporter < Sketchup::Importer
 
 end
 
-Sketchup.register_importer(MatchphotoMaptkImporter.new)
+Sketchup.register_importer(MatchphotoTeleSculptorImporter.new)
