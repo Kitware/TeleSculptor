@@ -14,7 +14,7 @@ endif()
 ExternalProject_Add(fletch
   PREFIX ${MAPTK_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG 2e04bd2d7c3b7ff616c3c320046abcbd298faa52
+  GIT_TAG 1a8374e1240937c7e2b093b6f66ecbe5fec3e006
   #GIT_SHALLOW 1
   SOURCE_DIR ${MAPTK_EXTERNAL_DIR}/fletch
   BINARY_DIR ${MAPTK_EXTERNAL_DIR}/fletch-build
