@@ -194,6 +194,9 @@ TeleSculptor
 
  * Set default filenames in save dialog boxes.
 
+ * Added a check box to show only inlier residuals.  Previously this was the
+   default behavior.  Now unchecking the box shows outliers too.  Also added
+   an option to color outlier residuals in a different color.
 
 Fixes since v0.10.0
 ------------------

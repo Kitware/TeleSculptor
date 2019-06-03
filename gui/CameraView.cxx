@@ -68,6 +68,7 @@
 #include <qtMath.h>
 #include <qtUiState.h>
 
+#include <QCheckBox>
 #include <QFormLayout>
 #include <QMenu>
 #include <QTimer>
@@ -94,40 +95,59 @@ struct LandmarkData
 };
 
 //-----------------------------------------------------------------------------
-class ActorColorOption : public QWidget
+class ResidualsOptions : public QWidget
 {
 public:
-  ActorColorOption(QString const& settingsGroup, QWidget* parent);
-  ~ActorColorOption() override;
+  ResidualsOptions(QString const& settingsGroup, QWidget* parent);
+  ~ResidualsOptions() override;
 
-  void setDefaultColor(QColor const&);
+  void setDefaultInlierColor(QColor const&);
+  void setDefaultOutlierColor(QColor const&);
 
-  ActorColorButton* const button;
+  ActorColorButton* const inlierColorButton;
+  ActorColorButton* const outlierColorButton;
+  QCheckBox* const inlierCheckbox;
   qtUiState uiState;
 };
 
 //-----------------------------------------------------------------------------
-ActorColorOption::ActorColorOption(
+ResidualsOptions::ResidualsOptions(
   QString const& settingsGroup, QWidget* parent)
-  : QWidget(parent), button(new ActorColorButton(this))
+  : QWidget(parent),
+    inlierColorButton(new ActorColorButton(this)),
+    outlierColorButton(new ActorColorButton(this)),
+    inlierCheckbox(new QCheckBox(this))
 {
   auto const layout = new QFormLayout(this);
-  layout->addRow("Color", this->button);
+  layout->addRow("Inlier Color", this->inlierColorButton);
+  layout->addRow("Outlier Color", this->outlierColorButton);
+  layout->addRow("Inliers Only", this->inlierCheckbox);
 
-  this->button->persist(this->uiState, settingsGroup + "/Color");
+  this->inlierColorButton->persist(this->uiState,
+                                   settingsGroup + "/InlierColor");
+  this->outlierColorButton->persist(this->uiState,
+                                    settingsGroup + "/OutlierColor");
+  this->uiState.mapChecked(settingsGroup + "/Inlier", this->inlierCheckbox);
   this->uiState.restore();
 }
 
 //-----------------------------------------------------------------------------
-ActorColorOption::~ActorColorOption()
+ResidualsOptions::~ResidualsOptions()
 {
   this->uiState.save();
 }
 
 //-----------------------------------------------------------------------------
-void ActorColorOption::setDefaultColor(QColor const& color)
+void ResidualsOptions::setDefaultInlierColor(QColor const& color)
 {
-  this->button->setColor(color);
+  this->inlierColorButton->setColor(color);
+  this->uiState.restore();
+}
+
+//-----------------------------------------------------------------------------
+void ResidualsOptions::setDefaultOutlierColor(QColor const& color)
+{
+  this->outlierColorButton->setColor(color);
   this->uiState.restore();
 }
 
@@ -208,11 +228,13 @@ public:
   vtkNew<vtkMatrix4x4> transformMatrix;
 
   LandmarkCloud landmarks;
-  SegmentCloud residuals;
+  SegmentCloud residualsInlier;
+  SegmentCloud residualsOutlier;
 
   QHash<kwiver::vital::landmark_id_t, LandmarkData> landmarkData;
 
   PointOptions* landmarkOptions;
+  ResidualsOptions* residualsOptions;
   GroundControlPointsWidget* groundControlPointsWidget;
   RulerWidget* rulerWidget;
 
@@ -386,7 +408,8 @@ void CameraViewPrivate::setTransforms(int imageHeight)
   this->featureRep->GetTrailsWithDescActor()->SetUserMatrix(xf);
   this->featureRep->GetTrailsWithoutDescActor()->SetUserMatrix(xf);
   this->landmarks.actor->SetUserMatrix(xf);
-  this->residuals.actor->SetUserMatrix(xf);
+  this->residualsInlier.actor->SetUserMatrix(xf);
+  this->residualsOutlier.actor->SetUserMatrix(xf);
 }
 
 //-----------------------------------------------------------------------------
@@ -454,15 +477,25 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setTransformMatrix(d->transformMatrix);
   d->rulerWidget->setComputeDistance(false);
 
-  auto const residualsOptions =
-    new ActorColorOption("CameraView/Residuals", this);
-  residualsOptions->setDefaultColor(QColor(255, 128, 0));
-  residualsOptions->button->addActor(d->residuals.actor);
+  d->residualsOptions =
+    new ResidualsOptions("CameraView/Residuals", this);
+  d->residualsOptions->setDefaultInlierColor(QColor(255, 128, 0));
+  d->residualsOptions->setDefaultOutlierColor(QColor(0, 128, 255));
+  d->residualsOptions->inlierColorButton->addActor(d->residualsInlier.actor);
+  d->residualsOptions->outlierColorButton->addActor(d->residualsOutlier.actor);
 
-  d->setPopup(d->UI.actionShowResiduals, residualsOptions);
+  d->setPopup(d->UI.actionShowResiduals, d->residualsOptions);
+  this->setOutlierResidualsVisible(
+    d->residualsOptions->inlierCheckbox->isChecked());
 
-  connect(residualsOptions->button, &ActorColorButton::colorChanged,
+  connect(d->residualsOptions->inlierColorButton,
+          &ActorColorButton::colorChanged,
           this, &CameraView::render);
+  connect(d->residualsOptions->outlierColorButton,
+          &ActorColorButton::colorChanged,
+          this, &CameraView::render);
+  connect(d->residualsOptions->inlierCheckbox, &QCheckBox::toggled,
+          this, &CameraView::setOutlierResidualsVisible);
 
   // Connect actions
   this->addAction(d->UI.actionViewReset);
@@ -510,7 +543,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->renderer->AddActor(d->featureRep->GetTrailsWithDescActor());
   d->renderer->AddActor(d->featureRep->GetTrailsWithoutDescActor());
   d->renderer->AddActor(d->landmarks.actor);
-  d->renderer->AddActor(d->residuals.actor);
+  d->renderer->AddActor(d->residualsInlier.actor);
+  d->renderer->AddActor(d->residualsOutlier.actor);
 
   d->renderer->AddViewProp(d->imageActor);
   d->imageActor->SetPosition(0.0, 0.0, -0.5);
@@ -666,13 +700,21 @@ void CameraView::addLandmark(
 
 //-----------------------------------------------------------------------------
 void CameraView::addResidual(
-  kwiver::vital::track_id_t id, double x1, double y1, double x2, double y2)
+  kwiver::vital::track_id_t id, double x1, double y1, double x2, double y2,
+  bool inlier)
 {
   QTE_D();
 
   Q_UNUSED(id)
 
-  d->residuals.addSegment(x1, y1, -0.2, x2, y2, -0.2);
+  if (inlier)
+  {
+    d->residualsInlier.addSegment(x1, y1, -0.3, x2, y2, -0.3);
+  }
+  else
+  {
+    d->residualsOutlier.addSegment(x1, y1, -0.2, x2, y2, -0.2);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -686,7 +728,8 @@ void CameraView::clearLandmarks()
 void CameraView::clearResiduals()
 {
   QTE_D();
-  d->residuals.clear();
+  d->residualsInlier.clear();
+  d->residualsOutlier.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -720,7 +763,19 @@ void CameraView::setResidualsVisible(bool state)
 {
   QTE_D();
 
-  d->residuals.actor->SetVisibility(state);
+  d->residualsInlier.actor->SetVisibility(state);
+  d->residualsOutlier.actor->SetVisibility(state &&
+    !d->residualsOptions->inlierCheckbox->isChecked());
+  this->render();
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setOutlierResidualsVisible(bool state)
+{
+  QTE_D();
+
+  bool overallState = d->residualsInlier.actor->GetVisibility();
+  d->residualsOutlier.actor->SetVisibility(overallState && !state);
   this->render();
 }
 

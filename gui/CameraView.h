@@ -74,7 +74,8 @@ public slots:
   void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
   void addResidual(kwiver::vital::track_id_t id,
                    double x1, double y1,
-                   double x2, double y2);
+                   double x2, double y2,
+                   bool inlier);
 
   void clearLandmarks();
   void clearResiduals();
@@ -89,6 +90,7 @@ protected slots:
   void setImageVisible(bool);
   void setLandmarksVisible(bool);
   void setResidualsVisible(bool);
+  void setOutlierResidualsVisible(bool);
 
   void updateFeatures();
 
