@@ -168,7 +168,7 @@ kwiver_configure_file( telesculptor-config
   TELESCULPTOR_SOURCE_DIR
   TELESCULPTOR_BINARY_DIR
   EIGEN3_INCLUDE_DIR
-  TELESCULPTOR_VERSION
+  TeleSculptor_VERSION
   telesculptor_libs
   module_path
   )
@@ -182,7 +182,7 @@ kwiver_configure_file( telesculptor-install-config
   "${TELESCULPTOR_SOURCE_DIR}/CMake/telesculptor-config-install.cmake.in"
   "${TELESCULPTOR_CONFIG_INSTALL_FILE}"
   EIGEN3_INCLUDE_DIR
-  TELESCULPTOR_VERSION
+  TeleSculptor_VERSION
   telesculptor_libs
   module_path
   )
@@ -220,10 +220,10 @@ set(CPACK_PACKAGE_NAME              "TeleSculptor")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
-set(CPACK_PACKAGE_VERSION_MAJOR     "${TELESCULPTOR_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR     "${TELESCULPTOR_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH     "${TELESCULPTOR_VERSION_PATCH}")
-set(CPACK_PACKAGE_VERSION           "${TELESCULPTOR_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR     "${TeleSculptor_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR     "${TeleSculptor_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH     "${TeleSculptor_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION           "${TeleSculptor_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_FILE_NAME         "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
 set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\telesculptor_install.bmp")

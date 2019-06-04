@@ -55,6 +55,6 @@ add_custom_target(manuals ALL DEPENDS ${outputs})
 
 kwiver_install(
   DIRECTORY   "${manual_dir}"
-  DESTINATION "share/doc/telesculptor-${TELESCULPTOR_VERSION}"
+  DESTINATION "share/doc/telesculptor-${TeleSculptor_VERSION}"
   COMPONENT   documentation
 )

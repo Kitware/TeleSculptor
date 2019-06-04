@@ -2,21 +2,21 @@
 kwiver_install(
   FILES README.rst
   COMPONENT runtime
-  DESTINATION share/telesculptor/${TELESCULPTOR_VERSION}/plugins
+  DESTINATION share/telesculptor/${TeleSculptor_VERSION}/plugins
   )
 
 # Install blender files
 kwiver_install(
   DIRECTORY blender
   COMPONENT runtime
-  DESTINATION share/telesculptor/${TELESCULPTOR_VERSION}/plugins
+  DESTINATION share/telesculptor/${TeleSculptor_VERSION}/plugins
   )
 
 # Install the zipped ruby file
 kwiver_install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/kw_telesculptor.rbz"
   COMPONENT runtime
-  DESTINATION share/telesculptor/${TELESCULPTOR_VERSION}/plugins/sketchup
+  DESTINATION share/telesculptor/${TeleSculptor_VERSION}/plugins/sketchup
   )
 
 # Move files to out of ./sketchup into the binary directory
