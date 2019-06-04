@@ -62,7 +62,7 @@ QString formatTitle(QString formatStr)
 QString buildCopyrightText()
 {
   QString format = "Copyright &copy;%1 %2";
-  return format.arg(MAPTK_COPYRIGHT_YEAR).arg(QApplication::organizationName());
+  return format.arg(TELESCULPTOR_COPYRIGHT_YEAR).arg(QApplication::organizationName());
 }
 
 //-----------------------------------------------------------------------------

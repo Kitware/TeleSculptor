@@ -1,5 +1,5 @@
 ::
-:: Script to source to setup the MAP-Tk environment
+:: Script to source to setup the TeleSculptor environment
 ::
 
 if [%1] == [] (
@@ -8,9 +8,9 @@ if [%1] == [] (
   set config=%1 
 )
 
-call setup_MAPTK.bat %config%
+call setup_TeleSculptor.bat %config%
 
-start MAPTK.sln /D .\
+start TeleSculptor.sln /D .\
 :: Note if a different visual studio is associated with a *.sln file than should be
 :: Change your .sln file association to the VSLauncher usually found here
 :: "%ProgramFiles(x86)%\Common Files\Microsoft Shared\MSEnv"\VSLauncher.exe

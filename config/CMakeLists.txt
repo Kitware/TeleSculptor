@@ -2,14 +2,14 @@ file(GLOB config_files *.conf *.pipe *.properties)
 file(GLOB model_files *.gz)
 
 # Ensure target directory exists
-set(out_dir "${MAPTK_BINARY_DIR}/share/maptk/${MAPTK_VERSION}/config")
+set(out_dir "${TELESCULPTOR_BINARY_DIR}/share/telesculptor/${TELESCULPTOR_VERSION}/config")
 add_custom_command(
   OUTPUT "${out_dir}"
   COMMAND "${CMAKE_COMMAND}" -E make_directory "${out_dir}"
   )
 
 # Set up meta-target
-add_custom_target(maptk-data-config ALL DEPENDS "${out_dir}")
+add_custom_target(telesculptor-data-config ALL DEPENDS "${out_dir}")
 
 # Add targets to copy config files
 foreach(file ${config_files})
@@ -20,7 +20,7 @@ foreach(file ${config_files})
     "${CMAKE_CURRENT_SOURCE_DIR}/${filename}"
     "${out_dir}/${filename}"
     )
-  add_dependencies(maptk-data-config configure-${target})
+  add_dependencies(telesculptor-data-config configure-${target})
 endforeach()
 
 # Add targets to copy model files
@@ -36,5 +36,5 @@ endforeach()
 kwiver_install(
   FILES ${config_files} ${model_files}
   COMPONENT runtime
-  DESTINATION share/maptk/${MAPTK_VERSION}/config
+  DESTINATION share/telesculptor/${TELESCULPTOR_VERSION}/config
   )

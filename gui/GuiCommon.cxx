@@ -94,7 +94,7 @@ kwiver::vital::config_block_sptr readConfig(std::string const& name)
 
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
-    return read_config_file(name, "maptk", MAPTK_VERSION, prefix);
+    return read_config_file(name, "telesculptor", TELESCULPTOR_VERSION, prefix);
   }
   catch (...)
   {
@@ -113,7 +113,7 @@ kwiver::vital::path_t findConfig(std::string const& name)
     auto const exeDir = QDir(QApplication::applicationDirPath());
     auto const prefix = stdString(exeDir.absoluteFilePath(".."));
     auto const& search_paths =
-    application_config_file_paths("maptk", MAPTK_VERSION, prefix);
+    application_config_file_paths("telesculptor", TELESCULPTOR_VERSION, prefix);
 
     for (auto const& search_path : search_paths)
     {

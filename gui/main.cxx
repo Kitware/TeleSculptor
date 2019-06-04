@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   QApplication::setApplicationName("TeleSculptor");
   QApplication::setOrganizationName("Kitware");
   QApplication::setOrganizationDomain("kitware.com");
-  QApplication::setApplicationVersion(MAPTK_VERSION);
+  QApplication::setApplicationVersion(TELESCULPTOR_VERSION);
 
   // Tell Qt to fully use High-DPI scaling, as the partial implementation we
   // get otherwise is worse (and doesn't use our high-resolution icons)

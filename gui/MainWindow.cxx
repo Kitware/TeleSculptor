@@ -121,8 +121,8 @@ kv::path_t kvPath(QString const& s)
 QString findUserManual()
 {
   static auto const name = "telesculptor.html";
-  static auto const product = "maptk";
-  static auto const version = MAPTK_VERSION;
+  static auto const product = "telesculptor";
+  static auto const version = TELESCULPTOR_VERSION;
 
   auto const& prefix =
     QFileInfo(QApplication::applicationFilePath()).dir().absoluteFilePath("..");

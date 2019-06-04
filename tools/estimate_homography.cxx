@@ -281,8 +281,8 @@ static int maptk_main(int argc, char const* argv[])
   if( ! opt_config.empty() )
   {
     const std::string prefix = kwiver::vital::get_executable_path() + "/..";
-    config->merge_config(kwiver::vital::read_config_file(opt_config, "maptk",
-                                                         MAPTK_VERSION, prefix));
+    config->merge_config(kwiver::vital::read_config_file(opt_config, "telesculptor",
+                                                         TELESCULPTOR_VERSION, prefix));
   }
 
   // Set current configuration to algorithms and extract refined configuration.
