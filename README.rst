@@ -106,8 +106,8 @@ Here is the quickest way to build via a cmd/bash shell
   $ sudo apt-get install libgtk2.0-dev
   $ sudo apt-get install liblapack-dev
 
-  mkdir maptk
-  ## For this example, we assume source is in a 'src' folder under maptk/
+  mkdir telesculptor
+  ## For this example, we assume source is in a 'src' folder under telesculptor/
   mkdir builds
   cd builds
   # Feel free to make subfolders here, for example: debug and release
@@ -123,23 +123,23 @@ Here is the quickest way to build via a cmd/bash shell
   # On Linux/OSX/MinGW
   make
   # Once the Superbuild is complete,
-  # the maptk makefile will be placed in the build/external/maptk-build directory
+  # the telesculptor makefile will be placed in the build/external/telesculptor-build directory
 
   # For MSVC
-  # Open the MAPTK-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
+  # Open the TeleSculptor-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
   # When the build is complete you may close this solution.
-  # To edit maptk code, open the build/external/maptk-build/MATPTK.sln
+  # To edit telesculptor code, open the build/external/telesculptor-build/TeleSculptor.sln
 
 CMake Options
 -------------
 
-============================== =================================================
-``CMAKE_BUILD_TYPE``           The compiler mode, usually ``Debug`` or ``Release``
+=============================== =================================================
+``CMAKE_BUILD_TYPE``            The compiler mode, usually ``Debug`` or ``Release``
 
-``MAPTK_SUPERBUILD``           Build as a superbuild (build Fletch and KWIVER)
-``MAPTK_ENABLE_MANUALS``       Turn on building the user documentation
-``MAPTK_ENABLE_TESTING``       Build the unit tests
-============================== =================================================
+``TELESCULPTOR_SUPERBUILD``     Build as a superbuild (build Fletch and KWIVER)
+``TELESCULPTOR_ENABLE_MANUALS`` Turn on building the user documentation
+``TELESCULPTOR_ENABLE_TESTING`` Build the unit tests
+=============================== =================================================
 
 Mulit-Configuration Build Tools
 '''''''''''''''''''''''''''''''
@@ -170,7 +170,7 @@ and all dependencies will be built by the Superbuild.
 Documentation
 '''''''''''''
 
-If ``MAPTK_ENABLE_MANUALS`` is enabled, and CMake finds all dependencies,
+If ``TELESCULPTOR_ENABLE_MANUALS`` is enabled, and CMake finds all dependencies,
 then the user manuals are built as part of the normal build process under the target
 "manuals".  The GUI manual can be viewed from inside the GUI by choosing the
 "TeleSculptor User Manual" action from the "Help" menu.
@@ -197,7 +197,7 @@ hosts nightly build and test results across multiple platforms including
 Windows, Mac, and Linux.
 
 Anyone can contribute a build to this dashboard using the
-`dashboard script <CMake/dashboard-scripts/MAPTK_common.cmake>`_
+`dashboard script <CMake/dashboard-scripts/TeleSculptor_common.cmake>`_
 provided.  Follow the instructions in the comments.
 
 `Travis CI`_ is also used for continued integration testing.
@@ -229,9 +229,9 @@ which contains the kwiver-config.cmake file.
 
 You must ensure that the specified build of KWIVER was built with at least the following options set:
 
-The required KWIVER flags can be found in this file : `<CMake/maptk-external-kwiver.cmake>`_
+The required KWIVER flags can be found in this file : `<CMake/telesculptor-external-kwiver.cmake>`_
 
-The required Fletch flags can be found in this file : `<CMake/maptk-external-fletch.cmake>`_
+The required Fletch flags can be found in this file : `<CMake/telesculptor-external-fletch.cmake>`_
 
 
 MAP-Tk Tools
@@ -370,8 +370,8 @@ public release via 88ABW-2015-2555.
 
 .. |>=| unicode:: U+02265 .. greater or equal sign
 
-.. |CI:master| image:: https://travis-ci.org/Kitware/maptk.svg?branch=master
-.. |CI:release| image:: https://travis-ci.org/Kitware/maptk.svg?branch=release
+.. |CI:master| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=master
+.. |CI:release| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=release
 
-.. _CI:master: https://travis-ci.org/Kitware/maptk
-.. _CI:release: https://travis-ci.org/Kitware/maptk
+.. _CI:master: https://travis-ci.org/Kitware/TeleSculptor
+.. _CI:release: https://travis-ci.org/Kitware/TeleSculptor
