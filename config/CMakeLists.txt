@@ -2,7 +2,7 @@ file(GLOB config_files *.conf *.pipe *.properties)
 file(GLOB model_files *.gz)
 
 # Ensure target directory exists
-set(out_dir "${TELESCULPTOR_BINARY_DIR}/share/telesculptor/${TELESCULPTOR_VERSION}/config")
+set(out_dir "${TELESCULPTOR_BINARY_DIR}/share/telesculptor/${TeleSculptor_VERSION}/config")
 add_custom_command(
   OUTPUT "${out_dir}"
   COMMAND "${CMAKE_COMMAND}" -E make_directory "${out_dir}"
@@ -36,5 +36,5 @@ endforeach()
 kwiver_install(
   FILES ${config_files} ${model_files}
   COMPONENT runtime
-  DESTINATION share/telesculptor/${TELESCULPTOR_VERSION}/config
+  DESTINATION share/telesculptor/${TeleSculptor_VERSION}/config
   )

@@ -224,8 +224,8 @@ if(APPLE)
   set_target_properties(TeleSculptor PROPERTIES
     OUTPUT_NAME TeleSculptor
     MACOSX_BUNDLE_NAME "TeleSculptor"
-    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${TELESCULPTOR_VERSION} Application"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${TELESCULPTOR_VERSION}"
+    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${TeleSculptor_VERSION} Application"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${TeleSculptor_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
     )
 endif()

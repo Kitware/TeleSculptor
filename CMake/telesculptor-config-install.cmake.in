@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH "@module_path@" ${CMAKE_MODULE_PATH})
 get_filename_component(TELESCULPTOR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 set(TELESCULPTOR_INCLUDE_DIRS "${TELESCULPTOR_ROOT}/include" "@EIGEN3_INCLUDE_DIR@")
 set(TELESCULPTOR_LIBRARIES @telesculptor_libs@)
-set(TELESCULPTOR_VERSION @TELESCULPTOR_VERSION@)
+set(TELESCULPTOR_VERSION @TeleSculptor_VERSION@)
 
 # Include the library targets
 include("${CMAKE_CURRENT_LIST_DIR}/telesculptor-config-targets.cmake")

@@ -29,7 +29,7 @@ set(maptk_sources
 kwiver_configure_file( version.h
   "${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/version.h"
-  TELESCULPTOR_VERSION
+  TeleSculptor_VERSION
   TELESCULPTOR_COPYRIGHT_YEAR
 )
 
@@ -72,7 +72,7 @@ endif()
 # Marking source root for documentation generation
 #
 if(NOT DOXYGEN_TELESCULPTOR_NUMBER)
-  set(DOXYGEN_TELESCULPTOR_NUMBER "v${TELESCULPTOR_VERSION}")
+  set(DOXYGEN_TELESCULPTOR_NUMBER "v${TeleSculptor_VERSION}")
 endif()
 kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}"
                        DISPLAY_NAME "MAP-Tk"
