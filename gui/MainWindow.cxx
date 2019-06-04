@@ -3093,6 +3093,9 @@ void MainWindow::applySimilarityTransform()
       imageWriter->Write();
     }
   }
+
+  // Invalidate the fusion volume
+  d->UI.worldView->resetVolume();
 }
 
 //-----------------------------------------------------------------------------
