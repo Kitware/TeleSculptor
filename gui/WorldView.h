@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_WORLDVIEW_H_
-#define MAPTK_WORLDVIEW_H_
+#ifndef TELESCULPTOR_WORLDVIEW_H_
+#define TELESCULPTOR_WORLDVIEW_H_
 
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
