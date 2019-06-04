@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// MAPTK includes
+// TeleSculptor includes
 #include "RulerWidget.h"
 #include "vtkMaptkDistanceRepresentation2D.h"
 #include "vtkMaptkDistanceWidget.h"
