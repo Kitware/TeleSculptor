@@ -18,6 +18,12 @@ endif()
 if(POLICY CMP0071)
   cmake_policy(SET CMP0071 NEW)
 endif()
+# This policy is new in CMake 3.12. The NEW behavior uses the <PackageName>_ROOT variable in
+# find_package(<PackageName>) calls.
+# See: https://cmake.org/cmake/help/git-stage/policy/CMP0074.html
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 ###
 # Options and setup
