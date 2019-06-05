@@ -1,4 +1,4 @@
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp 3.4 REQUIRED)
 execute_process(
   COMMAND ${PYTHON_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/FindDocUtils.py

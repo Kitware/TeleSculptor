@@ -178,7 +178,7 @@ then the user manuals are built as part of the normal build process under the ta
 To build the user manual(s), you need:
 
 * Python
-    version 2.6 or greater
+    version 3.4 or greater
     http://www.python.org/
 
 * Docutils
