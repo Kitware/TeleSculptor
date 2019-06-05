@@ -110,13 +110,8 @@ add_subdirectory(examples)
 # GUI
 #
 if(APPLE)
-  set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
-  # make sure CMAKE_INSTALL_PREFIX ends in /
-  if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
-  endif()
-  set(CMAKE_INSTALL_PREFIX
-    "${CMAKE_INSTALL_PREFIX}TeleSculptor.app/Contents")
+  set(CMAKE_BUNDLE_LOCATION "/")
+  set(CMAKE_INSTALL_PREFIX "/TeleSculptor.app/Contents")
 endif()
 add_subdirectory(gui)
 
