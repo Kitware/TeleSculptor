@@ -200,7 +200,8 @@ void ComputeAllDepthTool::run()
   for (size_t c = 0; c < num_depth_maps; ++c)
   {
     size_t curr_frame_idx = halfsupport + (c * num_frames) / (num_depth_maps-1);
-    this->updateProgress(c, num_depth_maps);
+    this->updateProgress(static_cast<int>(c),
+                         static_cast<int>(num_depth_maps));
     auto fitr = frames_in_range.begin() + curr_frame_idx;
 
     // Compute an iterator range containing total_support entries and
