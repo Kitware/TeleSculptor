@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
 project(TeleSculptor-SuperBuild)
 
 option(TELESCULPTOR_SUPERBUILD  "Enable TeleSculptor superbuild" ON)
