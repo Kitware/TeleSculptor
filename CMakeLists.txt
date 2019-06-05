@@ -48,10 +48,12 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
-else() # Provide both configurations as they are compatible with each other
-  set(CMAKE_CONFIGURATION_TYPES "Release" "RelWithDebInfo" CACHE TYPE INTERNAL FORCE )
+if(GENERATOR_IS_MULTI_CONFIG)
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
+  else() # Provide both configurations as they are compatible with each other
+    set(CMAKE_CONFIGURATION_TYPES "Release" "RelWithDebInfo" CACHE TYPE INTERNAL FORCE )
+  endif()
 endif()
 
 # Always build shared libraries, required due to plugin infrastructure
