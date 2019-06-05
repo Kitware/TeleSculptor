@@ -262,13 +262,10 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
     list(APPEND FIXUP_DIRS "${VTK_INSTALL_PREFIX}/lib")
   endif()
 
-  # For now, we're assuming we're pulling qtextensions from a build directory
-  # (not an install).  Also, Mac and/or Linux will need be a bit different,
-  # but will be handled later (they'd likely use CMAKE_BUILD_TYPE instead
-  # of CMAKE_CONFIGURATION_TYPES). For Windows really expect the dll will
+  # For Windows expect the dll will
   # be in Release subdirectory, and so look there unless
   # CMAKE_CONFIGURATION_TYPES indicates only "debug"
-  if(CMAKE_CONFIGURATION_TYPES)
+  if(GENERATOR_IS_MULTI_CONFIG AND CMAKE_CONFIGURATION_TYPES)
     string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
     if(BUILD_TYPE STREQUAL "debug")
       set(BINARY_DIR "Debug")
