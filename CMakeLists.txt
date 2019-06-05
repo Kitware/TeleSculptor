@@ -69,6 +69,7 @@ if( APPLE )
   set(LIBRARY_PATH_VAR "DYLD_FALLBACK_LIBRARY_PATH")
 endif()
 
+option(TELESCULPTOR_ENABLE_MANUALS "Build TeleSculptor user manual(s)" OFF)
 option(TELESCULPTOR_ENABLE_TESTING "Build TeleSculptor testing" OFF)
 option(TELESCULPTOR_ENABLE_TOOLS "Build command line tools" ON)
 
@@ -130,7 +131,6 @@ endif()
 ###
 # Manuals
 #
-option(TELESCULPTOR_ENABLE_MANUALS "Build TeleSculptor user manual(s)" OFF)
 if(TELESCULPTOR_ENABLE_MANUALS)
   add_subdirectory(doc/manuals)
 endif()
