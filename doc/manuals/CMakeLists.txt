@@ -45,8 +45,8 @@ foreach(man telesculptor)
     COMMAND "${PYTHON_EXECUTABLE}" "${create_manual_script}"
       "${_in}"
       "${_out}"
-      "${MAPTK_SOURCE_DIR}/gui/icons/16x16"
-      "${MAPTK_SOURCE_DIR}/gui/icons/22x22"
+      "${TELESCULPTOR_SOURCE_DIR}/gui/icons/16x16"
+      "${TELESCULPTOR_SOURCE_DIR}/gui/icons/22x22"
   )
   list(APPEND outputs "${_out}")
 endforeach()
@@ -55,6 +55,6 @@ add_custom_target(manuals ALL DEPENDS ${outputs})
 
 kwiver_install(
   DIRECTORY   "${manual_dir}"
-  DESTINATION "share/doc/maptk-${MAPTK_VERSION}"
+  DESTINATION "share/doc/telesculptor-${TeleSculptor_VERSION}"
   COMPONENT   documentation
 )

@@ -1,7 +1,7 @@
 include(CheckCXXCompilerFlag)
 
-include_directories("${MAPTK_SOURCE_DIR}")
-include_directories("${MAPTK_BINARY_DIR}")
+include_directories("${TELESCULPTOR_SOURCE_DIR}")
+include_directories("${TELESCULPTOR_BINARY_DIR}")
 
 
 ###
@@ -29,8 +29,8 @@ set(maptk_sources
 kwiver_configure_file( version.h
   "${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/version.h"
-  MAPTK_VERSION
-  MAPTK_COPYRIGHT_YEAR
+  TeleSculptor_VERSION
+  TELESCULPTOR_COPYRIGHT_YEAR
 )
 
 kwiver_add_library(
@@ -45,8 +45,8 @@ target_link_libraries( maptk
                        kwiver::kwiversys
   )
 
-option(MAPTK_USE_PDAL "Enable PDAL support for saving to LAS" ON)
-if(MAPTK_USE_PDAL)
+option(TELESCULPTOR_USE_PDAL "Enable PDAL support for saving to LAS" ON)
+if(TELESCULPTOR_USE_PDAL)
   find_package(PDAL 1.0.0 REQUIRED)
 
   target_link_libraries( maptk
@@ -71,9 +71,9 @@ endif()
 ###
 # Marking source root for documentation generation
 #
-if(NOT DOXYGEN_MAPTK_NUMBER)
-  set(DOXYGEN_MAPTK_NUMBER "v${MAPTK_VERSION}")
+if(NOT DOXYGEN_TELESCULPTOR_NUMBER)
+  set(DOXYGEN_TELESCULPTOR_NUMBER "v${TeleSculptor_VERSION}")
 endif()
 kwiver_create_doxygen( maptk "${CMAKE_CURRENT_LIST_DIR}"
                        DISPLAY_NAME "MAP-Tk"
-                       VERSION_NUMBER "${DOXYGEN_MAPTK_NUMBER}")
+                       VERSION_NUMBER "${DOXYGEN_TELESCULPTOR_NUMBER}")

@@ -40,14 +40,11 @@
 
 #include <vital/types/geodesy.h>
 
-#include <vital/range/transform.h>
-
 #include <vtkHandleWidget.h>
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 
 namespace kv = kwiver::vital;
-namespace kvr = kwiver::vital::range;
 
 //-----------------------------------------------------------------------------
 class RulerHelperPrivate

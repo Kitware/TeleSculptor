@@ -30,11 +30,11 @@
 require 'sketchup.rb'
 require 'extensions.rb'
 
-ext = SketchupExtension.new('TeleSculptor Importer', File.join('kw_maptk', 'MaptkImporter.rb'))
+ext = SketchupExtension.new('TeleSculptor Importer', File.join('kw_telesculptor', 'TeleSculptorImporter.rb'))
 
 ext.creator = 'Kitware, Inc.'
-ext.version = '0.11.0'
-ext.copyright = '2018'
+ext.version = '1.0.0'
+ext.copyright = '2019'
 ext.description = 'Allows importing of TeleSculptor project files and ply files.'
 
 Sketchup.register_extension(ext, true)

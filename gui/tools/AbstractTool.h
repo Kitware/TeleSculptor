@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_ABSTRACTTOOL_H_
-#define MAPTK_ABSTRACTTOOL_H_
+#ifndef TELESCULPTOR_ABSTRACTTOOL_H_
+#define TELESCULPTOR_ABSTRACTTOOL_H_
 
 #include <vital/config/config_block_types.h>
 #include <vital/logger/logger.h>

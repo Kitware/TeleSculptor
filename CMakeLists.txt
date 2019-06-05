@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
-project(MAPTK-SuperBuild)
+project(TeleSculptor-SuperBuild)
 
-option(MAPTK_SUPERBUILD  "Enable MAPTK superbuild" ON)
+option(TELESCULPTOR_SUPERBUILD  "Enable TeleSculptor superbuild" ON)
 
 ###
 # CMake policies
@@ -29,18 +29,18 @@ include(CMakeDependentOption)
 #
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMake" )
 
-string(TIMESTAMP MAPTK_COPYRIGHT_YEAR "%Y")
+string(TIMESTAMP TELESCULPTOR_COPYRIGHT_YEAR "%Y")
 
 ###
 # project specific directories
 #
-set(MAPTK_CMAKE_DIR            "${CMAKE_SOURCE_DIR}/CMake")
+set(TELESCULPTOR_CMAKE_DIR      "${CMAKE_SOURCE_DIR}/CMake")
 
 # root directories
-set(MAPTK_SOURCE_DIR           "${CMAKE_SOURCE_DIR}")
-set(MAPTK_BINARY_DIR           "${CMAKE_BINARY_DIR}")
-set(MAPTK_EXTERNAL_DIR         "${MAPTK_BINARY_DIR}/external")
-set(MAPTK_STAMP_DIR             ${MAPTK_EXTERNAL_DIR}/stamps)
+set(TELESCULPTOR_SOURCE_DIR     "${CMAKE_SOURCE_DIR}")
+set(TELESCULPTOR_BINARY_DIR     "${CMAKE_BINARY_DIR}")
+set(TELESCULPTOR_EXTERNAL_DIR   "${TELESCULPTOR_BINARY_DIR}/external")
+set(TELESCULPTOR_STAMP_DIR       ${TELESCULPTOR_EXTERNAL_DIR}/stamps)
 
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Release' as none was specified.")
@@ -60,7 +60,8 @@ if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
 endif()
 set(BUILD_SHARED_LIBS ON)
 
-set(LIB_SUFFIX "${MAPTK_LIB_SUFFIX}" CACHE STRING "String suffix appended to the library directory we install into")
+set(LIB_SUFFIX "${TELESCULPTOR_LIB_SUFFIX}"
+    CACHE STRING "String suffix appended to the library directory we install into")
 mark_as_advanced( LIB_SUFFIX )
 
 set(LIBRARY_PATH_VAR "LD_LIBRARY_PATH")
@@ -68,23 +69,24 @@ if( APPLE )
   set(LIBRARY_PATH_VAR "DYLD_FALLBACK_LIBRARY_PATH")
 endif()
 
-option(MAPTK_ENABLE_TESTING "Build MAPTK testing" OFF)
-option(MAPTK_ENABLE_TOOLS "Build command line tools" ON)
+option(TELESCULPTOR_ENABLE_MANUALS "Build TeleSculptor user manual(s)" OFF)
+option(TELESCULPTOR_ENABLE_TESTING "Build TeleSculptor testing" OFF)
+option(TELESCULPTOR_ENABLE_TOOLS "Build command line tools" ON)
 
-if(MAPTK_SUPERBUILD)
-  include(${MAPTK_CMAKE_DIR}/maptk-superbuild.cmake)
+if(TELESCULPTOR_SUPERBUILD)
+  include(${TELESCULPTOR_CMAKE_DIR}/telesculptor-superbuild.cmake)
   return()
 endif()
-project(MAPTK VERSION 1.0.0)
-include( maptk-depends )
+project(TeleSculptor VERSION 1.0.0)
+include( telesculptor-depends )
 
 # set the name for our package exports
-set(kwiver_export_name     maptk_exports)
+set(kwiver_export_name     telesculptor_exports)
 
 add_subdirectory(maptk)
 
 # this is where the executables source code lives
-if(MAPTK_ENABLE_TOOLS)
+if(TELESCULPTOR_ENABLE_TOOLS)
   add_subdirectory(tools)
 endif()
 
@@ -114,20 +116,22 @@ add_subdirectory(gui)
 ###
 # Environment Scripts
 #
-configure_file(${MAPTK_CMAKE_DIR}/start_MSVC.bat.in           ${MAPTK_BINARY_DIR}/start_MSVC.bat @ONLY)
-configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.bat.in    ${MAPTK_BINARY_DIR}/setup_MAPTK.bat @ONLY)
-configure_file(${MAPTK_CMAKE_DIR}/setup_MAPTK.build.sh.in     ${MAPTK_BINARY_DIR}/setup_MAPTK.sh @ONLY)
+configure_file(${TELESCULPTOR_CMAKE_DIR}/start_MSVC.bat.in
+               ${TELESCULPTOR_BINARY_DIR}/start_MSVC.bat @ONLY)
+configure_file(${TELESCULPTOR_CMAKE_DIR}/setup_TeleSculptor.build.bat.in
+               ${TELESCULPTOR_BINARY_DIR}/setup_TeleSculptor.bat @ONLY)
+configure_file(${TELESCULPTOR_CMAKE_DIR}/setup_TeleSculptor.build.sh.in
+               ${TELESCULPTOR_BINARY_DIR}/setup_TeleSculptor.sh @ONLY)
 
 if(MSVC)
   # Create vcxproj.user files for every executable with the correct runtime environment
-  kwiver_setup_msvc_env(${MAPTK_BINARY_DIR}/setup_MAPTK.bat)
+  kwiver_setup_msvc_env(${TELESCULPTOR_BINARY_DIR}/setup_TeleSculptor.bat)
 endif()
 
 ###
 # Manuals
 #
-option(MAPTK_ENABLE_MANUALS "Build MAPTK user manual(s)" OFF)
-if(MAPTK_ENABLE_MANUALS)
+if(TELESCULPTOR_ENABLE_MANUALS)
   add_subdirectory(doc/manuals)
 endif()
 
@@ -135,7 +139,7 @@ endif()
 # Testing
 #
 # The following are required to uses Dart and the Cdash dashboard
-if(MAPTK_ENABLE_TESTING)
+if(TELESCULPTOR_ENABLE_TESTING)
   enable_testing()
   include(CTest)
   set(BUILD_TESTING ON)
@@ -146,50 +150,51 @@ endif()
 ###
 # Top level installation
 #
-set(maptk_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/maptk")
+set(telesculptor_cmake_install_dir  "lib${LIB_SUFFIX}/cmake/telesculptor")
 
 # Install rules for CMake utilities
-include(maptk-install-utils)
+include(telesculptor-install-utils)
 
 # Prepare space-separated list of library names for config
-get_property(maptk_libs GLOBAL PROPERTY kwiver_libraries)
-string(REPLACE ";" " " maptk_libs "${maptk_libs}")
+get_property(telesculptor_libs GLOBAL PROPERTY kwiver_libraries)
+string(REPLACE ";" " " telesculptor_libs "${telesculptor_libs}")
 
 # Configure build-tree CMake config file and export associated targets file
-set(MAPTK_CONFIG_FILE "${MAPTK_BINARY_DIR}/maptk-config.cmake")
-set(module_path "${MAPTK_SOURCE_DIR}/CMake")
-kwiver_configure_file( maptk-config
-  "${MAPTK_SOURCE_DIR}/CMake/maptk-config.cmake.in"
-  "${MAPTK_CONFIG_FILE}"
-  MAPTK_SOURCE_DIR
-  MAPTK_BINARY_DIR
+set(TELESCULPTOR_CONFIG_FILE "${TELESCULPTOR_BINARY_DIR}/telesculptor-config.cmake")
+set(module_path "${TELESCULPTOR_SOURCE_DIR}/CMake")
+kwiver_configure_file( telesculptor-config
+  "${TELESCULPTOR_SOURCE_DIR}/CMake/telesculptor-config.cmake.in"
+  "${TELESCULPTOR_CONFIG_FILE}"
+  TELESCULPTOR_SOURCE_DIR
+  TELESCULPTOR_BINARY_DIR
   EIGEN3_INCLUDE_DIR
-  MAPTK_VERSION
-  maptk_libs
+  TeleSculptor_VERSION
+  telesculptor_libs
   module_path
   )
-kwiver_export_targets("${MAPTK_BINARY_DIR}/maptk-config-targets.cmake")
+kwiver_export_targets("${TELESCULPTOR_BINARY_DIR}/telesculptor-config-targets.cmake")
 
 # Configure install-tree CMake config file and export associated targets file
-set(MAPTK_CONFIG_INSTALL_FILE "${MAPTK_BINARY_DIR}/maptk-config-install.cmake")
-set(module_path "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/maptk")
-kwiver_configure_file( maptk-install-config
-  "${MAPTK_SOURCE_DIR}/CMake/maptk-config-install.cmake.in"
-  "${MAPTK_CONFIG_INSTALL_FILE}"
+set(TELESCULPTOR_CONFIG_INSTALL_FILE
+    "${TELESCULPTOR_BINARY_DIR}/telesculptor-config-install.cmake")
+set(module_path "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/telesculptor")
+kwiver_configure_file( telesculptor-install-config
+  "${TELESCULPTOR_SOURCE_DIR}/CMake/telesculptor-config-install.cmake.in"
+  "${TELESCULPTOR_CONFIG_INSTALL_FILE}"
   EIGEN3_INCLUDE_DIR
-  MAPTK_VERSION
-  maptk_libs
+  TeleSculptor_VERSION
+  telesculptor_libs
   module_path
   )
 kwiver_install(
-  FILES       "${MAPTK_CONFIG_INSTALL_FILE}"
-  DESTINATION "${maptk_cmake_install_dir}"
-  RENAME      maptk-config.cmake
+  FILES       "${TELESCULPTOR_CONFIG_INSTALL_FILE}"
+  DESTINATION "${telesculptor_cmake_install_dir}"
+  RENAME      telesculptor-config.cmake
   )
 kwiver_install(
   EXPORT      ${kwiver_export_name}
-  DESTINATION "${maptk_cmake_install_dir}"
-  FILE        maptk-config-targets.cmake
+  DESTINATION "${telesculptor_cmake_install_dir}"
+  FILE        telesculptor-config-targets.cmake
   )
 
 ###
@@ -197,14 +202,14 @@ kwiver_install(
 #
 
 #TODO: Define package dependencies
-set(MAPTK_DEPS "")
+set(TELESCULPTOR_DEPS "")
 
 if(EXISTS /etc/redhat-release)
   file(READ /etc/redhat-release RHEL_VERSION)
   string(REGEX REPLACE ".*release ([^\\. ]*).*" "\\1" RHEL_VERSION "${RHEL_VERSION}")
   set(CPACK_SYSTEM_NAME "el${RHEL_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")
   set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
-  set(CPACK_RPM_PACKAGE_REQUIRES "${MAPTK_DEPS}")
+  set(CPACK_RPM_PACKAGE_REQUIRES "${TELESCULPTOR_DEPS}")
 else()
   set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 endif()
@@ -215,13 +220,13 @@ set(CPACK_PACKAGE_NAME              "TeleSculptor")
 set(CPACK_PACKAGE_VENDOR            "Kitware, Inc.")
 set(CPACK_PACKAGE_CONTACT           "kitware@kitware.com")
 set(CPACK_MONOLITHIC_INSTALL        true)
-set(CPACK_PACKAGE_VERSION_MAJOR     "${MAPTK_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR     "${MAPTK_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH     "${MAPTK_VERSION_PATCH}")
-set(CPACK_PACKAGE_VERSION           "${MAPTK_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR     "${TeleSculptor_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR     "${TeleSculptor_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH     "${TeleSculptor_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION           "${TeleSculptor_VERSION}")
 set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_FILE_NAME         "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
-set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\maptk_install.bmp")
+set(CPACK_PACKAGE_ICON              "${CMAKE_CURRENT_SOURCE_DIR}/packaging\\\\telesculptor_install.bmp")
 set(CPACK_DMG_DS_STORE              "${CMAKE_CURRENT_SOURCE_DIR}/packaging/DS_Store")
 
 # NSIS Package options
@@ -239,6 +244,6 @@ if(APPLE)
   set(CPACK_BINARY_DRAGNDROP ON)
   set(CPACK_BINARY_PACKAGEMAKER OFF)
   set(CPACK_SET_DESTDIR TRUE)
-  set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/maptk_drive.icns")
+  set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/telesculptor_drive.icns")
 endif()
 include (CPack)

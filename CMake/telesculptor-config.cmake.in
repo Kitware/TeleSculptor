@@ -1,0 +1,10 @@
+# Extend module path for TeleSculptor utils
+set(CMAKE_MODULE_PATH "@module_path@" ${CMAKE_MODULE_PATH})
+
+# TeleSculptor include directory
+set(TELESCULPTOR_INCLUDE_DIRS "@TELESCULPTOR_SOURCE_DIR@" "@TELESCULPTOR_BINARY_DIR@" "@EIGEN3_INCLUDE_DIR@")
+set(TELESCULPTOR_LIBRARIES @telesculptor_libs@)
+set(TELESCULPTOR_VERSION @TeleSculptor_VERSION@)
+
+# Export definitions for TeleSculptor to be used from find_package
+include("${CMAKE_CURRENT_LIST_DIR}/telesculptor-config-targets.cmake")

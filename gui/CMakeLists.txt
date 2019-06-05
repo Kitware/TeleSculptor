@@ -50,15 +50,15 @@ endif()
 # unexpected behaviour, all libraries are installed in the .../bin
 # directory. This is okay for Windows and Mac, but unexpected for Linux.
 #
-option( MAPTK_FIXUP_BUNDLE_ON_PACKAGE
+option( TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE
   "Perform bundle fixup when building a package. Only set when packaging."
   OFF )
 
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${MAPTK_SOURCE_DIR}
-  ${MAPTK_BINARY_DIR}
+  ${TELESCULPTOR_SOURCE_DIR}
+  ${TELESCULPTOR_BINARY_DIR}
 )
 
 set(gui_am_ui
@@ -162,7 +162,7 @@ if (APPLE)
   )
 endif()
 
-maptk_use_appdata(
+telesculptor_use_appdata(
   ACKNOWLEDGMENTS
   BUILDINFO
   LICENSE
@@ -218,14 +218,14 @@ if(vtkWebGLExporter_LOADED)
 endif()
 
 if(APPLE)
-  file(STRINGS "${MAPTK_SOURCE_DIR}/LICENSE" copyright_line
+  file(STRINGS "${TELESCULPTOR_SOURCE_DIR}/LICENSE" copyright_line
     LIMIT_COUNT 1 REGEX "Copyright")
 
   set_target_properties(TeleSculptor PROPERTIES
     OUTPUT_NAME TeleSculptor
     MACOSX_BUNDLE_NAME "TeleSculptor"
-    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${MAPTK_VERSION} Application"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "${MAPTK_VERSION}"
+    MACOSX_BUNDLE_INFO_STRING "TeleSculptor v${TeleSculptor_VERSION} Application"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${TeleSculptor_VERSION}"
     MACOSX_BUNDLE_COPYRIGHT "${copyright_line}"
     )
 endif()
@@ -251,8 +251,8 @@ endif()
 # Do bundle fixup
 #    This could be conditional on APPLE || WIN32 also
 #
-if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
-  include(${MAPTK_SOURCE_DIR}/CMake/maptk-install-qt-utils.cmake)
+if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
+  include(${TELESCULPTOR_SOURCE_DIR}/CMake/telesculptor-install-qt-utils.cmake)
 
   if (WIN32)
     # Add expected location of VTK dlls
@@ -333,7 +333,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
   install(DIRECTORY "${fletch_ROOT}/share/gdal"
           DESTINATION share COMPONENT Runtime)
 
-  if(${MAPTK_ENABLE_TOOLS})
+  if(${TELESCULPTOR_ENABLE_TOOLS})
     set(kwiver_tools
         kwiver
         pipe_config
@@ -357,7 +357,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
     endforeach()
   endif()
 
-  get_property( bundle_path GLOBAL PROPERTY maptk_bundle_paths)
+  get_property( bundle_path GLOBAL PROPERTY telesculptor_bundle_paths)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
 
@@ -369,7 +369,7 @@ if (MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
 
-  set( script_file  ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-$<CONFIGURATION>.cmake)
+  set( script_file  ${TELESCULPTOR_BINARY_DIR}/CMakeFiles/plugin-libs-$<CONFIGURATION>.cmake)
 
   file(GENERATE OUTPUT ${script_file}
     CONTENT "
@@ -390,8 +390,8 @@ set(bundle_path \"${bundle_path}\")
             \"${dest_prefix}/${plugin_dest_dir}/vital_*_logger${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
         set(ENV{VS_UNICODE_OUTPUT} \"\")
-        include(${MAPTK_SOURCE_DIR}/CMake/utils/maptk-utils-bundle.cmake)
-        include( ${MAPTK_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
+        include(${TELESCULPTOR_SOURCE_DIR}/CMake/utils/telesculptor-utils-bundle.cmake)
+        include( ${TELESCULPTOR_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
         list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
         list(REMOVE_DUPLICATES FIXUP_DIRS)
         set(libs \${KWIVER_PLUGINS} \${SPROKIT_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
@@ -403,4 +403,4 @@ set(bundle_path \"${bundle_path}\")
     include(InstallRequiredSystemLibraries)
   endif()
 
-endif(MAPTK_FIXUP_BUNDLE_ON_PACKAGE)
+endif(TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)

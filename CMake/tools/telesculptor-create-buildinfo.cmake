@@ -1,7 +1,7 @@
 # Inputs:
 #   GIT_EXECUTABLE    - Path to git executable
-#   SOURCE_DIR        - Path to MAP-Tk source directory
-#   BINARY_DIR        - Path to MAP-Tk build directory
+#   SOURCE_DIR        - Path to TeleSculptor source directory
+#   BINARY_DIR        - Path to TeleSculptor build directory
 #   COMPILER_NAME     - Name of the compiler to write to the build info file
 #   COMPILER_VERSION  - Version of the compiler to write to the build info file
 

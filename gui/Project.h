@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MAPTK_PROJECT_H_
-#define MAPTK_PROJECT_H_
+#ifndef TELESCULPTOR_PROJECT_H_
+#define TELESCULPTOR_PROJECT_H_
 
 #include <vital/config/config_block_io.h>
 

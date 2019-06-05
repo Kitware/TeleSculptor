@@ -1,7 +1,7 @@
-# MAPTK Common Dashboard Script
+# TeleSculptor Common Dashboard Script
 #
 # This script contains basic dashboard driver code common to all clients for
-# the MAPTK project.
+# the TeleSculptor project.
 #
 # Put this script in a directory such as "~/Dashboards/Scripts" or
 # "C:\Dashboards\Scripts". Create a file next to this script, say
@@ -12,7 +12,7 @@
 #   set(CTEST_BUILD_NAME "Platform-Compiler")
 #   set(CTEST_CONFIGURATION_TYPE Debug)
 #   set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-#   include("${CTEST_SCRIPT_DIRECTORY}/MAPTK_common.cmake")
+#   include("${CTEST_SCRIPT_DIRECTORY}/TeleSculptor_common.cmake")
 #
 # Then run a scheduled task (cron job) with a command line such as:
 #
@@ -27,8 +27,8 @@
 #   dashboard_model           = Nightly [default] | Experimental | Continuous
 #   dashboard_root_name       = Change name of "MyTests" directory. This is
 #                               ignored if CTEST_DASHBOARD_ROOT is set.
-#   dashboard_source_name     = Name of source directory (default: MAPTK)
-#   dashboard_binary_name     = Name of binary directory (default: MAPTK-build)
+#   dashboard_source_name     = Name of source directory (default: TeleSculptor)
+#   dashboard_binary_name     = Name of binary directory (default: TeleSculptor-build)
 #   dashboard_cache           = Initial CMakeCache.txt file content.
 #   dashboard_do_coverage     = True to enable coverage.
 #   dashboard_do_memcheck     = True to enable memcheck.
@@ -86,7 +86,7 @@ cmake_minimum_required(VERSION 2.8.2 FATAL_ERROR)
 # CTest properties setup
 #
 
-set(CTEST_PROJECT_NAME MAPTK)
+set(CTEST_PROJECT_NAME TeleSculptor)
 set(dashboard_user_home "$ENV{HOME}")
 
 # Select the top dashboard directory
@@ -127,7 +127,7 @@ endif()
 
 # Selecting Git source to use
 if(NOT DEFINED dashboard_git_url)
-  set(dashboard_git_url "https://github.com/Kitware/maptk.git")
+  set(dashboard_git_url "https://github.com/Kitware/TeleSculptor.git")
 endif()
 if(NOT DEFINED dashboard_git_branch)
   set(dashboard_git_branch master)
@@ -156,14 +156,14 @@ if(NOT DEFINED CTEST_SOURCE_DIRECTORY)
   if(DEFINED dashboard_source_name)
     set(CTEST_SOURCE_DIRECTORY "${CTEST_DASHBOARD_ROOT}/${dashboard_source_name}")
   else()
-    set(CTEST_SOURCE_DIRECTORY "${CTEST_DASHBOARD_ROOT}/MAPTK")
+    set(CTEST_SOURCE_DIRECTORY "${CTEST_DASHBOARD_ROOT}/TeleSculptor")
   endif()
 endif()
 if(NOT DEFINED CTEST_BINARY_DIRECTORY)
   if(DEFINED dashboard_binary_name)
     set(CTEST_BINARY_DIRECTORY "${CTEST_DASHBOARD_ROOT}/${dashboard_binary_name}")
   else()
-    set(CTEST_BINARY_DIRECTORY "${CTEST_DASHBOARD_ROOT}/MAPTK-build")
+    set(CTEST_BINARY_DIRECTORY "${CTEST_DASHBOARD_ROOT}/TeleSculptor-build")
   endif()
 endif()
 

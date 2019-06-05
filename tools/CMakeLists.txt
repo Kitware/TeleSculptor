@@ -1,9 +1,9 @@
 # Tools
 
-include_directories("${MAPTK_SOURCE_DIR}")
-include_directories("${MAPTK_BINARY_DIR}")
+include_directories("${TELESCULPTOR_SOURCE_DIR}")
+include_directories("${TELESCULPTOR_BINARY_DIR}")
 
-get_property(maptk_libs GLOBAL PROPERTY maptk_libraries)
+get_property(telesculptor_libs GLOBAL PROPERTY telesculptor_libraries)
 
 kwiver_add_executable(maptk_detect_and_describe detect_and_describe.cxx)
 target_link_libraries(maptk_detect_and_describe

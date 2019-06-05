@@ -1,19 +1,19 @@
-# Central location for MAPTK external dependency declaration and resolution
+# Central location for TeleSculptor external dependency declaration and resolution
 include(ExternalProject)
 
 ###
 # Option for CUDA
 #
-option(MAPTK_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
-if (MAPTK_BUILD_WITH_CUDA)
+option(TELESCULPTOR_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
+if (TELESCULPTOR_BUILD_WITH_CUDA)
   find_package( CUDA QUIET REQUIRED )
 endif()
 
 ###
 # Option for Python
 #
-option(MAPTK_BUILD_WITH_PYTHON "Build with Python support" FALSE)
-if (MAPTK_BUILD_WITH_PYTHON)
+option(TELESCULPTOR_BUILD_WITH_PYTHON "Build with Python support" FALSE)
+if (TELESCULPTOR_BUILD_WITH_PYTHON)
   find_package(PythonInterp 3.4 QUIET REQUIRED )
   find_package(PythonLibs 3.4 QUIET REQUIRED )
 endif()
@@ -21,26 +21,27 @@ endif()
 ###
 # Dependencies
 #
-include(CMake/maptk-external-fletch.cmake)
-include(CMake/maptk-external-kwiver.cmake)
+include(CMake/telesculptor-external-fletch.cmake)
+include(CMake/telesculptor-external-kwiver.cmake)
 
 ###
-# MAPTK
+# TELESCULPTOR
 #
-ExternalProject_Add(maptk
-  PREFIX ${MAPTK_BINARY_DIR}
-  DEPENDS ${MAPTK_DEPENDENCIES}
-  SOURCE_DIR ${MAPTK_SOURCE_DIR}
-  BINARY_DIR ${MAPTK_EXTERNAL_DIR}/maptk-build
-  STAMP_DIR ${MAPTK_STAMP_DIR}
+ExternalProject_Add(telesculptor
+  PREFIX ${TELESCULPTOR_BINARY_DIR}
+  DEPENDS ${TELESCULPTOR_DEPENDENCIES}
+  SOURCE_DIR ${TELESCULPTOR_SOURCE_DIR}
+  BINARY_DIR ${TELESCULPTOR_EXTERNAL_DIR}/telesculptor-build
+  STAMP_DIR ${TELESCULPTOR_STAMP_DIR}
   CMAKE_CACHE_ARGS
     -Dkwiver_DIR:PATH=${kwiver_DIR}
     -DqtExtensions_DIR:PATH=${qtExtensions_DIR}
     -DBUILD_SHARED_LIBS:BOOL=ON
-    -DMAPTK_SUPERBUILD:BOOL=OFF
-    -DMAPTK_ENABLE_TESTING:BOOL=${MAPTK_ENABLE_TESTING}
-    -DMAPTK_ENABLE_TOOLs:BOOL=${MAPTK_ENABLE_TOOLS}
-    -DMAPTK_FIXUP_BUNDLE_ON_PACKAGE:BOOL=ON
+    -DTELESCULPTOR_SUPERBUILD:BOOL=OFF
+    -DTELESCULPTOR_ENABLE_MANUALS:BOOL=${TELESCULPTOR_ENABLE_MANUALS}
+    -DTELESCULPTOR_ENABLE_TESTING:BOOL=${TELESCULPTOR_ENABLE_TESTING}
+    -DTELESCULPTOR_ENABLE_TOOLS:BOOL=${TELESCULPTOR_ENABLE_TOOLS}
+    -DTELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE:BOOL=ON
     -DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_CONFIGURATION_TYPES:STRING=${CMAKE_CONFIGURATION_TYPES}
