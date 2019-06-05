@@ -243,7 +243,7 @@ set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 set(CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 
 if(APPLE)
-  set(CPACK_BINARY_DRAGNDROP ON)
+  set(CPACK_GENERATOR "DragNDrop")
   set(CPACK_BINARY_PACKAGEMAKER OFF)
   set(CPACK_SET_DESTDIR TRUE)
   set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/telesculptor_drive.icns")
