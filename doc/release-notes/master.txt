@@ -10,6 +10,8 @@ Updates since v0.10.0
 
 Overall
 
+ * TeleSculptor now enforces the use of Python 3.
+
  * Removed all uses of VITAL_FOREACH, which has been removed from KWIVER,
    and replace with standard C++11 range-based for loops.
 
