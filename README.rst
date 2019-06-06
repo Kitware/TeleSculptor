@@ -59,6 +59,10 @@ While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
 framework and optimize the algorithm to run in real-time.
 
+The remainder of this document is aimed at developers who wish to build the
+project from source or run command line tools.  For end users looking for
+instruction on running the GUI application please read the
+`User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
 
 Overview of Directories
 =======================
