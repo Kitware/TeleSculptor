@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install location")
 project(TeleSculptor-SuperBuild)
 
 option(TELESCULPTOR_SUPERBUILD  "Enable TeleSculptor superbuild" ON)
@@ -115,13 +113,8 @@ add_subdirectory(examples)
 # GUI
 #
 if(APPLE)
-  set(CMAKE_BUNDLE_LOCATION "${CMAKE_INSTALL_PREFIX}")
-  # make sure CMAKE_INSTALL_PREFIX ends in /
-  if(NOT CMAKE_INSTALL_PREFIX MATCHES "/$")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/")
-  endif()
-  set(CMAKE_INSTALL_PREFIX
-    "${CMAKE_INSTALL_PREFIX}TeleSculptor.app/Contents")
+  set(CMAKE_BUNDLE_LOCATION "/")
+  set(CMAKE_INSTALL_PREFIX "/TeleSculptor.app/Contents")
 endif()
 add_subdirectory(gui)
 
@@ -253,7 +246,7 @@ set(CPACK_NSIS_MENU_LINKS "http://www.kwiver.org" "KWIVER Website")
 set(CPACK_PACKAGE_EXECUTABLES "TeleSculptor" "TeleSculptor" ${CPACK_PACKAGE_EXECUTABLES})
 
 if(APPLE)
-  set(CPACK_BINARY_DRAGNDROP ON)
+  set(CPACK_GENERATOR "DragNDrop")
   set(CPACK_BINARY_PACKAGEMAKER OFF)
   set(CPACK_SET_DESTDIR TRUE)
   set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/telesculptor_drive.icns")

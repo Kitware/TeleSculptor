@@ -237,12 +237,14 @@ kwiver_install(TARGETS TeleSculptor
 
 # add DESTDIR switch (Turn it on if not WIN32?)
 # do components bit (don't install header files)')
-SET(plugin_dest_dir bin)
-SET(qtconf_dest_dir bin)
+set(plugin_dest_dir bin)
+set(qtplugin_dest_dir "bin/plugins")
+set(qtconf_dest_dir bin)
 set(dest_prefix "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
 set(gui-exe "${dest_prefix}/bin/TeleSculptor${CMAKE_EXECUTABLE_SUFFIX}")
 if(APPLE)
   set(gui-exe "${dest_prefix}/MacOS/TeleSculptor")
+  set(qtplugin_dest_dir "plugins")
   set(plugin_dest_dir lib)
   set(qtconf_dest_dir Resources)
 endif()
@@ -358,9 +360,8 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
 
   list(APPEND FIXUP_DIRS "${VTK_CMAKE_DIR}../..")
 
-  # install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
   set(QT5_MODULES "Gui;Widgets")
-  install_qt_plugins(QT5_MODULES "${plugin_dest_dir}/plugins" QT_PLUGINS)
+  install_qt_plugins(QT5_MODULES "${qtplugin_dest_dir}" QT_PLUGINS)
   # install a qt.conf file
   install(CODE "
     file(WRITE \"${dest_prefix}/${qtconf_dest_dir}/qt.conf\" \"\")
@@ -378,7 +379,7 @@ set(bundle_path \"${bundle_path}\")
         set(QT_PLUGINS_Debug \"${QT_PLUGINS_Debug}\")
         string(CONCAT QTPLUGINS \"QT_PLUGINS_\" \"\${CMAKE_INSTALL_CONFIG_NAME}\")
         file(GLOB_RECURSE QTPLUGINS
-            \"${dest_prefix}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+            \"${dest_prefix}/${qtplugin_dest_dir}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
             \"${dest_prefix}/lib/kwiver/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         file(GLOB_RECURSE SPROKIT_PLUGINS
