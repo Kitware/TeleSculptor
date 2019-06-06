@@ -265,7 +265,7 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
   # For Windows expect the dll will
   # be in Release subdirectory, and so look there unless
   # CMAKE_CONFIGURATION_TYPES indicates only "debug"
-  if(GENERATOR_IS_MULTI_CONFIG AND CMAKE_CONFIGURATION_TYPES)
+  if(CMAKE_GENERATOR_IS_MULTI_CONFIG AND CMAKE_CONFIGURATION_TYPES)
     string(TOLOWER "${CMAKE_CONFIGURATION_TYPES}" BUILD_TYPE)
     if(BUILD_TYPE STREQUAL "debug")
       set(BINARY_DIR "Debug")

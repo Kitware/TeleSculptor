@@ -54,7 +54,10 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
 
-if(GENERATOR_IS_MULTI_CONFIG)
+get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL
+    PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(CMAKE_GENERATOR_IS_MULTI_CONFIG)
+  message(STATUS "Generator is multi-config, setting configuration types")
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(CMAKE_CONFIGURATION_TYPES "Debug" CACHE TYPE INTERNAL FORCE )
   else() # Provide both configurations as they are compatible with each other
