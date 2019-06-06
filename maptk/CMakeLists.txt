@@ -64,7 +64,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/maptk_config.h.in"
 # Configuring/Adding compile definitions to target
 # (so we can use generator expressions)
 
-if (GENERATOR_IS_MULTI_CONFIG)
+if (CMAKE_GENERATOR_IS_MULTI_CONFIG)
   set(config_subdir "/$<CONFIGURATION>")
 endif()
 
