@@ -294,6 +294,13 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
     endif()
   endif()
 
+  if(DEFINED CUDA_TOOLKIT_ROOT_DIR)
+    if(WIN32)
+      list(APPEND FIXUP_DIRS "${CUDA_TOOLKIT_ROOT_DIR}/bin")
+    else()
+      list(APPEND FIXUP_DIRS "${CUDA_TOOLKIT_ROOT_DIR}/lib")
+    endif()
+  endif()
 
   # Location for QT libraries
   if(WIN32 AND TARGET Qt5::Core)
