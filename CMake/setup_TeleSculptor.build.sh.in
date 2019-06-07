@@ -6,11 +6,11 @@
 CURR_DIR=`pwd`
 
 export @LIBRARY_PATH_VAR@=@TELESCULPTOR_BINARY_DIR@/lib:$@LIBRARY_PATH_VAR@
-export KWIVER_CONFIG_PATH=@KWIVER_CONFIG_PATH@:@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TELESCULPTOR_VERSION@/config
+export KWIVER_CONFIG_PATH=@KWIVER_CONFIG_PATH@:@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TeleSculptor_VERSION@/config
 
 cd @KWIVER_DIR@
 source setup_KWIVER.sh
 cd $CURR_DIR
 
-export LOG4CPLUS_CONFIGURATION=@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TELESCULPTOR_VERSION@/config/log4cplus.properties
+export LOG4CPLUS_CONFIGURATION=@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TeleSculptor_VERSION@/config/log4cplus.properties
 
