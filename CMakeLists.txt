@@ -81,7 +81,7 @@ endif()
 option(TELESCULPTOR_ENABLE_MANUALS "Build TeleSculptor user manual(s)" OFF)
 option(TELESCULPTOR_ENABLE_TESTING "Build TeleSculptor testing" OFF)
 option(TELESCULPTOR_ENABLE_TOOLS "Build command line tools" ON)
-set(KWIVER_PYTHON_MAJOR_VERSION "3")
+set(PYTHON_MAJOR_VERSION "3")
 
 if(TELESCULPTOR_SUPERBUILD)
   include(${TELESCULPTOR_CMAKE_DIR}/telesculptor-superbuild.cmake)
