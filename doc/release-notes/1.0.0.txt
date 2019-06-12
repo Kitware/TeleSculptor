@@ -1,16 +1,57 @@
-MAP-Tk v0.11.0 Release Notes
-============================
+TeleSculptor v1.0.0 Release Notes
+=================================
 
-This is a minor release of MAP-Tk that provides both new functionality and
-fixes over the previous v0.10.0 release.
+This is the first major release of TeleSculptor. TeleSculptor was previously
+developed as beta software under the name MAP-Tk.  TeleSculptor is a graphical
+application for aerial photogrammetry that builds on KWIVER.  All algorithms
+have been moved into KWIVER and this project now focuses on the user interface.
+Some command line utilities remain in this release, but these will move into
+KWIVER in the future as well.
+
+This is the first release in which TeleSculptor provides an end-to-end pipeline
+for building a dense 3D model from a video in the graphical application without
+the need for any command line tools.  This release has been well tested on a
+particular type of aerial video that uses an orbital flight pattern and
+encodes metadata in a KLV stream.  In future releases we will generalize the
+algorithms to work more reliably on a wider range of aerial video, both with
+and without metadata.
+
+There is a very large set of changes since the last beta release.  These
+changes are documented below in detail.  At a high level, these changes are
+all focused around transforming MAP-Tk, a developer focused toolkit, into
+TeleSculptor, an end-user focused application.  In support of this transition,
+TeleSculptor can now configure and build itself with a CMake superbuild.
+That is, building TeleSculptor can now automatically download and build
+Fletch and KWIVER before building itself to provide all dependencies in a
+single build.  The superbuild will also package up the binaries into an
+installer.
 
 
-Updates since v0.10.0
---------------------
+Known Issues in this Release
+----------------------------
+
+ * On MacOS, the color selection buttons function correctly but always show
+   the color as white in the button.
+
+ * Default colors used during the first run of the application are incorrectly
+   set to white or black.  However, once the colors are changed these settings
+   are cached and reloaded correctly.
+
+ * The libraries in the Linux installer package do not properly set the runpath
+   so it is required to set LD_LIBRARY_PATH to point to the "lib" directory of
+   the package before running the executables.
+
+ * A user interface is provided for setting ground control points to constrain
+   georegistration of the 3D model, but this release is missing the function
+   to apply these constraints to improve the georegistration.
+
+
+Updates since MAP-Tk v0.10.0
+----------------------------
 
 Overall
 
- * TeleSculptor now enforces the use of Python 3.
+ * TeleSculptor now enforces the use of Python 3 when Python is enabled.
 
  * Removed all uses of VITAL_FOREACH, which has been removed from KWIVER,
    and replace with standard C++11 range-based for loops.
@@ -30,7 +71,7 @@ Overall
 MAP-Tk Library
 
  * modified extract_feature_colors API to accept a feature_track_set by
-   shared_ptr, modify to tracks in-place, and return the same modifed
+   shared_ptr, modify to tracks in-place, and return the same modified
    feature_track_set.  It also uses the new track_set API to more quickly
    find track state on a frame and avoids destroying the frame index if
    one is used in the track_set.
@@ -68,13 +109,13 @@ TeleSculptor
    must now create or open a project before running an algorithms.
 
  * TeleSculptor now depends on Sprokit from KWIVER and adds a new Sprokit
-   powered compute tool compute feature tracks using the new KLT feature
+   powered compute tool to compute feature tracks using the new KLT feature
    tracker in KWIVER.  The tool also detects key frames in video and uses
    ORB feature detection and matching on the keyframes with bag of words
    frame matching for loop closure.
 
  * A new tool is available in the compute menu to compute a dense depth
-   map on the current frame.  THis uses the new Super3D algorithms in KWIVER.
+   map on the current frame.  This uses the new Super3D algorithms in KWIVER.
 
  * TeleSculptor now supports logging with log4cplus.
 
@@ -121,12 +162,13 @@ TeleSculptor
  * Added a progress bar that appears below the World View to show progress when
    tools are running.  It can also display a status message.
 
- * Added CMake superbuild to automatically pull and build a specified version of all
-   the necessary libraries from Fletch and KWIVER. This allows MAP-Tk to be fully built
-   from a single build, rather than having to manually build and connect multiple builds.
-   The superbuild does still allow using a manually built KWIVER/Fletch if so desired.
+ * Added CMake superbuild to automatically pull and build a specified version
+   of all the necessary libraries from Fletch and KWIVER.  This allows
+   TeleSculptor to be fully built from a single build, rather than having to
+   manually build and connect multiple builds.  The superbuild does still allow
+   using a manually built KWIVER/Fletch if so desired.
 
- * Updated TeleSculptor to use Qt version 5.10 instead of 4.8.  This also
+ * Updated TeleSculptor to use Qt version 5.11 instead of 4.8.  This also
    enables the OpenGL2 backend in VTK 8.0 which provides faster rendering.
    Qt5 now requires Python to build, so we are also requiring Python for
    the superbuild, which enables Python in KWIVER.  We are not yet taking
@@ -139,8 +181,8 @@ TeleSculptor
    dense feature tracking.
 
  * Added ability to place and edit ground control points that are synchronized
-   across the world and camera views. The points can be exported to a PLY file
-   and get imported using the standard import project infrastructure.
+   across the world and camera views. The points can be exported to a geojson
+   file and get imported using the standard import project infrastructure.
 
  * Double-clicking the mouse pointer in the WorldView allows to set the center
    of rotation of the view camera about the nearest picked point in the view.
@@ -148,15 +190,14 @@ TeleSculptor
  * Refactored the code to remove the ReconstructionData class that was left
    over from when surface extraction was part of a separate repository.
 
- * Added metrics for rms error by camera and a check that the rays meeting at a
+ * Added metrics for RMS error by camera and a check that the rays meeting at a
    point have some minimum angle.
 
  * Switched the iso-surfacing algorithm to
    [flying edges](https://ieeexplore.ieee.org/document/7348069).
 
- * Rebranded "MAP-Tk TeleSculptor" to simply "TeleSculptor".  These changes
-   apply mostly to documentation and user-facing names.  The name "maptk"
-   is still used heavily in the code itself.
+ * Rebranded "MAP-Tk TeleSculptor" to simply "TeleSculptor".
+   The name "maptk" is still used in parts of the source code.
 
  * Combined the "Mesh" and "Colored Mesh" export options into a single option
    named "Fused Mesh".  This will save the mesh with or without color depending
@@ -200,8 +241,17 @@ TeleSculptor
    default behavior.  Now unchecking the box shows outliers too.  Also added
    an option to color outlier residuals in a different color.
 
-Fixes since v0.10.0
-------------------
+
+Fixes since MAP-Tk v0.10.0
+--------------------------
+
+Build System
+
+ * The CPack installer packaging was broken on MacOS due to using the variable
+   CMAKE_SHARED_LIBRARY_SUFFIX instead of CMAKE_SHARED_MODULE_SUFFIX to find
+   KWIVER plugins to include in the package.  These variables are the same on
+   most platforms but differ on MacOS where libraries are .dylib and modules
+   are .so.
 
 Installer
 
@@ -210,6 +260,16 @@ Installer
    environment variable to tell PROJ where the data is installed.
 
 TeleSculptor
+
+ * Removed an unused signal/slot connection that was generating warnings on
+   the command line.  Neither the signal nor the slot existed.
+
+ * Fixed a visualization bug in which a frame with an invalid camera was still
+   rendered in the world view by borrowing the camera from the most recently
+   displayed valid frame.
+
+ * Fixed a visualization bug in which camera frustums were not rendered when
+   built with GCC with compiler optimizations turned on.
 
  * TeleSculptor now catches more algorithm exceptions and turns them into
    warning messages rather than letting the application crash.
@@ -229,17 +289,17 @@ TeleSculptor
    broken.  Fixing the camera path rendering also fixed this.  Also adjusted
    the camera scaling range to make it more reasonable.
 
- * Fixed a crash in the GUI that occured when the video reader plugin returned
+ * Fixed a crash in the GUI that occurred when the video reader plugin returned
    a nullptr instead of a valid frame.
 
- * Fixed issues with ROI initialization and the use of the ROI in deteremining
+ * Fixed issues with ROI initialization and the use of the ROI in determining
    display scale.  If not manually set, the ROI is automatically initialized
    before running tools.  When set, the ROI (not landmarks) is used to set the
    scene scale for drawing cameras.
 
- * Switched from calling get_image() in a loop during the depth_to_vtk function to
-   outside the loop.  This improves processing speed by eliminating unnecessary
-   image allocations for certain underlying image classes.
+ * Switched from calling get_image() in a loop during the depth_to_vtk function
+   to outside the loop.  This improves processing speed by eliminating
+   unnecessary image allocations for certain underlying image classes.
 
  * Fixed the volume surface mesh to use a solid color when not in colorize mode
    previously the color would change with the surface threshold.
