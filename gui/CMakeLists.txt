@@ -235,17 +235,14 @@ kwiver_install(TARGETS TeleSculptor
   RUNTIME DESTINATION bin
   BUNDLE DESTINATION "${CMAKE_BUNDLE_LOCATION}")
 
-# add DESTDIR switch (Turn it on if not WIN32?)
-# do components bit (don't install header files)')
+# Set destination paths for plugins and the GUI executable
 set(plugin_dest_dir lib)
-set(qtconf_dest_dir lib)
-set(qtplugin_dest_dir "lib/plugins")
+set(qtconf_dest_dir bin)
+set(qtplugin_dest_dir "bin/plugins")
 set(dest_prefix "\${DESTDIR}\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}")
 set(gui-exe "${dest_prefix}/bin/TeleSculptor${CMAKE_EXECUTABLE_SUFFIX}")
 if(WIN32)
   set(plugin_dest_dir bin)
-  set(qtconf_dest_dir bin)
-  set(qtplugin_dest_dir "bin/plugins")
 endif()
 if(APPLE)
   set(gui-exe "${dest_prefix}/MacOS/TeleSculptor")
