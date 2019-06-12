@@ -3081,7 +3081,7 @@ void MainWindow::applySimilarityTransform()
       }
 
       // Replace active depth map if needed
-      if (f.id == d->activeDepthFrame)
+      if (f.id == d->currentDepthFrame)
       {
         d->activeDepth = depthImg;
       }
