@@ -32,8 +32,8 @@ WORKDIR TeleSculptor/bld
 
 # Configure with CMake
 # Turn on options for a full-featured build
-RUN cmake ../src -DTELESCULPTOR_BUILD_WITH_CUDA=ON \
-                 -DTELESCULPTOR_BUILD_WITH_PYTHON=ON \
+RUN cmake ../src -DTELESCULPTOR_ENABLE_CUDA=ON \
+                 -DTELESCULPTOR_ENABLE_PYTHON=ON \
                  -DTELESCULPTOR_ENABLE_MANUALS=ON
 
 # run the build step with onre more than the number of available processors

@@ -142,8 +142,8 @@ CMake Options
 
 ================================== ===================================================
 ``CMAKE_BUILD_TYPE``               The compiler mode, usually ``Debug`` or ``Release``
-``TELESCULPTOR_BUILD_WITH_CUDA``   Enable GPU acceleration with CUDA
-``TELESCULPTOR_BUILD_WITH_PYTHON`` Enable Python bindings in KWIVER
+``TELESCULPTOR_ENABLE_CUDA``       Enable GPU acceleration with CUDA
+``TELESCULPTOR_ENABLE_PYTHON``     Enable Python bindings in KWIVER
 ``TELESCULPTOR_ENABLE_MANUALS``    Turn on building the user documentation
 ``TELESCULPTOR_ENABLE_TOOLS``      Build the command line tools
 ``TELESCULPTOR_ENABLE_TESTING``    Build the unit tests

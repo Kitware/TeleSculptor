@@ -4,16 +4,16 @@ include(ExternalProject)
 ###
 # Option for CUDA
 #
-option(TELESCULPTOR_BUILD_WITH_CUDA "Build with CUDA support" FALSE)
-if (TELESCULPTOR_BUILD_WITH_CUDA)
+option(TELESCULPTOR_ENABLE_CUDA "Build with CUDA support" FALSE)
+if (TELESCULPTOR_ENABLE_CUDA)
   find_package( CUDA QUIET REQUIRED )
 endif()
 
 ###
 # Option for Python
 #
-option(TELESCULPTOR_BUILD_WITH_PYTHON "Build with Python support" FALSE)
-if (TELESCULPTOR_BUILD_WITH_PYTHON)
+option(TELESCULPTOR_ENABLE_PYTHON "Build with Python support" FALSE)
+if (TELESCULPTOR_ENABLE_PYTHON)
   find_package(PythonInterp 3.4 QUIET REQUIRED )
   find_package(PythonLibs 3.4 QUIET REQUIRED )
 endif()
