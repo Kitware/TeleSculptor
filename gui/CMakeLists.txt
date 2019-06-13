@@ -406,7 +406,7 @@ set(bundle_path \"${bundle_path}\")
 
         # fixup_bundle puts all libraries in \"bin\" on Linux.
         # we want them in \"lib\" instead, so move them
-        file(GLOB_RECURSE dyn_libs \"${dest_prefix}/bin/*.so*\")
+        file(GLOB dyn_libs \"${dest_prefix}/bin/*.so*\")
         foreach(dyn_lib \${dyn_libs})
           get_filename_component(fname \${dyn_lib} NAME)
           message(STATUS \"Moving bin->lib : \${fname}\")
