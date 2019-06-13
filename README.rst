@@ -77,7 +77,8 @@ Overview of Directories
 ``maptk``               contains the maptk library source and headers
 ``packaging``           contains support files for CPack packaging
 ``scripts``             contains Python helper scripts
-``scripts/blender``     contains Python plug-ins for Blender
+``plugins/blender``     contains Python plug-ins for Blender
+``plugins/sketchup``    contains Ruby plug-ins for SketchUp
 ``tests``               contains testing framework and tests for each module
 ``tools``               contains source for command line utilities
 ======================= ========================================================
@@ -105,10 +106,8 @@ Here is the quickest way to build via a cmd/bash shell
 .. code-block :: bash
 
   # On Linux systems, Install the following packages before building
-  $ sudo apt-get install build-essential libgl1-mesa-dev
-  $ sudo apt-get install libexpat1-dev
-  $ sudo apt-get install libgtk2.0-dev
-  $ sudo apt-get install liblapack-dev
+  $ sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
+  $ sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
 
   mkdir telesculptor
   ## For this example, we assume source is in a 'src' folder under telesculptor/
@@ -116,34 +115,40 @@ Here is the quickest way to build via a cmd/bash shell
   cd builds
   # Feel free to make subfolders here, for example: debug and release
   # Generate a makefile/msvc solution to perform the superbuild
-  # Provide cmake the source directory at the end (relative or absolute)
-  # Run CMake (it will use the system default compiler if you don't provide options or use the CMake GUI)
-  cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
-  # Using the CMake GUI you can set the source and build directories accordingly and press the "Configure"  and “Generate” buttons
-  # Alternatively, the ccmake tool allows for interactive selection of CMake options.
+  # Provide CMake the source directory at the end (relative or absolute)
 
+  # Run CMake
+  cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
+  # Using the CMake GUI you can set the source and build directories accordingly
+  # and press the "Configure"  and “Generate” buttons
+  # Alternatively, the ccmake tool allows for interactive selection of
+  # CMake options.
 
   # Build the install target/project
   # On Linux/OSX/MinGW
   make
-  # Once the Superbuild is complete,
-  # the telesculptor makefile will be placed in the build/external/telesculptor-build directory
+  # Once the Superbuild is complete, the telesculptor makefile will be placed in
+  # the build/external/telesculptor-build directory
 
   # For MSVC
-  # Open the TeleSculptor-Superbuild.sln, choose your build configuration, from the 'Build' menu choose 'Build Solution'
+  # Open the TeleSculptor-Superbuild.sln, choose your build configuration,
+  # from the 'Build' menu choose 'Build Solution'
   # When the build is complete you may close this solution.
-  # To edit telesculptor code, open the build/external/telesculptor-build/TeleSculptor.sln
+  # To edit TeleSculptor code, open the
+  # build/external/telesculptor-build/TeleSculptor.sln
 
 CMake Options
 -------------
 
-=============================== =================================================
-``CMAKE_BUILD_TYPE``            The compiler mode, usually ``Debug`` or ``Release``
-
-``TELESCULPTOR_SUPERBUILD``     Build as a superbuild (build Fletch and KWIVER)
-``TELESCULPTOR_ENABLE_MANUALS`` Turn on building the user documentation
-``TELESCULPTOR_ENABLE_TESTING`` Build the unit tests
-=============================== =================================================
+================================== ===================================================
+``CMAKE_BUILD_TYPE``               The compiler mode, usually ``Debug`` or ``Release``
+``TELESCULPTOR_BUILD_WITH_CUDA``   Enable GPU acceleration with CUDA
+``TELESCULPTOR_BUILD_WITH_PYTHON`` Enable Python bindings in KWIVER
+``TELESCULPTOR_ENABLE_MANUALS``    Turn on building the user documentation
+``TELESCULPTOR_ENABLE_TOOLS``      Build the command line tools
+``TELESCULPTOR_ENABLE_TESTING``    Build the unit tests
+``TELESCULPTOR_SUPERBUILD``        Build as a superbuild (build Fletch and KWIVER)
+================================== ===================================================
 
 Mulit-Configuration Build Tools
 '''''''''''''''''''''''''''''''
