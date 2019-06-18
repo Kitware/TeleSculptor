@@ -314,6 +314,7 @@ public:
   void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
+  void resetActiveDepthMap(int);
 
   // Member variables
   Ui::MainWindow UI;
@@ -981,21 +982,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   //load from memory if cached
   if (id >= 0 && id == this->activeDepthFrame)
   {
-    this->depthReader->SetFileName("");
-    this->depthFilter->RemoveAllInputConnections(0);
-    this->depthFilter->SetInputData(this->activeDepth);
-
-    this->UI.depthMapView->setValidDepthInput(true);
-    this->UI.worldView->setValidDepthInput(true);
-
-    if (auto* const fr = qtGet(qAsConst(this->frames), id))
-    {
-      this->depthFilter->SetCamera(fr->camera);
-    }
-    this->UI.worldView->updateDepthMap();
-    this->UI.depthMapView->updateView(true);
-    this->UI.actionExportDepthPoints->setEnabled(true);
-
+    this->resetActiveDepthMap(id);
     this->currentDepthFrame = id;
   }
   else // load from file
@@ -1347,6 +1334,27 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
   this->roi->SetXMin(minpt);
   this->roi->SetXMax(maxpt);
   UI.worldView->setROI(roi.GetPointer(), true);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::resetActiveDepthMap(int frame)
+{
+  this->depthReader->SetFileName("");
+  this->depthFilter->RemoveAllInputConnections(0);
+  this->depthFilter->SetInputData(this->activeDepth);
+
+  this->UI.depthMapView->setValidDepthInput(true);
+  this->UI.worldView->setValidDepthInput(true);
+
+  if (auto* const fr = qtGet(qAsConst(this->frames), frame))
+  {
+    this->depthFilter->SetCamera(fr->camera);
+  }
+  this->UI.worldView->updateDepthMap();
+  this->UI.depthMapView->updateView(true);
+  this->UI.actionExportDepthPoints->setEnabled(true);
+
+  this->currentDepthFrame = frame;
 }
 
 //END MainWindowPrivate
@@ -3084,6 +3092,7 @@ void MainWindow::applySimilarityTransform()
       if (f.id == d->currentDepthFrame)
       {
         d->activeDepth = depthImg;
+        d->resetActiveDepthMap(f.id);
       }
 
       vtkNew<vtkXMLImageDataWriter> imageWriter;
