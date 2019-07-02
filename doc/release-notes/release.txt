@@ -10,4 +10,6 @@ Fixes since v1.0.0
 
 Build System
 
+ * Updated Fletch to fix broken Qt 5.11 URL.
+
 TeleSculptor Application
