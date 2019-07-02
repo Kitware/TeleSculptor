@@ -3,7 +3,6 @@ set -e
 
 INSTALL_DIR=$HOME/deps
 KITWARE_DIR=/opt/kitware
-export PATH=$INSTALL_DIR/bin:$KITWARE_DIR/fletch/bin:$KITWARE_DIR/kwiver/bin:$PATH
 HASH_DIR=/opt/kitware/hashes
 mkdir -p $HASH_DIR
 mkdir -p $INSTALL_DIR
@@ -32,7 +31,13 @@ else
   FLETCH_TAR_FILE_ID=599f2db18d777f7d33e9cc9e
   kwiver_branch="release"
   echo "Using release branches of Fletch and KWIVER"
+  # The nightly Fletch build currently has an issue where the release build
+  # needs to be placed in a release subdirectory.
+  KITWARE_DIR=$KITWARE_DIR/release
+  mkdir -p $KITWARE_DIR
 fi
+
+export PATH=$INSTALL_DIR/bin:$KITWARE_DIR/fletch/bin:$KITWARE_DIR/kwiver/bin:$PATH
 
 wget https://data.kitware.com/api/v1/file/$FLETCH_TAR_FILE_ID/hashsum_file/sha512 -O fletch.sha512
 RHASH=`cat fletch.sha512`
