@@ -14,7 +14,7 @@ endif()
 ExternalProject_Add(fletch
   PREFIX ${TELESCULPTOR_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
-  GIT_TAG bfb68d2a5dfdc2cd4e06cda1f52dfecfac630004
+  GIT_TAG ea2191a1918b1f381e5cb401b0185ae3d86e54d6
   #GIT_SHALLOW 1
   SOURCE_DIR ${TELESCULPTOR_EXTERNAL_DIR}/fletch
   BINARY_DIR ${TELESCULPTOR_EXTERNAL_DIR}/fletch-build
