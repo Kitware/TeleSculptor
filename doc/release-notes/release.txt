@@ -12,4 +12,7 @@ Build System
 
  * Updated Fletch to fix broken Qt 5.11 URL.
 
+ * Fixed broken PDAL support.  PDAL was disabled regardless of the CMake
+   setting due to a mis-named variable.
+
 TeleSculptor Application

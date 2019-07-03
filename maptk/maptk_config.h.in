@@ -43,6 +43,6 @@
 #define MAPTK_MAPTK_CONFIG_H
 
 
-#cmakedefine MAPTK_USE_PDAL
+#cmakedefine TELESCULPTOR_USE_PDAL
 
 #endif // MAPTK_MAPTK_CONFIG_H

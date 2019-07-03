@@ -39,7 +39,7 @@
 #include <vital/exceptions/base.h>
 #include <vital/exceptions/io.h>
 
-#ifdef MAPTK_USE_PDAL
+#ifdef TELESCULPTOR_USE_PDAL
 #include <pdal/PointView.hpp>
 #include <pdal/PointTable.hpp>
 #include <pdal/Dimension.hpp>
@@ -81,7 +81,7 @@ write_pdal(vital::path_t const& filename,
   namespace kv = kwiver::vital;
   kv::logger_handle_t logger( kv::get_logger( "write_pdal" ) );
 
-#ifdef MAPTK_USE_PDAL
+#ifdef TELESCULPTOR_USE_PDAL
 
   if( !colors.empty() && colors.size() != points.size() )
   {
