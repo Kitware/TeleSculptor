@@ -16,3 +16,5 @@ Build System
    setting due to a mis-named variable.
 
 TeleSculptor Application
+
+ * Updated "About" dialog github URL from maptk to TeleSculptor.
