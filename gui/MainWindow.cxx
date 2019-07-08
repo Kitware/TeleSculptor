@@ -3133,6 +3133,13 @@ void MainWindow::applySimilarityTransform()
 
   // Invalidate the fusion volume
   d->UI.worldView->resetVolume();
+
+  // Save updated data
+  saveCameras(d->project->cameraPath);
+  saveLandmarks(d->project->landmarksPath);
+  saveGroundControlPoints(d->project->groundControlPath);
+  d->project->config->set_value("ROI", d->roiToString());
+  d->project->write();
 }
 
 //-----------------------------------------------------------------------------
