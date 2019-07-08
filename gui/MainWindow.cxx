@@ -3062,6 +3062,7 @@ void MainWindow::applySimilarityTransform()
     auto gcp_loc = gcp.second->loc();
     gcp.second->set_loc(sim_transform*gcp_loc);
   }
+  d->groundControlPointsHelper->pointsReloaded();
 
   // Transform ROI
   kwiver::vital::vector_3d minPt;
