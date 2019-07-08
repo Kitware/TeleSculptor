@@ -2954,38 +2954,66 @@ void MainWindow::applySimilarityTransform()
 {
   QTE_D();
 
-  auto lgcs = d->sfmConstraints->get_local_geo_cs();
-  if (lgcs.origin().is_empty())
-  {
-    qWarning() << "Can't apply similarity transform without local coordinate system";
-    return;
-  }
-
-  auto local_crs = lgcs.origin().crs();
-
-  std::vector<kwiver::vital::vector_3d> from_pts, to_pts;
+  std::vector<kwiver::vital::ground_control_point_sptr> gcps;
   auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
   for ( auto gcp : gcp_map )
   {
     if ( gcp.second->is_geo_loc_user_provided() )
     {
-      from_pts.push_back( gcp.second->loc() );
-      kwiver::vital::vector_3d to_pt;
-      to_pt.block< 2, 1>( 0, 0 ) =
-        gcp.second->geo_loc().location( local_crs ) - lgcs.origin().location();
-      to_pt(2) = gcp.second->elevation() - lgcs.origin_altitude();
-      to_pts.push_back( to_pt );
+      gcps.push_back(gcp.second);
     }
   }
 
   // TODO: enforce by disabling button if there is not enough points
-  if (from_pts.size() < 3)
+  if (gcps.size() < 3)
   {
     QMessageBox::information(
       this, "",
       "Must have at least three user defined ground control points to"
       " apply similarity transform.");
     return;
+  }
+
+  auto lgcs = d->sfmConstraints->get_local_geo_cs();
+  if (lgcs.origin().is_empty())
+  {
+    // If we don't have a lgcs, make one from the GPCs
+    double min_elev = std::numeric_limits<double>::infinity();
+    kwiver::vital::vector_2d mean_loc(0.0, 0.0);
+    auto local_crs = gcps[0]->geo_loc().crs();
+    for (auto gcp : gcps)
+    {
+      if (gcp->elevation() < min_elev)
+      {
+        min_elev = gcp->elevation();
+      }
+      mean_loc += gcp->geo_loc().location(local_crs);
+    }
+    mean_loc /= gcps.size();
+    lgcs.set_origin(kwiver::vital::geo_point(mean_loc, local_crs));
+    lgcs.set_origin_altitude(min_elev);
+    d->sfmConstraints->set_local_geo_cs(lgcs);
+    if (d->project->geoOriginFile.isEmpty())
+    {
+      Project default_project(d->project->workingDir.path());
+      d->project->geoOriginFile = default_project.geoOriginFile;
+    }
+    if (!d->project->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->project->geoOriginFile);
+    }
+  }
+
+  auto local_crs = lgcs.origin().crs();
+  std::vector<kwiver::vital::vector_3d> from_pts, to_pts;
+  for (auto gcp : gcps)
+  {
+    from_pts.push_back(gcp->loc());
+    kwiver::vital::vector_3d to_pt;
+    to_pt.block< 2, 1>(0, 0) =
+      gcp->geo_loc().location(local_crs) - lgcs.origin().location();
+    to_pt(2) = gcp->elevation() - lgcs.origin_altitude();
+    to_pts.push_back(to_pt);
   }
 
   // Merge project config with default config file
@@ -3034,6 +3062,7 @@ void MainWindow::applySimilarityTransform()
     auto gcp_loc = gcp.second->loc();
     gcp.second->set_loc(sim_transform*gcp_loc);
   }
+  d->groundControlPointsHelper->pointsReloaded();
 
   // Transform ROI
   kwiver::vital::vector_3d minPt;
@@ -3105,6 +3134,17 @@ void MainWindow::applySimilarityTransform()
 
   // Invalidate the fusion volume
   d->UI.worldView->resetVolume();
+
+  // Recenter the geo-coordinates
+  auto offset = d->centerLandmarks();
+  d->shiftGeoOrigin(offset);
+
+  // Save updated data
+  saveCameras(d->project->cameraPath);
+  saveLandmarks(d->project->landmarksPath);
+  saveGroundControlPoints(d->project->groundControlPath);
+  d->project->config->set_value("ROI", d->roiToString());
+  d->project->write();
 }
 
 //-----------------------------------------------------------------------------
