@@ -3135,6 +3135,10 @@ void MainWindow::applySimilarityTransform()
   // Invalidate the fusion volume
   d->UI.worldView->resetVolume();
 
+  // Recenter the geo-coordinates
+  auto offset = d->centerLandmarks();
+  d->shiftGeoOrigin(offset);
+
   // Save updated data
   saveCameras(d->project->cameraPath);
   saveLandmarks(d->project->landmarksPath);
