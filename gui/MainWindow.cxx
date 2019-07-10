@@ -74,6 +74,7 @@
 #include <vital/types/sfm_constraints.h>
 
 #include <vtkBox.h>
+#include <vtkBoundingBox.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
@@ -3070,6 +3071,7 @@ void MainWindow::applySimilarityTransform()
   d->roi->GetXMin(minPt.data());
   d->roi->GetXMax(maxPt.data());
   std::vector<kwiver::vital::vector_3d> boundPts = {minPt, maxPt};
+  vtkBoundingBox bbox;
 
   for (int i=0; i < 2; ++i)
   {
@@ -3081,21 +3083,12 @@ void MainWindow::applySimilarityTransform()
                                         boundPts[j][1],
                                         boundPts[k][2]);
         kwiver::vital::vector_3d newPt = sim_transform*currPt;
-        for (int l = 0; l < 3; ++l)
-        {
-          if (newPt[l] < minPt[l])
-          {
-            minPt[l] = newPt[l];
-          }
-          if (newPt[l] > maxPt[l])
-          {
-            maxPt[l] = newPt[l];
-          }
-        }
+        bbox.AddPoint(newPt.data());
       }
     }
   }
-
+  bbox.GetMinPoint(minPt.data());
+  bbox.GetMaxPoint(maxPt.data());
   d->roi->SetXMin(minPt.data());
   d->roi->SetXMax(maxPt.data());
 
