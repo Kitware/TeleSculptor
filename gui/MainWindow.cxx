@@ -74,6 +74,7 @@
 #include <vital/types/sfm_constraints.h>
 
 #include <vtkBox.h>
+#include <vtkBoundingBox.h>
 #include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
@@ -460,7 +461,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     min_pt -= offset;
     this->roi->SetXMin(min_pt.data());
     max_pt -= offset;
-    this->roi->SetXMax(min_pt.data());
+    this->roi->SetXMax(max_pt.data());
     UI.worldView->setROI(roi.GetPointer(), true);
     project->config->set_value("ROI", roiToString());
   }
@@ -3070,6 +3071,7 @@ void MainWindow::applySimilarityTransform()
   d->roi->GetXMin(minPt.data());
   d->roi->GetXMax(maxPt.data());
   std::vector<kwiver::vital::vector_3d> boundPts = {minPt, maxPt};
+  vtkBoundingBox bbox;
 
   for (int i=0; i < 2; ++i)
   {
@@ -3079,25 +3081,17 @@ void MainWindow::applySimilarityTransform()
       {
         kwiver::vital::vector_3d currPt(boundPts[i][0],
                                         boundPts[j][1],
-                                        boundPts[k][3]);
+                                        boundPts[k][2]);
         kwiver::vital::vector_3d newPt = sim_transform*currPt;
-        for (int l = 0; l < 3; ++l)
-        {
-          if (newPt[l] < minPt[l])
-          {
-            minPt[l] = newPt[l];
-          }
-          if (newPt[l] > maxPt[l])
-          {
-            maxPt[l] = newPt[l];
-          }
-        }
+        bbox.AddPoint(newPt.data());
       }
     }
   }
-
+  bbox.GetMinPoint(minPt.data());
+  bbox.GetMaxPoint(maxPt.data());
   d->roi->SetXMin(minPt.data());
   d->roi->SetXMax(maxPt.data());
+  d->UI.worldView->setROI(d->roi.GetPointer(), true);
 
   // Scale all the depth maps
   for (auto const& f : d->frames)
