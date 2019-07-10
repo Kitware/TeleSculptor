@@ -3091,6 +3091,7 @@ void MainWindow::applySimilarityTransform()
   bbox.GetMaxPoint(maxPt.data());
   d->roi->SetXMin(minPt.data());
   d->roi->SetXMax(maxPt.data());
+  d->UI.worldView->setROI(d->roi.GetPointer(), true);
 
   // Scale all the depth maps
   for (auto const& f : d->frames)
