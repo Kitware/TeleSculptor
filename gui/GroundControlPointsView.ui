@@ -207,7 +207,7 @@
   <action name="actionApplySimilarity">
    <property name="icon">
     <iconset resource="icons/icons.qrc">
-     <normaloff>:/icons/16x16/reset</normaloff>:/icons/16x16/reset</iconset>
+     <normaloff>:/icons/16x16/apply</normaloff>:/icons/16x16/apply</iconset>
    </property>
    <property name="text">
     <string>&amp;Apply Similarity Transform</string>
