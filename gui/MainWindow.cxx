@@ -461,7 +461,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     min_pt -= offset;
     this->roi->SetXMin(min_pt.data());
     max_pt -= offset;
-    this->roi->SetXMax(min_pt.data());
+    this->roi->SetXMax(max_pt.data());
     UI.worldView->setROI(roi.GetPointer(), true);
     project->config->set_value("ROI", roiToString());
   }
