@@ -3079,7 +3079,7 @@ void MainWindow::applySimilarityTransform()
       {
         kwiver::vital::vector_3d currPt(boundPts[i][0],
                                         boundPts[j][1],
-                                        boundPts[k][3]);
+                                        boundPts[k][2]);
         kwiver::vital::vector_3d newPt = sim_transform*currPt;
         for (int l = 0; l < 3; ++l)
         {
