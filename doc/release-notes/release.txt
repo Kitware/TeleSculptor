@@ -18,3 +18,7 @@ Build System
 TeleSculptor Application
 
  * Updated "About" dialog github URL from maptk to TeleSculptor.
+
+ * Fixed a bug in translating the ROI when shifting the geo-origin point.
+   Previously the ROI was collapsing because both the min and max point were
+   set to the translated min point.
