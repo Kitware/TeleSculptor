@@ -23,6 +23,9 @@ TeleSculptor Application
    Previously the ROI was collapsing because both the min and max point were
    set to the translated min point.
 
+ * Fixed a bug in which GCPs imported from a file after a camera was loaded
+   were imported twice.
+
  * Fixed an issues with location precision of landmarks in the Camera View that
    occured when some points project very far from the image.  These points are
    now filtered out.
