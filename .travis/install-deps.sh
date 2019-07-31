@@ -10,16 +10,6 @@ mkdir -p $INSTALL_DIR
 # Make a directory to test installation of TeleSculptor into
 mkdir -p $HOME/install
 
-# check if directory is cached
-if [ ! -f "$INSTALL_DIR/bin/cmake" ]; then
-  cd /tmp
-  wget --no-check-certificate https://cmake.org/files/v3.9/cmake-3.9.6-Linux-x86_64.sh
-  bash cmake-3.9.6-Linux-x86_64.sh --skip-license --prefix="$INSTALL_DIR/"
-else
-  echo 'Using cached CMake directory.';
-fi
-
-
 
 # download and unpack Fletch
 cd /tmp
