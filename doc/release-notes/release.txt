@@ -22,3 +22,7 @@ TeleSculptor Application
  * Fixed a bug in translating the ROI when shifting the geo-origin point.
    Previously the ROI was collapsing because both the min and max point were
    set to the translated min point.
+
+ * Fixed an issues with location precision of landmarks in the Camera View that
+   occured when some points project very far from the image.  These points are
+   now filtered out.
