@@ -69,6 +69,8 @@ public:
 
   void setVolume(vtkSmartPointer<vtkStructuredGrid> volume);
 
+  void resetVolume();
+
   void setVideoConfig(QString const& videoPath,
                       kwiver::vital::config_block_sptr config);
   void setCameras(kwiver::vital::camera_map_sptr cameras);

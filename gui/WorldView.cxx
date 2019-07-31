@@ -917,6 +917,19 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::resetVolume()
+{
+  QTE_D();
+
+  d->volume = nullptr;
+
+  d->renderer->RemoveActor(d->volumeActor.Get());
+
+  this->fusedMeshEnabled(false);
+  d->volumeOptions->setEnabled(false);
+}
+
+//-----------------------------------------------------------------------------
 void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();
@@ -1656,7 +1669,17 @@ void WorldView::setROI(vtkBox* box, bool init)
   QTE_D();
   d->roi = box;
   d->initroi = init;
+  if (d->boxWidget)
+  {
+    vtkBoxRepresentation* rep =
+      vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
+    if (rep)
+    {
+      rep->PlaceWidget(d->roi->GetBounds());
+    }
+  }
   d->updateScale(this);
+  this->render();
 }
 
 //-----------------------------------------------------------------------------

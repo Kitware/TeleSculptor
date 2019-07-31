@@ -746,6 +746,14 @@ void GroundControlPointsHelper::setActivePoint(id_t gcpId)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsHelper::applySimilarityTransform()
+{
+  QTE_D();
+
+  d->mainWindow->applySimilarityTransform();
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsHelper::setGroundControlPoints(
   kv::ground_control_point_map const& gcpm)
 {

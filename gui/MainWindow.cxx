@@ -62,7 +62,9 @@
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
+#include <arrows/core/transform.h>
 #include <vital/algo/video_input.h>
+#include <vital/algo/estimate_similarity_transform.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -72,11 +74,14 @@
 #include <vital/types/sfm_constraints.h>
 
 #include <vtkBox.h>
+#include <vtkBoundingBox.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
@@ -310,6 +315,7 @@ public:
   void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
+  void resetActiveDepthMap(int);
 
   // Member variables
   Ui::MainWindow UI;
@@ -977,21 +983,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   //load from memory if cached
   if (id >= 0 && id == this->activeDepthFrame)
   {
-    this->depthReader->SetFileName("");
-    this->depthFilter->RemoveAllInputConnections(0);
-    this->depthFilter->SetInputData(this->activeDepth);
-
-    this->UI.depthMapView->setValidDepthInput(true);
-    this->UI.worldView->setValidDepthInput(true);
-
-    if (auto* const fr = qtGet(qAsConst(this->frames), id))
-    {
-      this->depthFilter->SetCamera(fr->camera);
-    }
-    this->UI.worldView->updateDepthMap();
-    this->UI.depthMapView->updateView(true);
-    this->UI.actionExportDepthPoints->setEnabled(true);
-
+    this->resetActiveDepthMap(id);
     this->currentDepthFrame = id;
   }
   else // load from file
@@ -1343,6 +1335,27 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
   this->roi->SetXMin(minpt);
   this->roi->SetXMax(maxpt);
   UI.worldView->setROI(roi.GetPointer(), true);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::resetActiveDepthMap(int frame)
+{
+  this->depthReader->SetFileName("");
+  this->depthFilter->RemoveAllInputConnections(0);
+  this->depthFilter->SetInputData(this->activeDepth);
+
+  this->UI.depthMapView->setValidDepthInput(true);
+  this->UI.worldView->setValidDepthInput(true);
+
+  if (auto* const fr = qtGet(qAsConst(this->frames), frame))
+  {
+    this->depthFilter->SetCamera(fr->camera);
+  }
+  this->UI.worldView->updateDepthMap();
+  this->UI.depthMapView->updateView(true);
+  this->UI.actionExportDepthPoints->setEnabled(true);
+
+  this->currentDepthFrame = frame;
 }
 
 //END MainWindowPrivate
@@ -2935,6 +2948,197 @@ void MainWindow::showUserManual()
       this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::applySimilarityTransform()
+{
+  QTE_D();
+
+  std::vector<kwiver::vital::ground_control_point_sptr> gcps;
+  auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
+  for ( auto gcp : gcp_map )
+  {
+    if ( gcp.second->is_geo_loc_user_provided() )
+    {
+      gcps.push_back(gcp.second);
+    }
+  }
+
+  // TODO: enforce by disabling button if there is not enough points
+  if (gcps.size() < 3)
+  {
+    QMessageBox::information(
+      this, "",
+      "Must have at least three user defined ground control points to"
+      " apply similarity transform.");
+    return;
+  }
+
+  auto lgcs = d->sfmConstraints->get_local_geo_cs();
+  if (lgcs.origin().is_empty())
+  {
+    // If we don't have a lgcs, make one from the GPCs
+    double min_elev = std::numeric_limits<double>::infinity();
+    kwiver::vital::vector_2d mean_loc(0.0, 0.0);
+    auto local_crs = gcps[0]->geo_loc().crs();
+    for (auto gcp : gcps)
+    {
+      if (gcp->elevation() < min_elev)
+      {
+        min_elev = gcp->elevation();
+      }
+      mean_loc += gcp->geo_loc().location(local_crs);
+    }
+    mean_loc /= gcps.size();
+    lgcs.set_origin(kwiver::vital::geo_point(mean_loc, local_crs));
+    lgcs.set_origin_altitude(min_elev);
+    d->sfmConstraints->set_local_geo_cs(lgcs);
+    if (d->project->geoOriginFile.isEmpty())
+    {
+      Project default_project(d->project->workingDir.path());
+      d->project->geoOriginFile = default_project.geoOriginFile;
+    }
+    if (!d->project->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->project->geoOriginFile);
+    }
+  }
+
+  auto local_crs = lgcs.origin().crs();
+  std::vector<kwiver::vital::vector_3d> from_pts, to_pts;
+  for (auto gcp : gcps)
+  {
+    from_pts.push_back(gcp->loc());
+    kwiver::vital::vector_3d to_pt;
+    to_pt.block< 2, 1>(0, 0) =
+      gcp->geo_loc().location(local_crs) - lgcs.origin().location();
+    to_pt(2) = gcp->elevation() - lgcs.origin_altitude();
+    to_pts.push_back(to_pt);
+  }
+
+  // Merge project config with default config file
+  auto const config = readConfig("gui_st_estimator.conf");
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "No configuration data was found for similarity estimator. "
+      "Please check your installation.");
+    return;
+  }
+
+  config->merge_config(d->project->config);
+  if (! kv::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config) )
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "An error was found in the similarity estimator configuration.");
+    return;
+  }
+
+  // Create the similarity transform from the ground control points
+  kv::algo::estimate_similarity_transform_sptr st_estimator;
+  kv::algo::estimate_similarity_transform::set_nested_algo_configuration(
+      "st_estimator", config, st_estimator);
+
+  // initialize identity transform
+  kwiver::vital::similarity_d sim_transform;
+
+  sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
+
+  // Transform landmarks
+  d->landmarks = kwiver::arrows::transform(d->landmarks, sim_transform);
+
+  // Transform cameras
+  auto camera_map = d->cameraMap();
+  camera_map = kwiver::arrows::transform(camera_map, sim_transform);
+  d->updateCameras(camera_map);
+
+  // Transform GCP's
+  for ( auto gcp : gcp_map )
+  {
+    auto gcp_loc = gcp.second->loc();
+    gcp.second->set_loc(sim_transform*gcp_loc);
+  }
+  d->groundControlPointsHelper->pointsReloaded();
+
+  // Transform ROI
+  kwiver::vital::vector_3d minPt;
+  kwiver::vital::vector_3d maxPt;
+  d->roi->GetXMin(minPt.data());
+  d->roi->GetXMax(maxPt.data());
+  std::vector<kwiver::vital::vector_3d> boundPts = {minPt, maxPt};
+  vtkBoundingBox bbox;
+
+  for (int i=0; i < 2; ++i)
+  {
+    for (int j=0; j < 2; ++j)
+    {
+      for (int k =0; k < 2; ++k)
+      {
+        kwiver::vital::vector_3d currPt(boundPts[i][0],
+                                        boundPts[j][1],
+                                        boundPts[k][2]);
+        kwiver::vital::vector_3d newPt = sim_transform*currPt;
+        bbox.AddPoint(newPt.data());
+      }
+    }
+  }
+  bbox.GetMinPoint(minPt.data());
+  bbox.GetMaxPoint(maxPt.data());
+  d->roi->SetXMin(minPt.data());
+  d->roi->SetXMax(maxPt.data());
+  d->UI.worldView->setROI(d->roi.GetPointer(), true);
+
+  // Scale all the depth maps
+  for (auto const& f : d->frames)
+  {
+    if (f.depthMapPath.size() > 0)
+    {
+      vtkNew<vtkXMLImageDataReader> imageReader;
+      imageReader->SetFileName(qPrintable(f.depthMapPath));
+      imageReader->Update();
+      vtkSmartPointer<vtkImageData> depthImg = imageReader->GetOutput();
+
+      vtkSmartPointer<vtkDoubleArray> depthData = vtkDoubleArray::FastDownCast(
+          depthImg->GetPointData()->GetAbstractArray("Depths"));
+      auto numValues = depthData->GetNumberOfValues();
+      for (vtkIdType i = 0; i < numValues; ++i)
+      {
+        depthData->SetValue(i, sim_transform.scale()*depthData->GetValue(i));
+      }
+
+      // Replace active depth map if needed
+      if (f.id == d->currentDepthFrame)
+      {
+        d->activeDepth = depthImg;
+        d->resetActiveDepthMap(f.id);
+      }
+
+      vtkNew<vtkXMLImageDataWriter> imageWriter;
+      imageWriter->SetFileName(qPrintable(f.depthMapPath));
+      imageWriter->AddInputDataObject(depthImg.Get());
+      imageWriter->SetDataModeToBinary();
+      imageWriter->Write();
+    }
+  }
+
+  // Invalidate the fusion volume
+  d->UI.worldView->resetVolume();
+
+  // Recenter the geo-coordinates
+  auto offset = d->centerLandmarks();
+  d->shiftGeoOrigin(offset);
+
+  // Save updated data
+  saveCameras(d->project->cameraPath);
+  saveLandmarks(d->project->landmarksPath);
+  saveGroundControlPoints(d->project->groundControlPath);
+  d->project->config->set_value("ROI", d->roiToString());
+  d->project->write();
 }
 
 //-----------------------------------------------------------------------------
