@@ -14,11 +14,11 @@ mkdir -p $HOME/install
 # download and unpack Fletch
 cd /tmp
 if [ -f $TRAVIS_BUILD_DIR/doc/release-notes/master.txt ]; then
-  FLETCH_TAR_FILE_ID=599c39468d777f7d33e9cbe5
+  FLETCH_TAR_FILE_ID=5d3a2d40877dfcc9022ec9f5
   kwiver_branch="master"
   echo "Using master branches of Fletch and KWIVER"
 else
-  FLETCH_TAR_FILE_ID=599f2db18d777f7d33e9cc9e
+  FLETCH_TAR_FILE_ID=5d3f0c94877dfcc90235f064
   kwiver_branch="release"
   echo "Using release branches of Fletch and KWIVER"
   # The nightly Fletch build currently has an issue where the release build
