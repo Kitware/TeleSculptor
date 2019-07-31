@@ -394,6 +394,13 @@ Tool Bar
   Copies the geodetic location of the selected point to the clipboard. Several
   options of ordering and whether or not to include the elevation are provided.
 
+:icon:`apply` Apply Constraints to Geo-register
+  Estimates a 3D similarity transformation to best align the ground control
+  point (GCP) locations with the specified geodetic locations.  At least three
+  "user registered" GCPs are required.  That is, at least three points must
+  have manually specified latitude, longitude, and altitude.  The estimated
+  transform is applied to all data (cameras, landmarks, depth maps, etc.).
+
 :icon:`reset` Revert Changes
   Reverts user changes to the active ground control point's geodetic location,
   such that the point is no longer "user registered". This has no effect on
