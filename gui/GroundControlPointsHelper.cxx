@@ -666,25 +666,22 @@ void GroundControlPointsHelper::updateViewsFromGCPs()
 
   vtkMaptkCamera* camera = d->mainWindow->activeCamera();
 
-  with_expr(qtScopedBlockSignals{ cameraWidget })
+  for (auto const& i : d->groundControlPoints)
   {
-    for (auto const& i : d->groundControlPoints)
+    auto* const hp = qtGet(d->gcpIdToHandleMap, i.first);
+    auto* const handleWidget = (hp ? hp->second : nullptr);
+
+    if (handleWidget)
     {
-      auto* const hp = qtGet(d->gcpIdToHandleMap, i.first);
-      auto* const handleWidget = (hp ? hp->second : nullptr);
+      auto const handleId = worldWidget->findHandleWidget(handleWidget);
+      kwiver::vital::vector_3d loc = i.second->loc();
+      worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
 
-      if (handleWidget)
+      if (camera)
       {
-        auto const handleId = worldWidget->findHandleWidget(handleWidget);
-        kwiver::vital::vector_3d loc = i.second->loc();
-        worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
-
-        if (camera)
-        {
-          double cameraPt[2];
-          camera->ProjectPoint(loc, cameraPt);
-          cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
-        }
+        double cameraPt[2];
+        camera->ProjectPoint(loc, cameraPt);
+        cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
       }
     }
   }
