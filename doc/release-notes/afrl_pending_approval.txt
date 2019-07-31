@@ -12,6 +12,12 @@ Updates since last public release
 
 TeleSculptor
 
+ * Added an option to the Ground Control Points panel to apply the GCP
+   constraints to correct for georegistration.  The apply button estimates
+   a 3D similarity transform that best aligns the GCPs with their specified
+   geodetic locations (latitude, longitude, elevation).  The estimated
+   transform is then applied to all the data to georegister.
+
 
 Fixes since last public release
 -------------------------------
