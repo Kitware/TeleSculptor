@@ -109,6 +109,17 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
   }
 
   auto const& ppos = this->MaptkCamera->project(in);
+  // Ignore points that are very far from the image.
+  // Including points that are too far away can degrade the precision
+  // of location of points in the image.
+  int const& w_max = 10 * this->ImageDimensions[0];
+  int const& h_max = 10 * this->ImageDimensions[1];
+  if (ppos[0] < -w_max || ppos[0] > w_max ||
+    ppos[1] < -h_max || ppos[1] > h_max)
+  {
+    return false;
+  }
+
   out[0] = ppos[0];
   out[1] = ppos[1];
   return true;
