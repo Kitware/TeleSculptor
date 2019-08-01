@@ -23,6 +23,10 @@ TeleSculptor Application
    Previously the ROI was collapsing because both the min and max point were
    set to the translated min point.
 
+ * Fixed a bug in which GCPs or ruler end points would render in random
+   locations in the camera view if the world location was behind the
+   camera.  The GCPs or ruler for invalid projections are no longer drawn.
+
  * Fixed a bug in which GCPs imported from a file after a camera was loaded
    were imported twice.
 
