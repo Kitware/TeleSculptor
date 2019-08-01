@@ -662,6 +662,43 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 }
 
 //-----------------------------------------------------------------------------
+// Call this function when the GCP data has been modified
+void GroundControlPointsHelper::updateViewsFromGCPs()
+{
+  QTE_D();
+
+  GroundControlPointsWidget* worldWidget =
+    d->mainWindow->worldView()->groundControlPointsWidget();
+
+  GroundControlPointsWidget* cameraWidget =
+    d->mainWindow->cameraView()->groundControlPointsWidget();
+
+  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+
+  for (auto const& i : d->groundControlPoints)
+  {
+    auto* const hp = qtGet(d->gcpIdToHandleMap, i.first);
+    auto* const handleWidget = (hp ? hp->second : nullptr);
+
+    if (handleWidget)
+    {
+      auto const handleId = worldWidget->findHandleWidget(handleWidget);
+      kwiver::vital::vector_3d loc = i.second->loc();
+      worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
+
+      if (camera)
+      {
+        double cameraPt[2];
+        camera->ProjectPoint(loc, cameraPt);
+        cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
+      }
+    }
+  }
+  worldWidget->render();
+  cameraWidget->render();
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsHelper::recomputePoints()
 {
   QTE_D();

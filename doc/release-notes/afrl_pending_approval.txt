@@ -1,0 +1,26 @@
+TeleSculptor Release Notes for changes pending release approval by AFRL
+=======================================================================
+
+This file documents release notes for changes made to TeleSculptor which
+require public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+TeleSculptor
+
+ * Added an option to the Ground Control Points panel to apply the GCP
+   constraints to correct for georegistration.  The apply button estimates
+   a 3D similarity transform that best aligns the GCPs with their specified
+   geodetic locations (latitude, longitude, elevation).  The estimated
+   transform is then applied to all the data to georegister.
+
+
+Fixes since last public release
+-------------------------------
+
+TeleSculptor
+

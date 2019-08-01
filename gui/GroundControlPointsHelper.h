@@ -53,6 +53,9 @@ public:
 
   void updateCameraViewPoints();
 
+  // Call this function when the GCP data has been modified
+  void updateViewsFromGCPs();
+
   // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
   // Get access to the ground control points

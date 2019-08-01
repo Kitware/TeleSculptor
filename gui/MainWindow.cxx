@@ -496,7 +496,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   {
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
-  this->groundControlPointsHelper->pointsReloaded();
+  this->groundControlPointsHelper->updateViewsFromGCPs();
 }
 
 //-----------------------------------------------------------------------------
@@ -3063,7 +3063,7 @@ void MainWindow::applySimilarityTransform()
     auto gcp_loc = gcp.second->loc();
     gcp.second->set_loc(sim_transform*gcp_loc);
   }
-  d->groundControlPointsHelper->pointsReloaded();
+  d->groundControlPointsHelper->updateViewsFromGCPs();
 
   // Transform ROI
   kwiver::vital::vector_3d minPt;
