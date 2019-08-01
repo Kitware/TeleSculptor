@@ -105,6 +105,10 @@ bool vtkMaptkCamera::ProjectPoint(kwiver::vital::vector_3d const& in,
 {
   if (this->MaptkCamera->depth(in) < 0.0)
   {
+    // if the projection is invalid, move the point to infinity
+    // so that it doesn't render in the camera view
+    out[0] = std::numeric_limits<double>::infinity();
+    out[1] = std::numeric_limits<double>::infinity();
     return false;
   }
 
@@ -217,7 +221,7 @@ vtkSmartPointer<vtkMaptkCamera> vtkMaptkCamera::CropCamera(int i0, int ni, int j
   newCam->DeepCopy(this);
   newCam->SetCamera(cam_ptr);
   newCam->SetImageDimensions(ni, nj);
-  
+
   return newCam;
 }
 
