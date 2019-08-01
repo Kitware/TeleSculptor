@@ -225,6 +225,8 @@ public:
 
   void updateActivePoint(int handleId);
 
+  bool addCameraViewPoint();
+
   id_t addPoint();
 
 private:
@@ -246,7 +248,7 @@ void GroundControlPointsHelperPrivate::addPoint(
   // Add point to VTK widgets
   auto const& pos = point->loc();
   this->mainWindow->worldView()->groundControlPointsWidget()->addPoint(pos);
-  q->addCameraViewPoint();
+  this->addCameraViewPoint();
 
   // Add handle to handle map
   auto* const worldWidget =
@@ -410,6 +412,28 @@ void GroundControlPointsHelperPrivate::updateActivePoint(int handleId)
 }
 
 //-----------------------------------------------------------------------------
+bool GroundControlPointsHelperPrivate::addCameraViewPoint()
+{
+  vtkMaptkCamera* camera = this->mainWindow->activeCamera();
+  if (!camera)
+  {
+    return false;
+  }
+
+  GroundControlPointsWidget* worldWidget =
+    this->mainWindow->worldView()->groundControlPointsWidget();
+  kv::vector_3d p = worldWidget->activePoint();
+
+  double cameraPt[2];
+  bool valid = camera->ProjectPoint(p, cameraPt);
+  GroundControlPointsWidget* cameraWidget =
+    this->mainWindow->cameraView()->groundControlPointsWidget();
+  cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+  cameraWidget->render();
+  return valid;
+}
+
+//-----------------------------------------------------------------------------
 GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   : QObject{parent}, d_ptr{new GroundControlPointsHelperPrivate{this}}
 {
@@ -463,22 +487,7 @@ void GroundControlPointsHelper::addCameraViewPoint()
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
-  if (!camera)
-  {
-    return;
-  }
-
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-  kv::vector_3d p = worldWidget->activePoint();
-
-  double cameraPt[2];
-  camera->ProjectPoint(p, cameraPt);
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-  cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
-  cameraWidget->render();
+  d->addCameraViewPoint();
 
   emit this->pointAdded(d->addPoint());
   emit this->pointCountChanged(d->groundControlPoints.size());

@@ -1,18 +1,17 @@
 #Travis CI configuration for TeleSculptor
 # See http://travis-ci.org/Kitware/TeleSculptor/
 
-sudo: false
-
+dist: bionic
 language: cpp
 
 matrix:
   include:
     - compiler: gcc
       env:
-        - C_COMPILER=gcc-4.8
-        - CXX_COMPILER=g++-4.8
+        - C_COMPILER=gcc
+        - CXX_COMPILER=g++
     - compiler: clang
-      env: # default clang is version 3.4
+      env: # default clang is version 7.0
         - C_COMPILER=clang
         - CXX_COMPILER=clang++
 
@@ -22,17 +21,8 @@ cache:
   - /opt/kitware
 
 before_script:
+  - sudo apt-get install -y libgl1-mesa-dev libxt-dev
   - bash .travis/install-deps.sh
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
-    - libgl1-mesa-dev
-    - libxt-dev
-    - libqt4-dev
 
 script:
   - export PATH=$HOME/deps/bin:$PATH

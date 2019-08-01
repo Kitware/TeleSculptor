@@ -343,6 +343,18 @@ void RulerWidget::setPoint1WorldPosition(double x, double y, double z)
   double pos[4] = { x, y, z, 1.0 };
   d->transformPoint(pos);
   d->repr->SetPoint1WorldPosition(pos);
+  if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z))
+  {
+    d->repr->VisibilityOff();
+  }
+  else if (d->rulerPlaced)
+  {
+    auto pt2 = this->point2WorldPosition();
+    if (pt2.allFinite())
+    {
+      d->repr->VisibilityOn();
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -370,7 +382,16 @@ void RulerWidget::setPoint2WorldPosition(double x, double y, double z)
   double pos[4] = { x, y, z, 1.0 };
   d->transformPoint(pos);
   d->repr->SetPoint2WorldPosition(pos);
-  d->repr->VisibilityOn();
+  auto pt1 = this->point1WorldPosition();
+  if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
+      !pt1.allFinite())
+  {
+    d->repr->VisibilityOff();
+  }
+  else
+  {
+    d->repr->VisibilityOn();
+  }
   d->widget->SetWidgetStateToManipulate();
   d->widget->SetEnabled(1);
   d->rulerPlaced = true;
