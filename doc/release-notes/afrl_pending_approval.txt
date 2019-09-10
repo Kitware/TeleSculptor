@@ -18,6 +18,10 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * Changed feature tracking configuration to use non-maximum suppression to
+   achieve a better spatial distribution of features when contrast is unevenly
+   distributed across the image.
+
 
 Fixes since last public release
 -------------------------------
