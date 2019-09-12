@@ -758,6 +758,9 @@ void MainWindowPrivate::updateFrames(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
+          // find the first metadata that gives valid intrinsics
+          // and put this in baseCamera as a backup for when
+          // a particular metadata packet is missing data
           for (auto mdp : mdMap)
           {
             auto md_K = kv::intrinsics_from_metadata( *mdp.second,
@@ -773,7 +776,7 @@ void MainWindowPrivate::updateFrames(
 
         kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
         camMap = kv::initialize_cameras_with_metadata(
-          mdMap, baseCamera, lgcs);
+          mdMap, baseCamera, lgcs, init_intrinsics_with_metadata);
 
         sfmConstraints->set_local_geo_cs(lgcs);
 
