@@ -18,6 +18,11 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * When selecting a subset of video frames in the track features tool the
+   algorithm now selects first from the subset of frames which have camera
+   geometry metadata before filling in with other valid frames without
+   metadata. This gives priority to frames which have metadata.
+
 
 Fixes since last public release
 -------------------------------
