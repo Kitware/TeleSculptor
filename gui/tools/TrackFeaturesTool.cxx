@@ -164,6 +164,73 @@ bool TrackFeaturesTool::execute(QWidget* window)
   return AbstractTool::execute(window);
 }
 
+namespace
+{
+
+// uniformly sample max_num items from in_data and add to out_data
+template <typename T>
+void uniform_subsample(std::vector<T> const& in_data,
+                       std::vector<T>& out_data, size_t max_num)
+{
+  const size_t data_size = in_data.size();
+  if (data_size <= max_num)
+  {
+    // append all the data
+    out_data.insert(out_data.end(), in_data.begin(), in_data.end());
+    return;
+  }
+
+  // select max_num distributed throughout the vector
+  for (unsigned i = 0; i < max_num; ++i)
+  {
+    size_t idx = (i * data_size) / max_num;
+    out_data.push_back(in_data[idx]);
+  }
+}
+
+// select which frames to use for tracking
+std::vector<kwiver::vital::frame_id_t>
+select_frames(std::vector<kwiver::vital::frame_id_t> const& valid_frames,
+              std::vector<kwiver::vital::frame_id_t> const& camera_frames,
+              size_t max_frames)
+{
+  std::vector<kwiver::vital::frame_id_t> selected_frames;
+  std::vector<kwiver::vital::frame_id_t> remaining_valid_frames;
+  // if initial cameras are available, give these frames priority
+  if (!camera_frames.empty())
+  {
+    // intersect with valid frames to make sure camera frames are valid
+    std::vector<kwiver::vital::frame_id_t> valid_camera_frames;
+    std::set_intersection(camera_frames.begin(), camera_frames.end(),
+                          valid_frames.begin(), valid_frames.end(),
+                          std::back_inserter(valid_camera_frames));
+
+    // take max_frames uniformily out of camera_frames
+    uniform_subsample(valid_camera_frames, selected_frames, max_frames);
+
+    // remove selected frames from valid frames
+    std::set_difference(valid_frames.begin(), valid_frames.end(),
+                        selected_frames.begin(), selected_frames.end(),
+                        std::back_inserter(remaining_valid_frames));
+  }
+  else
+  {
+    remaining_valid_frames = valid_frames;
+  }
+
+  if (selected_frames.size() < max_frames &&
+      !remaining_valid_frames.empty())
+  {
+    const size_t num_needed = max_frames - selected_frames.size();
+    uniform_subsample(remaining_valid_frames, selected_frames, num_needed);
+    std::sort(selected_frames.begin(), selected_frames.end());
+  }
+
+  return selected_frames;
+}
+
+}
+
 //-----------------------------------------------------------------------------
 void TrackFeaturesTool::run()
 {
@@ -202,24 +269,17 @@ void TrackFeaturesTool::run()
     valid_frames = std::vector<kwiver::vital::frame_id_t>(fs.begin(), fs.end());
   }
 
-  const size_t num_frames = valid_frames.size();
-  std::vector<kwiver::vital::frame_id_t> selected_frames;
-  if (num_frames > d->max_frames)
+  std::vector<kwiver::vital::frame_id_t> camera_frames;
+  if (this->hasCameras())
   {
-    // select max_frames distributed throughout the video
-    for (unsigned i = 0; i < d->max_frames; ++i)
+    for (auto const& cam : this->cameras()->cameras())
     {
-      size_t idx = (i * num_frames) / d->max_frames;
-      if (valid_frames[idx] >= start_frame)
-      {
-        selected_frames.push_back(valid_frames[idx]);
-      }
+      camera_frames.push_back(cam.first);
     }
   }
-  else
-  {
-    selected_frames = valid_frames;
-  }
+
+  std::vector<kwiver::vital::frame_id_t> selected_frames =
+    select_frames(valid_frames, camera_frames, d->max_frames);
 
   // seek to the valid frame before the current frame
   // so that the first advance will bring us to the start frame
@@ -241,6 +301,10 @@ void TrackFeaturesTool::run()
 
   for (auto target_frame : selected_frames)
   {
+    if (target_frame < start_frame)
+    {
+      continue;
+    }
     bool valid = true;
     kwiver::vital::frame_id_t frame = 0;
 
