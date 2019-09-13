@@ -1093,12 +1093,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  kwiver::vital::metadata_map::map_metadata_t md;
   if (videoMetadataMap)
   {
-    md = videoMetadataMap->metadata();
+    return frameName(frameId, *this->videoMetadataMap);
   }
-  return frameName(frameId, md);
+  return frameName(frameId, kwiver::vital::simple_metadata_map());
 }
 
 //-----------------------------------------------------------------------------
@@ -1182,16 +1181,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
       else
       {
-        auto md_map = this->videoMetadataMap->metadata();
-        auto mdi = md_map.find(frame.id);
-        if (mdi == md_map.end())
-        {
-          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
-        }
-        else
-        {
-          this->UI.metadata->updateMetadata(mdi->second);
-        }
+        auto mdv = this->videoMetadataMap->get_vector(frame.id);
+        this->UI.metadata->updateMetadata(mdv);
       }
     }
   }
