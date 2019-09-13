@@ -18,6 +18,7 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * Improved speed of metadata access and loading.
 
 Fixes since last public release
 -------------------------------
