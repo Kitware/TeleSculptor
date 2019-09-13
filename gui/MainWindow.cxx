@@ -685,7 +685,8 @@ void MainWindowPrivate::updateFrames(
   int num_cams_loaded_from_krtd = 0;
 
   if (this->project &&
-      this->project->config->has_value("output_krtd_dir"))
+      this->project->config->has_value("output_krtd_dir") &&
+      QDir(this->project->cameraPath).exists())
   {
     qWarning() << "Loading project cameras with frames.count = "
                << this->frames.count();
