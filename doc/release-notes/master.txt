@@ -10,6 +10,8 @@ Updates since v1.0.0
 
 TeleSculptor Application
 
+ * Updated the code to work with API changes to kwiver::vital::geo_point.
+
 
 Fixes since v1.0.0
 ------------------
