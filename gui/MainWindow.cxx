@@ -1181,7 +1181,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
       else
       {
-        auto mdv = this->videoMetadataMap->get_vector(frame.id);
+        auto const& mdv = this->videoMetadataMap->get_vector(frame.id);
         this->UI.metadata->updateMetadata(mdv);
       }
     }
