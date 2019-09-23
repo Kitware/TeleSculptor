@@ -130,12 +130,12 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
     // Set world location and elevation; per the GeoJSON specification
     // (RFC 7946), the coordinates shall have been specified in WGS'84
     constexpr static auto gcs = kv::SRID::lat_lon_WGS84;
-    gcp->set_geo_loc({{coords[0].toDouble(), coords[1].toDouble()}, gcs});
-
+    kv::vector_3d loc(coords[0].toDouble(), coords[1].toDouble(), 0.0);
     if (coords.size() > 2)
     {
-      gcp->set_elevation(coords[2].toDouble());
+      loc[2] = coords[2].toDouble();
     }
+    gcp->set_geo_loc({loc, gcs});
   }
 
   // Get properties
@@ -286,11 +286,8 @@ void GroundControlPointsHelperPrivate::resetPoint(
     auto lgcs = this->mainWindow->localGeoCoordinateSystem();
     if (lgcs.origin().crs() >= 0)
     {
-      auto const& loc = gcp->loc();
-      gcp->set_geo_loc({
-        lgcs.origin().location() + kv::vector_2d{loc[0], loc[1]},
-        lgcs.origin().crs()});
-      gcp->set_elevation(lgcs.origin_altitude() + loc[2]);
+      kwiver::vital::vector_3d loc(lgcs.origin().location() + gcp->loc());
+      gcp->set_geo_loc({loc, lgcs.origin().crs()});
     }
 
     if (!(options & Reset::Silent))

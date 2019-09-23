@@ -108,8 +108,7 @@ write_pdal(vital::path_t const& filename,
   }
 
   int crs = lgcs.origin().crs();
-  kv::vector_2d offset_xy(0.0, 0.0);
-  double offset_z = 0.0;
+  kv::vector_3d offset(0.0, 0.0, 0.0);
   pdal::PointViewPtr view;
   // handle special cases of non-geographic coordinates
   if( crs < 0 )
@@ -121,8 +120,7 @@ write_pdal(vital::path_t const& filename,
   }
   else
   {
-    offset_xy = lgcs.origin().location();
-    offset_z = lgcs.origin_altitude();
+    offset = lgcs.origin().location();
     std::string srs_name = "EPSG:" + std::to_string(crs);
     pdal::SpatialReference srs;
     srs = pdal::SpatialReference(srs_name);
@@ -131,10 +129,7 @@ write_pdal(vital::path_t const& filename,
 
   for( unsigned int id=0; id < points.size(); ++id )
   {
-    kv::vector_3d pt = points[id];
-    pt[0] += offset_xy[0];
-    pt[1] += offset_xy[1];
-    pt[2] += offset_z;
+    kv::vector_3d pt = points[id] + offset;
     view->setField(pdal::Dimension::Id::X, id, pt.x());
     view->setField(pdal::Dimension::Id::Y, id, pt.y());
     view->setField(pdal::Dimension::Id::Z, id, pt.z());
