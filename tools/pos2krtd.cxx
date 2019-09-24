@@ -343,7 +343,8 @@ static int maptk_main(int argc, char const* argv[])
 
   LOG_INFO( main_logger, "Initializing cameras" );
   std::map<kwiver::vital::frame_id_t, kwiver::vital::camera_sptr> cam_map;
-  cam_map = kwiver::vital::initialize_cameras_with_metadata(md_map, base_camera, local_cs, ins_rot_offset);
+  cam_map = kwiver::vital::initialize_cameras_with_metadata(
+    md_map, base_camera, local_cs, true, ins_rot_offset);
 
   // create output KRTD directory
   if( ! ST::FileExists(output) )
