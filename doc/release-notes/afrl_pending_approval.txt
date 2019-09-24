@@ -20,6 +20,10 @@ TeleSculptor
 
  * Improved speed of metadata access and loading.
 
+ * Estimate focal length during structure from motion.  This option was
+   previously disabled by default.
+
+
 Fixes since last public release
 -------------------------------
 
