@@ -22,6 +22,8 @@ TeleSculptor
    filter in feature matching.  The fundamental matrix supports more general
    scenes and does not require a planar scene or small motion assumption.
 
+ * Improved speed of metadata access and loading.
+
 
 Fixes since last public release
 -------------------------------

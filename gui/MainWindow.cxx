@@ -440,10 +440,8 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   {
     return;
   }
-  lgcs.set_origin_altitude(lgcs.origin_altitude() + offset[2]);
-  lgcs.set_origin(kv::geo_point(lgcs.origin().location()
-                                  + kv::vector_2d(offset[0], offset[1]),
-                                lgcs.origin().crs()));
+  kwiver::vital::vector_3d new_origin = lgcs.origin().location() + offset;
+  lgcs.set_origin(kv::geo_point(new_origin, lgcs.origin().crs()));
   sfmConstraints->set_local_geo_cs(lgcs);
 
   if (!sfmConstraints->get_local_geo_cs().origin().is_empty() &&
@@ -685,7 +683,8 @@ void MainWindowPrivate::updateFrames(
   int num_cams_loaded_from_krtd = 0;
 
   if (this->project &&
-      this->project->config->has_value("output_krtd_dir"))
+      this->project->config->has_value("output_krtd_dir") &&
+      QDir(this->project->cameraPath).exists())
   {
     qWarning() << "Loading project cameras with frames.count = "
                << this->frames.count();
@@ -1092,12 +1091,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  kwiver::vital::metadata_map::map_metadata_t md;
   if (videoMetadataMap)
   {
-    md = videoMetadataMap->metadata();
+    return frameName(frameId, *this->videoMetadataMap);
   }
-  return frameName(frameId, md);
+  return frameName(frameId, kwiver::vital::simple_metadata_map());
 }
 
 //-----------------------------------------------------------------------------
@@ -1181,16 +1179,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
       else
       {
-        auto md_map = this->videoMetadataMap->metadata();
-        auto mdi = md_map.find(frame.id);
-        if (mdi == md_map.end())
-        {
-          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
-        }
-        else
-        {
-          this->UI.metadata->updateMetadata(mdi->second);
-        }
+        auto const& mdv = this->videoMetadataMap->get_vector(frame.id);
+        this->UI.metadata->updateMetadata(mdv);
       }
     }
   }
