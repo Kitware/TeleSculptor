@@ -2970,7 +2970,7 @@ void MainWindow::applySimilarityTransform()
   {
     // If we don't have a lgcs, make one from the GPCs
     double min_elev = std::numeric_limits<double>::infinity();
-    kwiver::vital::vector_2d mean_loc(0.0, 0.0);
+    kwiver::vital::vector_3d mean_loc(0.0, 0.0, 0.0);
     auto local_crs = gcps[0]->geo_loc().crs();
     for (auto gcp : gcps)
     {
@@ -2981,8 +2981,8 @@ void MainWindow::applySimilarityTransform()
       mean_loc += gcp->geo_loc().location(local_crs);
     }
     mean_loc /= gcps.size();
+    mean_loc[2] = min_elev;
     lgcs.set_origin(kwiver::vital::geo_point(mean_loc, local_crs));
-    lgcs.set_origin_altitude(min_elev);
     d->sfmConstraints->set_local_geo_cs(lgcs);
     if (d->project->geoOriginFile.isEmpty())
     {
@@ -3000,10 +3000,7 @@ void MainWindow::applySimilarityTransform()
   for (auto gcp : gcps)
   {
     from_pts.push_back(gcp->loc());
-    kwiver::vital::vector_3d to_pt;
-    to_pt.block< 2, 1>(0, 0) =
-      gcp->geo_loc().location(local_crs) - lgcs.origin().location();
-    to_pt(2) = gcp->elevation() - lgcs.origin_altitude();
+    auto to_pt = gcp->geo_loc().location(local_crs) - lgcs.origin().location();
     to_pts.push_back(to_pt);
   }
 
