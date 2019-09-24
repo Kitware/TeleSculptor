@@ -175,7 +175,7 @@ void GroundControlPointsViewPrivate::showPoint(id_t id)
       this->currentPoint = id;
 
       auto const& gl = gcp->geo_loc();
-      auto const grl = [&gl]() -> kv::vector_2d {
+      auto const grl = [&gl]() -> kv::vector_3d {
         if (!gl.is_empty())
         {
           try
@@ -187,7 +187,7 @@ void GroundControlPointsViewPrivate::showPoint(id_t id)
             qWarning() << "Geo-conversion from GCS" << gl.crs() << "failed";
           }
         }
-        return { 0.0, 0.0 };
+        return { 0.0, 0.0, 0.0 };
       }();
 
       with_expr (qtScopedBlockSignals{this->UI.easting})
@@ -253,7 +253,7 @@ void GroundControlPointsViewPrivate::copyLocation(
     auto const& gl = gcp->geo_loc();
     if (!gl.is_empty())
     {
-      auto const grl = [&gl]() -> kv::vector_2d {
+      auto const grl = [&gl]() -> kv::vector_3d {
         try
         {
           return gl.location(kv::SRID::lat_lon_WGS84);
@@ -262,7 +262,7 @@ void GroundControlPointsViewPrivate::copyLocation(
         {
           qWarning() << "Geo-conversion from GCS" << gl.crs() << "failed";
         }
-        return { 0.0, 0.0 };
+        return { 0.0, 0.0, 0.0 };
       }();
 
       QStringList values;
