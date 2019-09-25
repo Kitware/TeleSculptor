@@ -22,6 +22,8 @@ TeleSculptor
    algorithm now considers modifying each selection slightly to give
    priority to picking nearby frames which have camera metadata.
 
+ * Improved speed of metadata access and loading.
+
 
 Fixes since last public release
 -------------------------------
