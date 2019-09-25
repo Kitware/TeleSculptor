@@ -195,35 +195,66 @@ select_frames(std::vector<kwiver::vital::frame_id_t> const& valid_frames,
               size_t max_frames)
 {
   std::vector<kwiver::vital::frame_id_t> selected_frames;
-  std::vector<kwiver::vital::frame_id_t> remaining_valid_frames;
-  // if initial cameras are available, give these frames priority
-  if (!camera_frames.empty())
-  {
-    // intersect with valid frames to make sure camera frames are valid
-    std::vector<kwiver::vital::frame_id_t> valid_camera_frames;
-    std::set_intersection(camera_frames.begin(), camera_frames.end(),
-                          valid_frames.begin(), valid_frames.end(),
-                          std::back_inserter(valid_camera_frames));
+  uniform_subsample(valid_frames, selected_frames, max_frames);
 
-    // take max_frames uniformily out of camera_frames
-    uniform_subsample(valid_camera_frames, selected_frames, max_frames);
-
-    // remove selected frames from valid frames
-    std::set_difference(valid_frames.begin(), valid_frames.end(),
-                        selected_frames.begin(), selected_frames.end(),
-                        std::back_inserter(remaining_valid_frames));
-  }
-  else
+  if (valid_frames.size() > selected_frames.size() &&
+      !camera_frames.empty())
   {
-    remaining_valid_frames = valid_frames;
-  }
+    auto c_itr = camera_frames.begin();
+    auto s_itr = selected_frames.begin();
+    const auto c_itr_last = camera_frames.end() - 1;
 
-  if (selected_frames.size() < max_frames &&
-      !remaining_valid_frames.empty())
-  {
-    const size_t num_needed = max_frames - selected_frames.size();
-    uniform_subsample(remaining_valid_frames, selected_frames, num_needed);
-    std::sort(selected_frames.begin(), selected_frames.end());
+    // Step through each selected frame and if there is no camera data
+    // on the frame look at the frames between this selected frame and
+    // its neighbor selected frames and see if one of those frames has
+    // a camera.  If so, pick the frame with the camera data instead.
+    // This retains roughly uniformily distributed frames but gives
+    // priority to frames with camera data when nearby.
+    for (; s_itr != selected_frames.end(); ++s_itr)
+    {
+      // Find the next camera frame that is equal or greater.
+      // This is done such that *(c_itr - 1) < *s_itr and *c_itr >= *s_itr
+      for (; c_itr != camera_frames.end() && *c_itr < *s_itr; ++c_itr);
+      if (c_itr != camera_frames.end() && *c_itr == *s_itr)
+      {
+        // This selected frame already has a camera, so move on
+        continue;
+      }
+      kwiver::vital::frame_id_t new_s = -1;
+      kwiver::vital::frame_id_t diff =
+        std::numeric_limits<kwiver::vital::frame_id_t>::max();
+      // Check the previous selected frame if not at the start
+      if (s_itr != selected_frames.begin() &&
+          c_itr != camera_frames.begin() )
+      {
+        // Set a search limit half way to the previous keyframe
+        auto prev_lim = (*s_itr + *(s_itr - 1) + 1) / 2;
+        if (prev_lim <= *(c_itr - 1))
+        {
+          new_s = *(c_itr - 1);
+          diff = (*s_itr - new_s);
+        }
+      }
+      // Check the next selected frame if not at the end
+      if ((s_itr+1) != selected_frames.end() &&
+          c_itr != camera_frames.end() )
+      {
+        // Set a search limit half way to the next keyframe
+        auto next_lim = (*s_itr + *(s_itr + 1)) / 2;
+        // Use this camera frame only if within the limit and
+        // closer than the camera found above
+        if (next_lim >= *c_itr && (*c_itr - *s_itr) < diff )
+        {
+          new_s = *c_itr;
+          diff = *c_itr - *s_itr;
+        }
+      }
+      // Update the selection of a new selection was found
+      if (new_s >=0)
+      {
+        *s_itr = new_s;
+      }
+    }
   }
 
   return selected_frames;
