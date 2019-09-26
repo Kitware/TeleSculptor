@@ -22,6 +22,14 @@ TeleSculptor
    algorithm now considers modifying each selection slightly to give
    priority to picking nearby frames which have camera metadata.
 
+ * Changed feature tracking configuration to use non-maximum suppression to
+   achieve a better spatial distribution of features when contrast is unevenly
+   distributed across the image.
+
+ * Switched from homography to fundamental matrix as the default geometric
+   filter in feature matching.  The fundamental matrix supports more general
+   scenes and does not require a planar scene or small motion assumption.
+
  * Improved speed of metadata access and loading.
 
  * TeleSculptor now loads all video frames and metadata by default instead
