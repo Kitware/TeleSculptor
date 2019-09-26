@@ -107,7 +107,7 @@ void load_reference_file(vital::path_t const& reference_file,
       LOG_DEBUG(logger, "lgcs origin zone: " << zone.number );
       lgcs.set_origin( vital::geo_point( gp.location( crs ), crs ) );
     }
-    vital::vector_2d utm = gp.location(crs);
+    vital::vector_3d utm = gp.location(crs);
 
     vec[0] = utm.x();
     vec[1] = utm.y();
@@ -137,8 +137,7 @@ void load_reference_file(vital::path_t const& reference_file,
   {
     // Initialize lgcs center
     mean /= static_cast<double>(reference_lms.size());
-    lgcs.set_origin( vital::geo_point( vital::vector_2d( mean.x(), mean.y() ), crs ) );
-    lgcs.set_origin_altitude( mean.z() );
+    lgcs.set_origin( vital::geo_point( mean, crs ) );
     LOG_DEBUG(logger, "mean position (lgcs origin): " << mean.transpose());
   }
 
@@ -147,11 +146,7 @@ void load_reference_file(vital::path_t const& reference_file,
   LOG_INFO(logger, "transforming ground control points to local coordinates");
   for(vital::landmark_map::map_landmark_t::value_type & p : reference_lms)
   {
-    auto loc = p.second->loc();
-    auto origin_pt = lgcs.origin().location();
-    loc[0] -= origin_pt[0];
-    loc[1] -= origin_pt[1];
-    loc[2] -= lgcs.origin_altitude();
+    auto loc = p.second->loc() - lgcs.origin().location();
     dynamic_cast<vital::landmark_d*>(p.second.get())->set_loc(loc);
   }
 
