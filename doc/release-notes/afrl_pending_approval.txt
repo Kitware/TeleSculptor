@@ -18,6 +18,10 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * Switched from homography to fundamental matrix as the default geometric
+   filter in feature matching.  The fundamental matrix supports more general
+   scenes and does not require a planar scene or small motion assumption.
+
  * Improved speed of metadata access and loading.
 
  * TeleSculptor now loads all video frames and metadata by default instead
