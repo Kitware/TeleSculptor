@@ -763,9 +763,10 @@ void MainWindowPrivate::updateFrames(
           // a particular metadata packet is missing data
           for (auto mdp : mdMap)
           {
-            auto md_K = kv::intrinsics_from_metadata( *mdp.second,
-              static_cast<unsigned>(im->width()),
-              static_cast<unsigned>(im->height()) );
+            auto md_K = kv::intrinsics_from_metadata(
+                          *mdp.second,
+                          static_cast<unsigned>(im->width()),
+                          static_cast<unsigned>(im->height()) );
             if (md_K != nullptr)
             {
               baseCamera.set_intrinsics(md_K);
