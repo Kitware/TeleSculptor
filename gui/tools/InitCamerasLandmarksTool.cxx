@@ -187,16 +187,19 @@ bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
                                                 landmark_map_sptr landmarks,
                                                 feature_track_set_changes_sptr track_changes)
 {
-  this->updateProgress(0);
-  this->setDescription("Keyframe-centric structure from motion");
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  data->copyCameras(cameras);
-  data->copyLandmarks(landmarks);
-  data->copyTrackChanges(track_changes);
-  data->description = description().toStdString();
-  data->progress = progress();
-  data->activeFrame = cameras->cameras().rbegin()->first;
-  emit updated(data);
+  if (cameras || landmarks || track_changes)
+  {
+    this->updateProgress(0);
+    this->setDescription("Keyframe-centric structure from motion");
+    // make a copy of the tool data
+    auto data = std::make_shared<ToolData>();
+    data->copyCameras(cameras);
+    data->copyLandmarks(landmarks);
+    data->copyTrackChanges(track_changes);
+    data->description = description().toStdString();
+    data->progress = progress();
+    data->activeFrame = cameras->cameras().rbegin()->first;
+    emit updated(data);
+  }
   return !this->isCanceled();
 }

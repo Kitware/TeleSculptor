@@ -142,11 +142,14 @@ void BundleAdjustTool::run()
 bool BundleAdjustTool::callback_handler(camera_map_sptr cameras,
                                         landmark_map_sptr landmarks)
 {
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  data->copyCameras(cameras);
-  data->copyLandmarks(landmarks);
+  if (cameras || landmarks)
+  {
+    // make a copy of the tool data
+    auto data = std::make_shared<ToolData>();
+    data->copyCameras(cameras);
+    data->copyLandmarks(landmarks);
+    emit updated(data);
+  }
 
-  emit updated(data);
   return !this->isCanceled();
 }
