@@ -38,3 +38,6 @@ Fixes since last public release
 
 TeleSculptor
 
+ * Fixed a divide-by-zero bug caused by computing the mean landmark location
+   when there are zero landmarks.  This happened when recomputing the local
+   coordinate system without landmarks.
