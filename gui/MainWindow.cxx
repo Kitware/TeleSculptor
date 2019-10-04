@@ -675,9 +675,14 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
 
-  sfmConstraints->set_metadata(videoMetadataMap);
+  bool ignore_metadata =
+    this->freestandingConfig->get_value<bool>(
+      "ignore_metadata", false);
 
-
+  if (!ignore_metadata)
+  {
+    sfmConstraints->set_metadata(videoMetadataMap);
+  }
 
   this->UI.metadata->updateMetadata(mdMap);
 
@@ -745,7 +750,7 @@ void MainWindowPrivate::updateFrames(
         this->freestandingConfig->get_value<bool>(
           "initialize_cameras_with_metadata", true);
 
-      if (init_cams_with_metadata)
+      if (!ignore_metadata && init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
         K->set_image_width(static_cast<unsigned>(im->width()));
