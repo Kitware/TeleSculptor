@@ -411,6 +411,10 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 //-----------------------------------------------------------------------------
 kv::vector_3d MainWindowPrivate::centerLandmarks() const
 {
+  if (this->landmarks->size() == 0)
+  {
+    return kv::vector_3d(0.0, 0.0, 0.0);
+  }
   std::vector<double> x, y, z;
   x.reserve(this->landmarks->size());
   y.reserve(this->landmarks->size());
