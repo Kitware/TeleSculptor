@@ -47,6 +47,19 @@ public:
 
   static vtkMaptkPointHandleRepresentation3D* New();
 
+  void WidgetInteraction(double eventPos[2]) override;
+
+  //@{
+  /**
+   * Set/Get whether to use a custom constraint.
+   * In this mode, the constraint is exercised either along the Z axis or along
+   * the XY plane. Defaults to false.
+   */
+  vtkSetMacro(CustomConstraint, int);
+  vtkGetMacro(CustomConstraint, int);
+  vtkBooleanMacro(CustomConstraint, int);
+  //@}
+
 protected:
   vtkMaptkPointHandleRepresentation3D() = default;
   ~vtkMaptkPointHandleRepresentation3D() = default;
@@ -54,6 +67,15 @@ protected:
   // Override to ensure that the pick tolerance is always about the same as
   // handle size.
   int ComputeInteractionState(int X, int Y, int modify) override;
+
+  // Constrained move focus
+  void MoveFocusConstrained(double* p1, double* p2);
+
+  // Constrained translate
+  void TranslateConstrained(double* p1, double* p2);
+
+  // Member variables
+  int CustomConstraint;
 
 private:
   vtkMaptkPointHandleRepresentation3D(
