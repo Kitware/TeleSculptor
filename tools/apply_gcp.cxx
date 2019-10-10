@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2017 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -491,8 +491,8 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras and landmarks
     LOG_INFO(main_logger, "Applying transform to cameras and landmarks");
-    cam_map = kwiver::arrows::transform(cam_map, sim_transform);
-    lm_map = kwiver::arrows::transform(lm_map, sim_transform);
+    cam_map = kwiver::arrows::core::transform(cam_map, sim_transform);
+    lm_map = kwiver::arrows::core::transform(lm_map, sim_transform);
   }
 
   //
