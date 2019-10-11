@@ -66,7 +66,7 @@ public:
       case vtkCommand::KeyPressEvent:
       {
         vtkRenderWindowInteractor* iren =
-          static_cast<vtkRenderWindowInteractor*>(caller);
+          dynamic_cast<vtkRenderWindowInteractor*>(caller);
         if (iren)
         {
           if (strcmp(iren->GetKeySym(), "z") == 0)
