@@ -444,6 +444,7 @@ void vtkMaptkPointHandleRepresentation3D::ShallowCopy(vtkProp* p)
   if (p)
   {
     this->SetCustomConstraint(rep->GetCustomConstraint());
+    this->SetConstraintAxis(rep->GetConstraintAxis());
   }
   Superclass::ShallowCopy(p);
 }
@@ -456,6 +457,7 @@ void vtkMaptkPointHandleRepresentation3D::DeepCopy(vtkProp* p)
   if (p)
   {
     this->SetCustomConstraint(rep->GetCustomConstraint());
+    this->SetConstraintAxis(rep->GetConstraintAxis());
   }
   Superclass::DeepCopy(p);
 }

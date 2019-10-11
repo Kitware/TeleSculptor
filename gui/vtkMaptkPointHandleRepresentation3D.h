@@ -78,6 +78,14 @@ public:
   void DeepCopy(vtkProp* p) override;
   //@}
 
+  //@{
+  /**
+   * Set/Get the axis to be constrained.
+   */
+  vtkSetMacro(ConstraintAxis, int);
+  vtkGetMacro(ConstraintAxis, int);
+  //@}
+
 protected:
   vtkMaptkPointHandleRepresentation3D();
   ~vtkMaptkPointHandleRepresentation3D() = default;
