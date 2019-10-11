@@ -407,7 +407,7 @@ void vtkMaptkPointHandleRepresentation3D::UpdateAxes()
   if (!this->CustomConstraint || !this->Constrained ||
       this->ConstraintAxis < 0 || this->ConstraintAxis > 2)
   {
-    this->AxesActor->SetVisibility(0);
+    this->Renderer->RemoveViewProp(this->AxesAssembly);
     return;
   }
 
