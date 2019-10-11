@@ -32,14 +32,33 @@
 #include "vtkMaptkPointHandleRepresentation3D.h"
 
 // VTK includes
+#include <vtkAssembly.h>
 #include <vtkCamera.h>
 #include <vtkCellPicker.h>
 #include <vtkFocalPlanePointPlacer.h>
 #include <vtkInteractorObserver.h>
 #include <vtkObjectFactory.h>
+#include <vtkProperty.h>
+#include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 
 vtkStandardNewMacro(vtkMaptkPointHandleRepresentation3D);
+
+//----------------------------------------------------------------------------
+vtkMaptkPointHandleRepresentation3D::vtkMaptkPointHandleRepresentation3D()
+{
+  this->AxesActor->SetTipTypeToSphere();
+  this->AxesActor->SetAxisLabels(false);
+  this->AxesActor->SetTotalLength(1.5, 1.5, 1.5);
+  vtkNew<vtkPropCollection> collection;
+  this->AxesActor->GetActors(collection);
+  collection->InitTraversal();
+  for (int i = 0; i < collection->GetNumberOfItems(); ++i)
+  {
+    this->AxesAssembly->AddPart(
+      vtkProp3D::SafeDownCast(collection->GetNextProp()));
+  }
+}
 
 //----------------------------------------------------------------------------
 void vtkMaptkPointHandleRepresentation3D::PrintSelf(ostream& os,
@@ -350,4 +369,93 @@ void vtkMaptkPointHandleRepresentation3D::TranslateConstrained(double* p1,
 
   this->Cursor3D->SetModelBounds(newBounds);
   this->SetWorldPosition(newFocus);
+}
+
+//----------------------------------------------------------------------
+void vtkMaptkPointHandleRepresentation3D::BuildRepresentation()
+{
+  // The net effect is to resize the handle
+  if (this->GetMTime() > this->BuildTime ||
+      (this->Renderer && this->Renderer->GetVTKWindow() &&
+       this->Renderer->GetVTKWindow()->GetMTime() > this->BuildTime))
+  {
+    if (!this->Placed)
+    {
+      this->ValidPick = 1;
+      this->Placed = 1;
+    }
+
+    this->SizeBounds();
+    this->Cursor3D->Update();
+    this->UpdateAxes();
+    this->BuildTime.Modified();
+  }
+}
+
+//----------------------------------------------------------------------
+void vtkMaptkPointHandleRepresentation3D::UpdateAxes()
+{
+  if (!this->Renderer)
+  {
+    return;
+  }
+
+  if (!this->Renderer->HasViewProp(this->AxesAssembly))
+  {
+    this->Renderer->AddActor(this->AxesAssembly);
+  }
+  if (!this->CustomConstraint || !this->Constrained ||
+      this->ConstraintAxis < 0 || this->ConstraintAxis > 2)
+  {
+    this->AxesActor->SetVisibility(0);
+    return;
+  }
+
+  double bounds[6], center[3];
+  this->Cursor3D->GetFocalPoint(center);
+  this->Cursor3D->GetModelBounds(bounds);
+
+  this->AxesAssembly->SetPosition(center);
+  if (this->ConstraintAxis == 0 || this->ConstraintAxis == 1)
+  {
+    this->AxesActor->GetZAxisTipProperty()->SetOpacity(0);
+    this->AxesActor->GetZAxisShaftProperty()->SetOpacity(0);
+    this->AxesActor->GetXAxisTipProperty()->SetOpacity(1);
+    this->AxesActor->GetXAxisShaftProperty()->SetOpacity(1);
+    this->AxesActor->GetYAxisTipProperty()->SetOpacity(1);
+    this->AxesActor->GetYAxisShaftProperty()->SetOpacity(1);
+  }
+  else
+  {
+    this->AxesActor->GetZAxisTipProperty()->SetOpacity(1);
+    this->AxesActor->GetZAxisShaftProperty()->SetOpacity(1);
+    this->AxesActor->GetXAxisTipProperty()->SetOpacity(0);
+    this->AxesActor->GetXAxisShaftProperty()->SetOpacity(0);
+    this->AxesActor->GetYAxisTipProperty()->SetOpacity(0);
+    this->AxesActor->GetYAxisShaftProperty()->SetOpacity(0);
+  }
+}
+
+//----------------------------------------------------------------------
+void vtkMaptkPointHandleRepresentation3D::ShallowCopy(vtkProp* p)
+{
+  vtkMaptkPointHandleRepresentation3D* rep =
+    vtkMaptkPointHandleRepresentation3D::SafeDownCast(p);
+  if (p)
+  {
+    this->SetCustomConstraint(rep->GetCustomConstraint());
+  }
+  Superclass::ShallowCopy(p);
+}
+
+//----------------------------------------------------------------------
+void vtkMaptkPointHandleRepresentation3D::DeepCopy(vtkProp* p)
+{
+  vtkMaptkPointHandleRepresentation3D* rep =
+    vtkMaptkPointHandleRepresentation3D::SafeDownCast(p);
+  if (p)
+  {
+    this->SetCustomConstraint(rep->GetCustomConstraint());
+  }
+  Superclass::DeepCopy(p);
 }

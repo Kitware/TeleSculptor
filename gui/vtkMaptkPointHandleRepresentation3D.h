@@ -32,10 +32,12 @@
 #define TELESCULPTOR_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
 
 // VTK includes
+#include <vtkAxesActor.h>
 #include <vtkPointHandleRepresentation3D.h>
 
 // Forward declarations
 class vtkRenderer;
+class vtkAssembly;
 
 class vtkMaptkPointHandleRepresentation3D
   : public vtkPointHandleRepresentation3D
@@ -47,7 +49,15 @@ public:
 
   static vtkMaptkPointHandleRepresentation3D* New();
 
+  /**
+   * Override widget interaction for custom constraints
+   */
   void WidgetInteraction(double eventPos[2]) override;
+
+  /**
+   * Override build representation to show custom constraint axes
+   */
+  void BuildRepresentation() override;
 
   //@{
   /**
@@ -60,8 +70,16 @@ public:
   vtkBooleanMacro(CustomConstraint, int);
   //@}
 
+  //@{
+  /**
+   * Override shallow and deep copy to add custom constraint.
+   */
+  void ShallowCopy(vtkProp* p) override;
+  void DeepCopy(vtkProp* p) override;
+  //@}
+
 protected:
-  vtkMaptkPointHandleRepresentation3D() = default;
+  vtkMaptkPointHandleRepresentation3D();
   ~vtkMaptkPointHandleRepresentation3D() = default;
 
   // Override to ensure that the pick tolerance is always about the same as
@@ -74,8 +92,15 @@ protected:
   // Constrained translate
   void TranslateConstrained(double* p1, double* p2);
 
+  /**
+   * Update the axes
+   */
+  void UpdateAxes();
+
   // Member variables
-  int CustomConstraint;
+  int CustomConstraint = 0;
+  vtkNew<vtkAxesActor> AxesActor;
+  vtkNew<vtkAssembly> AxesAssembly;
 
 private:
   vtkMaptkPointHandleRepresentation3D(
