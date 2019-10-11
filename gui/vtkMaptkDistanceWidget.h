@@ -36,16 +36,23 @@
 
 // Forward declarations
 class vtkMaptkDistanceWidgetCallback;
+class vtkRenderWindowInteractor;
 
 class vtkMaptkDistanceWidget : public vtkDistanceWidget
 {
 public:
   vtkTypeMacro(vtkMaptkDistanceWidget, vtkDistanceWidget);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkMaptkDistanceWidget* New();
 
+  /**
+   * Set the interactor
+   */
+  void SetInteractor(vtkRenderWindowInteractor* iren) override;
+
   int DistanceInteractionEvent;
+
 protected:
   vtkMaptkDistanceWidget();
   ~vtkMaptkDistanceWidget();
@@ -55,8 +62,15 @@ protected:
   void DistanceInteraction(int handleNum);
 
   friend class vtkMaptkDistanceWidgetCallback;
-  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback1;
-  vtkMaptkDistanceWidgetCallback *MaptkDistanceWidgetCallback2;
+  vtkMaptkDistanceWidgetCallback* MaptkDistanceWidgetCallback1;
+  vtkMaptkDistanceWidgetCallback* MaptkDistanceWidgetCallback2;
+
+  // Member variables
+  int ConstraintMode = -1;
+  void SetConstraintMode(int mode);
+
+  // Update the constraint mode on representation
+  void UpdateRepresentationConstraint(int id);
 
 private:
   vtkMaptkDistanceWidget(const vtkMaptkDistanceWidget&) = delete;
