@@ -48,7 +48,7 @@ class vtkRenderWindowInteractor;
  *
  *  - It adds custom interaction constrains on the endpoints.  The user can
  *  enable/disable constrained motion as well as modify the constraint axis
- *  based for the ruler endpoints based on shortcut keys.
+ *  based for the ruler endpoints by holding shortcut keys:
  *
  *    - 'z':  Constrain motion of ruler endpoints along the Z direction
  *    - 'x' or 'y': Constrain motion of ruler endpoints along the XY plane

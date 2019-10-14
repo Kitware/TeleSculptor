@@ -92,6 +92,16 @@ public:
           this->HandleNumber);
         break;
       }
+      case vtkCommand::KeyReleaseEvent:
+      {
+        vtkRenderWindowInteractor* iren =
+          dynamic_cast<vtkRenderWindowInteractor*>(caller);
+        if (iren)
+        {
+          this->DistanceWidget->SetConstraintMode(-1);
+        }
+        break;
+      }
     }
   }
   int HandleNumber;
@@ -151,6 +161,9 @@ void vtkMaptkDistanceWidget::SetInteractor(vtkRenderWindowInteractor* iren)
   if (iren)
   {
     iren->AddObserver(vtkCommand::KeyPressEvent,
+                      this->MaptkDistanceWidgetCallback1,
+                      this->Priority);
+    iren->AddObserver(vtkCommand::KeyReleaseEvent,
                       this->MaptkDistanceWidgetCallback1,
                       this->Priority);
   }
