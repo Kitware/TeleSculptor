@@ -212,18 +212,41 @@ void vtkMaptkDistanceWidget::UpdateRepresentationConstraint(int id)
   vtkMaptkPointHandleRepresentation3D* repr =
     vtkMaptkPointHandleRepresentation3D::SafeDownCast(
       w->GetHandleRepresentation());
+  vtkMaptkPointHandleRepresentation3D* otherRepr =
+    vtkMaptkPointHandleRepresentation3D::SafeDownCast(
+      otherW->GetHandleRepresentation());
   if (repr)
   {
     repr->SetConstrained((this->ConstraintMode < 0 ? false : true));
     repr->SetConstraintAxis(this->ConstraintMode);
+    if (repr->GetConstrained() && otherRepr)
+    {
+      double pt[3], newPt[3];
+      repr->GetWorldPosition(newPt);
+      otherRepr->GetWorldPosition(pt);
+      switch (this->ConstraintMode)
+      {
+        case 0:
+        case 1:
+        {
+          newPt[2] = pt[2];
+          break;
+        }
+        case 2:
+        {
+          newPt[0] = pt[0];
+          newPt[1] = pt[1];
+          break;
+        }
+      }
+      repr->SetWorldPosition(newPt);
+    }
   }
 
   // reset the other representation since we're not interacting with it
-  repr = vtkMaptkPointHandleRepresentation3D::SafeDownCast(
-    otherW->GetHandleRepresentation());
-  if (repr)
+  if (otherRepr)
   {
-    repr->SetConstrained(false);
+    otherRepr->SetConstrained(false);
   }
 }
 
