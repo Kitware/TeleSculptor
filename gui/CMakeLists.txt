@@ -18,6 +18,7 @@ find_package(VTK REQUIRED
   COMPONENTS
   vtkFiltersSources
   vtkGUISupportQt
+  vtkIOGeometry
   vtkIOImage
   vtkIOPLY
   vtkIOXML

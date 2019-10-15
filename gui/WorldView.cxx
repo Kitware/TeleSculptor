@@ -70,6 +70,7 @@
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
+#include <vtkOBJWriter.h>
 #include <vtkPLYWriter.h>
 #include <vtkPlaneSource.h>
 #include <vtkPointData.h>
@@ -1521,6 +1522,14 @@ void WorldView::saveFusedMesh(const QString &path,
       writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
+    writer->AddInputDataObject(mesh);
+    writer->Write();
+  }
+  else if (ext == "obj")
+  {
+    vtkNew<vtkOBJWriter> writer;
+    writer->SetFileName(qPrintable(path));
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     writer->AddInputDataObject(mesh);
     writer->Write();
   }

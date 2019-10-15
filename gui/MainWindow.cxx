@@ -2494,6 +2494,7 @@ void MainWindow::saveFusedMesh()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
     "PLY File (*.ply);;"
+    "OBJ File (*.obj);;"
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "All Files (*)");
