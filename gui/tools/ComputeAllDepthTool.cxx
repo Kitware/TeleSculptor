@@ -63,6 +63,7 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_CD = "compute_depth";
+static char const* const BLOCK_MR = "mask_reader";
 }
 
 //-----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ class ComputeAllDepthToolPrivate
 public:
 
   video_input_sptr video_reader;
+  video_input_sptr mask_reader;
   compute_depth_sptr depth_algo;
   int start_frame, end_frame, num_depth, num_support;
 };
@@ -141,10 +143,20 @@ bool ComputeAllDepthTool::execute(QWidget* window)
     return false;
   }
 
+  auto const hasMask = !this->data()->maskPath.empty();
+  if (hasMask && !video_input::check_nested_algo_configuration(BLOCK_MR, config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the mask reader configuration.");
+    return false;
+  }
+
   // Create algorithm from configuration
   config->merge_config(this->data()->config);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
+  video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
 
   d->start_frame = config->get_value<int>("batch_depth:first_frame", 0);
   d->end_frame = config->get_value<int>("batch_depth:end_frame", -1);
@@ -162,6 +174,7 @@ void ComputeAllDepthTool::run()
 {
   QTE_D();
   using kwiver::vital::camera_perspective;
+  auto const hasMask = !this->data()->maskPath.empty();
 
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
@@ -184,6 +197,8 @@ void ComputeAllDepthTool::run()
              static_cast<size_t>(num_frames));
 
   d->video_reader->open(this->data()->videoPath);
+  if (hasMask)
+    d->mask_reader->open(this->data()->maskPath);
 
   //convert landmarks to vector
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
@@ -223,17 +238,22 @@ void ComputeAllDepthTool::run()
 
     std::vector<kwiver::vital::image_container_sptr> frames_out;
     std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
+    std::vector<kwiver::vital::image_container_sptr> masks_out;
     std::vector<kwiver::vital::frame_id_t> frame_ids;
     int ref_frame = 0; //local ref frame
 
     kwiver::vital::timestamp currentTimestamp;
     d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
+    if (hasMask)
+      d->mask_reader->seek_frame(currentTimestamp, *fitr_begin);
     // collect all the frames
     for (auto f = fitr_begin; f < fitr_end; ++f)
     {
       while (currentTimestamp.get_frame() < *f)
       {
         d->video_reader->next_frame(currentTimestamp);
+        if (hasMask)
+          d->mask_reader->next_frame(currentTimestamp);
       }
       if (currentTimestamp.get_frame() != *f)
       {
@@ -259,6 +279,8 @@ void ComputeAllDepthTool::run()
       frames_out.push_back(image);
       cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
       frame_ids.push_back(*f);
+      if (hasMask)
+        masks_out.push_back(d->mask_reader->frame_image());
     }
 
     kwiver::vital::image_container_sptr ref_img = frames_out[ref_frame];
@@ -281,7 +303,7 @@ void ComputeAllDepthTool::run()
     //compute depth
     auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                         height_min, height_max,
-                                        ref_frame, crop);
+                                        ref_frame, crop, masks_out);
     auto image_data = depth_to_vtk(depth, frames_out[ref_frame], crop.min_x(), crop.width(),
                                    crop.min_y(), crop.height());
 
