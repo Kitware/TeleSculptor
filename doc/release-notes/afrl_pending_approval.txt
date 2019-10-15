@@ -12,6 +12,9 @@ Updates since last public release
 
 TeleSculptor
 
+ * Added an option to write out the fused mesh as OBJ. Currently this option
+   supports only the mesh and does not write color per vertex.
+
 
 Fixes since last public release
 -------------------------------
