@@ -12,6 +12,9 @@ Updates since last public release
 
 TeleSculptor
 
+ * Improve responsiveness and information in progress bar for Compute Depth
+   tool.
+
 
 Fixes since last public release
 -------------------------------
