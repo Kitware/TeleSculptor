@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,8 +158,9 @@ bool ComputeDepthTool::execute(QWidget* window)
   // Set the callback to receive updates
   using std::placeholders::_1;
   using std::placeholders::_2;
+  using std::placeholders::_3;
   typedef compute_depth::callback_t callback_t;
-  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this, _1, _2);
+  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this, _1, _2, _3);
   d->depth_algo->set_callback(cb);
 
   return AbstractTool::execute(window);
@@ -357,6 +358,11 @@ void ComputeDepthTool::run()
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       height_min, height_max,
                                       ref_frame, d->crop);
+  if (!depth)
+  {
+    // processing was terminated before any result was produced
+    return;
+  }
   auto image_data = depth_to_vtk(depth, frames_out[ref_frame], d->crop.min_x(), d->crop.width(),
                                  d->crop.min_y(), d->crop.height());
 
@@ -366,18 +372,21 @@ void ComputeDepthTool::run()
 //-----------------------------------------------------------------------------
 bool
 ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
-                                   unsigned int iterations)
+                                   std::string const& status,
+                                   unsigned int percent_complete)
 {
   QTE_D();
   // make a copy of the tool data
   auto data = std::make_shared<ToolData>();
-  auto depthData = depth_to_vtk(depth, d->ref_img, d->crop.min_x(), d->crop.width(),
-                                d->crop.min_y(), d->crop.height());
-
-  data->copyDepth(depthData);
+  if (depth)
+  {
+    auto depthData = depth_to_vtk(depth, d->ref_img, d->crop.min_x(), d->crop.width(),
+                                  d->crop.min_y(), d->crop.height());
+    data->copyDepth(depthData);
+  }
   data->activeFrame = d->ref_frame;
-  this->setDescription("Optimizing Depth");
-  this->updateProgress(iterations, d->max_iterations);
+  this->setDescription(QString::fromStdString(status));
+  this->updateProgress(percent_complete);
 
   emit updated(data);
   return !this->isCanceled();
