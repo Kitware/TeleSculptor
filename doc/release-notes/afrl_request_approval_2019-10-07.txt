@@ -1,0 +1,51 @@
+TeleSculptor Release Notes for changes pending release approval by AFRL
+=======================================================================
+
+This file documents release notes for changes made to TeleSculptor which
+require public release approval from AFRL.  After approval, the changes and
+corresponding notes below will be incorporated into a public numbered
+release version, and the content of this file will be reset.
+
+
+Updates since last public release
+---------------------------------
+
+TeleSculptor
+
+ * Added an option to the Ground Control Points panel to apply the GCP
+   constraints to correct for georegistration.  The apply button estimates
+   a 3D similarity transform that best aligns the GCPs with their specified
+   geodetic locations (latitude, longitude, elevation).  The estimated
+   transform is then applied to all the data to georegister.
+
+ * When selecting a subset of video frames in the track features tool the
+   algorithm now considers modifying each selection slightly to give
+   priority to picking nearby frames which have camera metadata.
+
+ * Changed feature tracking configuration to use non-maximum suppression to
+   achieve a better spatial distribution of features when contrast is unevenly
+   distributed across the image.
+
+ * Switched from homography to fundamental matrix as the default geometric
+   filter in feature matching.  The fundamental matrix supports more general
+   scenes and does not require a planar scene or small motion assumption.
+
+ * Improved speed of metadata access and loading.
+
+ * TeleSculptor now loads all video frames and metadata by default instead
+   of sampling every 10th frame as in the past.  This is feasible because
+   the feature tracking now downsamples frames to a reasonable amount instead.
+
+ * Added new option "ignore_metadata" to force the camera estimation
+   algorithms to ignore the KLV metadata.  This is useful if the metadata is
+   known to be incorrect.
+
+
+Fixes since last public release
+-------------------------------
+
+TeleSculptor
+
+ * Fixed a divide-by-zero bug caused by computing the mean landmark location
+   when there are zero landmarks.  This happened when recomputing the local
+   coordinate system without landmarks.

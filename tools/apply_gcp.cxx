@@ -51,6 +51,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/exceptions.h>
 #include <vital/io/camera_io.h>
+#include <vital/io/camera_from_metadata.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/metadata_io.h>
