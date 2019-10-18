@@ -146,7 +146,8 @@ bool FuseDepthTool::execute(QWidget* window)
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int &nj)
+void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int &nj, 
+                    kwiver::vital::image_container_sptr &depth_out, kwiver::vital::image_container_sptr &confidence_out)
 {
   vtkNew<vtkXMLImageDataReader> depthReader;
   depthReader->SetFileName(filename.c_str());
@@ -166,12 +167,16 @@ kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, 
   }
 
   vtkDoubleArray *depths = dynamic_cast<vtkDoubleArray *>(img->GetPointData()->GetArray("Depths"));
+  vtkDoubleArray* confidences = dynamic_cast<vtkDoubleArray*>(img->GetPointData()->GetArray("Best Cost Values"));
 
   int dims[3];
   img->GetDimensions(dims);
 
   kwiver::vital::image depth(dims[0], dims[1], dims[2], false,
                              kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
+  kwiver::vital::image confidence(dims[0], dims[1], dims[2], false,
+                                  kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
+
 
   vtkIdType pt_id = 0;
   for (int x = 0; x < dims[0]; x++)
@@ -179,11 +184,13 @@ kwiver::vital::image_container_sptr load_depth_map(const std::string &filename, 
     for (int y = 0; y < dims[1]; y++)
     {
       depth.at<double>(x, y) = depths->GetValue(pt_id);
+      confidence.at<double>(x, y) = confidences->GetValue(pt_id);
       pt_id++;
     }
   }
 
-  return std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(depth));
+  depth_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(depth));
+  confidence_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(confidence));
 }
 
 //-----------------------------------------------------------------------------
@@ -261,6 +268,7 @@ void FuseDepthTool::run()
 
   std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
   std::vector<kwiver::vital::image_container_sptr> depths_out;
+  std::vector<kwiver::vital::image_container_sptr> confidences_out;
 
   for (std::map<kwiver::vital::frame_id_t, std::string>::iterator itr = depths->begin(); itr != depths->end(); itr++)
   {
@@ -269,8 +277,10 @@ void FuseDepthTool::run()
       continue;
     kwiver::vital::camera_perspective_sptr cam = std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(camitr->second);
     int i0, ni, j0, nj;
-    kwiver::vital::image_container_sptr depth = load_depth_map(itr->second, i0, ni, j0, nj);
+    kwiver::vital::image_container_sptr depth, confidence;
+    load_depth_map(itr->second, i0, ni, j0, nj, depth, confidence);
     depths_out.push_back(depth);
+    confidences_out.push_back(confidence);
     cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));
   }
 
@@ -284,7 +294,7 @@ void FuseDepthTool::run()
 
   kwiver::vital::image_container_sptr volume;
   kwiver::vital::vector_3d spacing;
-  d->fuse_algo->integrate(minpt, maxpt, depths_out, cameras_out, volume, spacing);
+  d->fuse_algo->integrate(minpt, maxpt, depths_out, confidences_out, cameras_out, volume, spacing);
 
   vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, spacing);
 

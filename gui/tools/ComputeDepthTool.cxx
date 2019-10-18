@@ -169,7 +169,8 @@ bool ComputeDepthTool::execute(QWidget* window)
 vtkSmartPointer<vtkImageData>
 depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
              kwiver::vital::image_container_sptr color_img,
-             int i0, int ni, int j0, int nj)
+             int i0, int ni, int j0, int nj,
+             kwiver::vital::image_container_sptr mask_img)
 {
   vtkNew<vtkDoubleArray> uniquenessRatios;
   uniquenessRatios->SetName("Uniqueness Ratios");
@@ -206,7 +207,18 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
     for (int x = 0; x < ni; x++)
     {
       uniquenessRatios->SetValue(pt_id, 0);
-      bestCost->SetValue(pt_id, 0);
+      if (mask_img)
+      {
+        if (mask_img->get_image().at<unsigned char>(x, y) > 127)
+          bestCost->SetValue(pt_id, 1.0);
+        else
+          bestCost->SetValue(pt_id, 0.0);
+      }
+      else
+      {
+        bestCost->SetValue(pt_id, 1.0);
+      }
+
       depths->SetValue(pt_id, dep_im.at<double>(x, y));
       color->SetTuple3(pt_id, (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
                               (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
