@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -198,7 +198,9 @@ void ComputeAllDepthTool::run()
 
   d->video_reader->open(this->data()->videoPath);
   if (hasMask)
+  {
     d->mask_reader->open(this->data()->maskPath);
+  }
 
   //convert landmarks to vector
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
@@ -245,7 +247,9 @@ void ComputeAllDepthTool::run()
     kwiver::vital::timestamp currentTimestamp;
     d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
     if (hasMask)
+    {
       d->mask_reader->seek_frame(currentTimestamp, *fitr_begin);
+    }
     // collect all the frames
     for (auto f = fitr_begin; f < fitr_end; ++f)
     {
@@ -253,7 +257,9 @@ void ComputeAllDepthTool::run()
       {
         d->video_reader->next_frame(currentTimestamp);
         if (hasMask)
+        {
           d->mask_reader->next_frame(currentTimestamp);
+        }
       }
       if (currentTimestamp.get_frame() != *f)
       {
@@ -280,7 +286,9 @@ void ComputeAllDepthTool::run()
       cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
       frame_ids.push_back(*f);
       if (hasMask)
+      {
         masks_out.push_back(d->mask_reader->frame_image());
+      }
     }
 
     kwiver::vital::image_container_sptr ref_img = frames_out[ref_frame];

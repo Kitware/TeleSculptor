@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -303,14 +303,18 @@ void ComputeDepthTool::run()
   }
 
   d->video_reader->open(this->data()->videoPath);
-  if (hasMask) 
+  if (hasMask)
+  {
     d->mask_reader->open(this->data()->maskPath);
+  }
 
   kwiver::vital::timestamp currentTimestamp;
   // seek to the first frame
   d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
-  if (hasMask) 
+  if (hasMask)
+  {
     d->mask_reader->seek_frame(currentTimestamp, *fitr_begin);
+  }
 
   // collect all the frames
   for (auto f = fitr_begin; f < fitr_end; ++f)
@@ -347,7 +351,9 @@ void ComputeDepthTool::run()
     frame_ids.push_back(*f);
 
     if (hasMask)
+    {
       masks_out.push_back(d->mask_reader->frame_image());
+    }
   }
 
   LOG_DEBUG(this->data()->logger, "ref frame at index " << ref_frame
