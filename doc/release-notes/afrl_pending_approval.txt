@@ -15,6 +15,10 @@ TeleSculptor
  * Improve responsiveness and information in progress bar for Compute Depth
    tool.
 
+ * TeleSculptor now uses image masks in the depth estimation tools if image
+   masks have been loaded.  Masks indicate which pixels to ignore in depth
+   estimation.
+
 
 Fixes since last public release
 -------------------------------
