@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,30 +32,30 @@
 #include "GuiCommon.h"
 
 #include <arrows/core/depth_utils.h>
-#include <vital/algo/image_io.h>
 #include <vital/algo/compute_depth.h>
+#include <vital/algo/image_io.h>
 #include <vital/algo/video_input.h>
 #include <vital/config/config_block_io.h>
 #include <vital/exceptions/base.h>
 #include <vital/types/metadata.h>
 
-#include <qtStlUtil.h>
 #include <QMessageBox>
+#include <qtStlUtil.h>
 
 #include <algorithm>
 
 #include <vtkDoubleArray.h>
 #include <vtkImageData.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkIntArray.h>
 
-using kwiver::vital::algo::image_io;
-using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::compute_depth;
 using kwiver::vital::algo::compute_depth_sptr;
+using kwiver::vital::algo::image_io;
+using kwiver::vital::algo::image_io_sptr;
 using kwiver::vital::algo::video_input;
 using kwiver::vital::algo::video_input_sptr;
 
@@ -63,14 +63,17 @@ namespace
 {
 static char const* const BLOCK_VR = "video_reader";
 static char const* const BLOCK_CD = "compute_depth";
-}
+static char const* const BLOCK_MR = "mask_reader";
+} // namespace
 
 //-----------------------------------------------------------------------------
 class ComputeDepthToolPrivate
 {
 public:
-  ComputeDepthToolPrivate() : crop(0,0,0,0) {}
+  ComputeDepthToolPrivate()
+    : crop(0, 0, 0, 0) {}
   video_input_sptr video_reader;
+  video_input_sptr mask_reader;
   compute_depth_sptr depth_algo;
   unsigned int max_iterations;
   int num_support;
@@ -137,7 +140,7 @@ bool ComputeDepthTool::execute(QWidget* window)
     return false;
   }
 
-  if(!compute_depth::check_nested_algo_configuration(BLOCK_CD, config))
+  if (!compute_depth::check_nested_algo_configuration(BLOCK_CD, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -145,10 +148,20 @@ bool ComputeDepthTool::execute(QWidget* window)
     return false;
   }
 
+  auto const hasMask = !this->data()->maskPath.empty();
+  if (hasMask && !video_input::check_nested_algo_configuration(BLOCK_MR, config))
+  {
+    QMessageBox::critical(
+      window, "Configuration error",
+      "An error was found in the mask reader configuration.");
+    return false;
+  }
+
   // Create algorithm from configuration
   config->merge_config(this->data()->config);
   video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
   compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
+  video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
 
   // TODO: find a more general way to get the number of iterations
   std::string iterations_key = ":super3d:iterations";
@@ -174,28 +187,30 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
 {
   vtkNew<vtkDoubleArray> uniquenessRatios;
   uniquenessRatios->SetName("Uniqueness Ratios");
-  uniquenessRatios->SetNumberOfValues(ni*nj);
+  uniquenessRatios->SetNumberOfValues(ni * nj);
 
   vtkNew<vtkDoubleArray> bestCost;
   bestCost->SetName("Best Cost Values");
-  bestCost->SetNumberOfValues(ni*nj);
+  bestCost->SetNumberOfValues(ni * nj);
 
   vtkNew<vtkUnsignedCharArray> color;
   color->SetName("Color");
   color->SetNumberOfComponents(3);
-  color->SetNumberOfTuples(ni*nj);
+  color->SetNumberOfTuples(ni * nj);
 
   vtkNew<vtkDoubleArray> depths;
   depths->SetName("Depths");
   depths->SetNumberOfComponents(1);
-  depths->SetNumberOfTuples(ni*nj);
+  depths->SetNumberOfTuples(ni * nj);
 
   vtkNew<vtkIntArray> crop;
   crop->SetName("Crop");
   crop->SetNumberOfComponents(1);
   crop->SetNumberOfValues(4);
-  crop->SetValue(0, i0);  crop->SetValue(1, ni);
-  crop->SetValue(2, j0);  crop->SetValue(3, nj);
+  crop->SetValue(0, i0);
+  crop->SetValue(1, ni);
+  crop->SetValue(2, j0);
+  crop->SetValue(3, nj);
 
   vtkIdType pt_id = 0;
 
@@ -220,9 +235,10 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
       }
 
       depths->SetValue(pt_id, dep_im.at<double>(x, y));
-      color->SetTuple3(pt_id, (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
-                              (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
-                              (int)col_im.at<unsigned char>(x + i0, y + j0, 2));
+      color->SetTuple3(pt_id,
+                       (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
+                       (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
+                       (int)col_im.at<unsigned char>(x + i0, y + j0, 2));
       pt_id++;
     }
   }
@@ -230,7 +246,7 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
   vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
   imageData->SetSpacing(1, 1, 1);
   imageData->SetOrigin(0, 0, 0);
-  imageData->SetDimensions(ni , nj, 1);
+  imageData->SetDimensions(ni, nj, 1);
   imageData->GetPointData()->AddArray(depths.Get());
   imageData->GetPointData()->AddArray(color.Get());
   imageData->GetPointData()->AddArray(uniquenessRatios.Get());
@@ -249,13 +265,15 @@ void ComputeDepthTool::run()
 
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
+  auto const hasMask = !this->data()->maskPath.empty();
 
   std::vector<kwiver::vital::image_container_sptr> frames_out;
   std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
+  std::vector<kwiver::vital::image_container_sptr> masks_out;
   std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   std::vector<kwiver::vital::frame_id_t> frame_ids;
   const int halfsupport = d->num_support;
-  const int total_support = 2*d->num_support+1;
+  const int total_support = 2 * d->num_support + 1;
   int ref_frame = 0;
 
   this->setDescription("Collecting Video Frames");
@@ -297,9 +315,18 @@ void ComputeDepthTool::run()
   }
 
   d->video_reader->open(this->data()->videoPath);
+  if (hasMask)
+  {
+    d->mask_reader->open(this->data()->maskPath);
+  }
+
   kwiver::vital::timestamp currentTimestamp;
   // seek to the first frame
   d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
+  if (hasMask)
+  {
+    d->mask_reader->seek_frame(currentTimestamp, *fitr_begin);
+  }
 
   // collect all the frames
   for (auto f = fitr_begin; f < fitr_end; ++f)
@@ -307,6 +334,8 @@ void ComputeDepthTool::run()
     while (currentTimestamp.get_frame() < *f)
     {
       d->video_reader->next_frame(currentTimestamp);
+      if (hasMask)
+        d->mask_reader->next_frame(currentTimestamp);
     }
     if (currentTimestamp.get_frame() != *f)
     {
@@ -332,6 +361,11 @@ void ComputeDepthTool::run()
     frames_out.push_back(image);
     cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
     frame_ids.push_back(*f);
+
+    if (hasMask)
+    {
+      masks_out.push_back(d->mask_reader->frame_image());
+    }
   }
 
   LOG_DEBUG(this->data()->logger, "ref frame at index " << ref_frame
@@ -339,7 +373,7 @@ void ComputeDepthTool::run()
 
   // Convert landmarks to vector
   landmarks_out.reserve(lm.size());
-  foreach(auto const& l, lm)
+  foreach (auto const& l, lm)
   {
     landmarks_out.push_back(l.second);
   }
@@ -354,9 +388,9 @@ void ComputeDepthTool::run()
   kwiver::vital::vector_3d minpt(minptd);
   kwiver::vital::vector_3d maxpt(maxptd);
 
-  d->crop =  kwiver::arrows::core::project_3d_bounds(minpt, maxpt, *cameras_out[ref_frame],
-    static_cast<int>(d->ref_img->width()),
-    static_cast<int>(d->ref_img->height()));
+  d->crop = kwiver::arrows::core::project_3d_bounds(minpt, maxpt, *cameras_out[ref_frame],
+                                                    static_cast<int>(d->ref_img->width()),
+                                                    static_cast<int>(d->ref_img->height()));
 
   double height_min, height_max;
   kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
@@ -368,7 +402,7 @@ void ComputeDepthTool::run()
   emit updated(data);
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       height_min, height_max,
-                                      ref_frame, d->crop);
+                                      ref_frame, d->crop, masks_out);
   auto image_data = depth_to_vtk(depth, frames_out[ref_frame], d->crop.min_x(), d->crop.width(),
                                  d->crop.min_y(), d->crop.height());
 
