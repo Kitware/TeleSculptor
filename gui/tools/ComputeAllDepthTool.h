@@ -50,6 +50,10 @@ public:
 
   virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
 
+  bool callback_handler(kwiver::vital::image_container_sptr depth,
+                        std::string const& status,
+                        unsigned int percent_complete);
+
 protected:
   virtual void run() QTE_OVERRIDE;
 
