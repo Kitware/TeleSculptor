@@ -98,7 +98,7 @@ protected:
   void MoveFocusConstrained(double* p1, double* p2);
 
   // Constrained translate
-  void TranslateConstrained(double* p1, double* p2);
+  void TranslateConstrained(double* p1, double* p2, double * displaypos);
 
   /**
    * Update the axes

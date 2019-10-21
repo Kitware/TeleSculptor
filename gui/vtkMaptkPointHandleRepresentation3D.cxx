@@ -38,6 +38,7 @@
 #include <vtkFocalPlanePointPlacer.h>
 #include <vtkInteractorObserver.h>
 #include <vtkObjectFactory.h>
+#include <vtkPlane.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
@@ -158,7 +159,7 @@ void vtkMaptkPointHandleRepresentation3D::WidgetInteraction(double eventPos[2])
         {
           if (this->CustomConstraint)
           {
-            this->MoveFocusConstrained(prevPickPoint, pickPoint);
+            this->TranslateConstrained(prevPickPoint, pickPoint, eventPos);
           }
           else
           {
@@ -220,7 +221,7 @@ void vtkMaptkPointHandleRepresentation3D::WidgetInteraction(double eventPos[2])
         {
           if (this->CustomConstraint)
           {
-            this->TranslateConstrained(prevPickPoint, pickPoint);
+            this->TranslateConstrained(prevPickPoint, pickPoint, eventPos);
           }
           else
           {
@@ -334,41 +335,52 @@ void vtkMaptkPointHandleRepresentation3D::MoveFocusConstrained(double* p1,
 
 //----------------------------------------------------------------------------
 void vtkMaptkPointHandleRepresentation3D::TranslateConstrained(double* p1,
-                                                               double* p2)
+                                                               double* p2,
+                                                               double* ePos)
 {
-  // Get the motion vector
-  double v[3];
-  v[0] = p2[0] - p1[0];
-  v[1] = p2[1] - p1[1];
-  v[2] = p2[2] - p1[2];
 
-  double* bounds = this->Cursor3D->GetModelBounds();
-  double* pos = this->Cursor3D->GetFocalPoint();
-  double newBounds[6], newFocus[3];
-  int i;
+  double normal[3] = { 0, 0, 1 };
+  double currentWorldPos[3];
+  this->GetWorldPosition(currentWorldPos);
 
   if (this->ConstraintAxis >= 0)
-  { // move along axis
+  {
     if (this->ConstraintAxis == 2)
     {
-      v[0] = 0.0;
-      v[1] = 0.0;
-    }
-    else
-    {
-      v[2] = 0.0;
+      // move along the z axis
+      double vec[3] = { currentWorldPos[0], currentWorldPos[1], 0.0 };
+      double zvec[3] = { 0, 0, 1 };
+      vtkMath::Cross(zvec, vec, normal);
     }
   }
-
-  for (i = 0; i < 3; i++)
+  else
   {
-    newBounds[2 * i] = bounds[2 * i] + v[i];
-    newBounds[2 * i + 1] = bounds[2 * i + 1] + v[i];
-    newFocus[i] = pos[i] + v[i];
+    return;
   }
+  double nearWorldPoint[4];
+  double farWorldPoint[4];
+  double tmp[3];
 
-  this->Cursor3D->SetModelBounds(newBounds);
-  this->SetWorldPosition(newFocus);
+  tmp[0] = ePos[0];
+  tmp[1] = ePos[1];
+  tmp[2] = 0.0; // near plane
+
+  this->Renderer->SetDisplayPoint(tmp);
+  this->Renderer->DisplayToWorld();
+  this->Renderer->GetWorldPoint(nearWorldPoint);
+
+  tmp[2] = 1.0; // far plane
+  this->Renderer->SetDisplayPoint(tmp);
+  this->Renderer->DisplayToWorld();
+  this->Renderer->GetWorldPoint(farWorldPoint);
+
+  double position[3];
+  double dist;
+  if (vtkPlane::IntersectWithLine(
+        nearWorldPoint, farWorldPoint, normal, currentWorldPos, dist, position))
+  {
+    this->SetWorldPosition(position);
+  }
 }
 
 //----------------------------------------------------------------------
