@@ -2688,6 +2688,18 @@ void MainWindow::acceptToolResults(
 
   if (d->activeTool)
   {
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
+
+    if (data->isProgressOnly() &&
+        data->activeFrame == d->activeCameraIndex)
+    {
+      // nothing else to update
+      return;
+    }
+
     auto const outputs = d->activeTool->outputs();
 
     d->toolUpdateCameras = NULL;
@@ -2729,10 +2741,6 @@ void MainWindow::acceptToolResults(
     {
       d->toolUpdateVolume = data->volume;
     }
-    // Update tool progress
-    d->updateProgress(d->activeTool,
-                      d->activeTool->description(),
-                      d->activeTool->progress());
   }
 
   if (isFinal)
