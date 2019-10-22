@@ -263,10 +263,10 @@ void vtkMaptkAxesActor::UpdateProps()
     double shaftLength = 0.7 * this->AxesLength;
 
     this->YAxisShaft->SetScale(shaftLength, shaftLength, shaftLength);
-    this->YAxisShaft->SetPosition(pos[0], pos[1] + shaftLength/2, pos[2]);
+    this->YAxisShaft->SetPosition(pos[0], pos[1] + shaftLength / 2, pos[2]);
     this->YAxisShaft->SetOrientation(0, 0, 0);
     this->XAxisShaft->SetScale(shaftLength, shaftLength, shaftLength);
-    this->XAxisShaft->SetPosition(pos[0] + shaftLength/2, pos[1], pos[2]);
+    this->XAxisShaft->SetPosition(pos[0] + shaftLength / 2, pos[1], pos[2]);
     this->XAxisShaft->SetOrientation(0, 0, -90);
 
     // 30% tip

@@ -31,13 +31,14 @@
 #ifndef TELESCULPTOR_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
 #define TELESCULPTOR_VTKMAPTKPOINTHANDLEREPRESENTATION3D_H_
 
+// Telesculptor includes
+#include "vtkMaptkAxesActor.h"
+
 // VTK includes
-#include <vtkAxesActor.h>
 #include <vtkPointHandleRepresentation3D.h>
 
 // Forward declarations
 class vtkRenderer;
-class vtkAssembly;
 
 class vtkMaptkPointHandleRepresentation3D
   : public vtkPointHandleRepresentation3D
@@ -87,7 +88,7 @@ public:
   //@}
 
 protected:
-  vtkMaptkPointHandleRepresentation3D();
+  vtkMaptkPointHandleRepresentation3D() = default;
   ~vtkMaptkPointHandleRepresentation3D() = default;
 
   // Override to ensure that the pick tolerance is always about the same as
@@ -98,7 +99,7 @@ protected:
   void MoveFocusConstrained(double* p1, double* p2);
 
   // Constrained translate
-  void TranslateConstrained(double* p1, double* p2, double * displaypos);
+  void TranslateConstrained(double* p1, double* p2, double* displaypos);
 
   /**
    * Update the axes
@@ -107,8 +108,7 @@ protected:
 
   // Member variables
   int CustomConstraint = 0;
-  vtkNew<vtkAxesActor> AxesActor;
-  vtkNew<vtkAssembly> AxesAssembly;
+  vtkNew<vtkMaptkAxesActor> AxesActor;
 
 private:
   vtkMaptkPointHandleRepresentation3D(

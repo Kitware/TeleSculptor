@@ -46,22 +46,6 @@
 vtkStandardNewMacro(vtkMaptkPointHandleRepresentation3D);
 
 //----------------------------------------------------------------------------
-vtkMaptkPointHandleRepresentation3D::vtkMaptkPointHandleRepresentation3D()
-{
-  this->AxesActor->SetTipTypeToSphere();
-  this->AxesActor->SetAxisLabels(false);
-  this->AxesActor->SetTotalLength(1.5, 1.5, 1.5);
-  vtkNew<vtkPropCollection> collection;
-  this->AxesActor->GetActors(collection);
-  collection->InitTraversal();
-  for (int i = 0; i < collection->GetNumberOfItems(); ++i)
-  {
-    this->AxesAssembly->AddPart(
-      vtkProp3D::SafeDownCast(collection->GetNextProp()));
-  }
-}
-
-//----------------------------------------------------------------------------
 void vtkMaptkPointHandleRepresentation3D::PrintSelf(ostream& os,
                                                     vtkIndent indent)
 {
@@ -412,14 +396,14 @@ void vtkMaptkPointHandleRepresentation3D::UpdateAxes()
     return;
   }
 
-  if (!this->Renderer->HasViewProp(this->AxesAssembly))
+  if (!this->Renderer->HasViewProp(this->AxesActor))
   {
-    this->Renderer->AddActor(this->AxesAssembly);
+    this->Renderer->AddActor(this->AxesActor);
   }
   if (!this->CustomConstraint || !this->Constrained ||
       this->ConstraintAxis < 0 || this->ConstraintAxis > 2)
   {
-    this->Renderer->RemoveViewProp(this->AxesAssembly);
+    this->Renderer->RemoveViewProp(this->AxesActor);
     return;
   }
 
@@ -427,24 +411,16 @@ void vtkMaptkPointHandleRepresentation3D::UpdateAxes()
   this->Cursor3D->GetFocalPoint(center);
   this->Cursor3D->GetModelBounds(bounds);
 
-  this->AxesAssembly->SetPosition(center);
+  this->AxesActor->SetPosition(center);
   if (this->ConstraintAxis == 0 || this->ConstraintAxis == 1)
   {
-    this->AxesActor->GetZAxisTipProperty()->SetOpacity(0);
-    this->AxesActor->GetZAxisShaftProperty()->SetOpacity(0);
-    this->AxesActor->GetXAxisTipProperty()->SetOpacity(1);
-    this->AxesActor->GetXAxisShaftProperty()->SetOpacity(1);
-    this->AxesActor->GetYAxisTipProperty()->SetOpacity(1);
-    this->AxesActor->GetYAxisShaftProperty()->SetOpacity(1);
+    this->AxesActor->SetZAxisVisibility(0);
+    this->AxesActor->SetXYPlaneVisibility(1);
   }
   else
   {
-    this->AxesActor->GetZAxisTipProperty()->SetOpacity(1);
-    this->AxesActor->GetZAxisShaftProperty()->SetOpacity(1);
-    this->AxesActor->GetXAxisTipProperty()->SetOpacity(0);
-    this->AxesActor->GetXAxisShaftProperty()->SetOpacity(0);
-    this->AxesActor->GetYAxisTipProperty()->SetOpacity(0);
-    this->AxesActor->GetYAxisShaftProperty()->SetOpacity(0);
+    this->AxesActor->SetZAxisVisibility(1);
+    this->AxesActor->SetXYPlaneVisibility(0);
   }
 }
 
