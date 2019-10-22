@@ -101,6 +101,15 @@ public:
 
   //@{
   /**
+   * Set/Get the XY plane visibility (Default: true)
+   */
+  vtkSetMacro(XYPlaneVisibility, vtkTypeBool);
+  vtkGetMacro(XYPlaneVisibility, vtkTypeBool);
+  vtkBooleanMacro(XYPlaneVisibility, vtkTypeBool);
+  //@}
+
+  //@{
+  /**
    * Set/Get the total length of the axes (Default: 1.5)
    */
   vtkSetMacro(AxesLength, int);
@@ -119,10 +128,14 @@ protected:
   vtkActor* ZAxisShaft;
   vtkActor* ZAxisTip;
   vtkActor* XYPlaneDisk;
-  vtkActor* XYPlaneDiskEdge;
+  vtkActor* XAxisShaft;
+  vtkActor* XAxisTip;
+  vtkActor* YAxisShaft;
+  vtkActor* YAxisTip;
 
   vtkTypeBool ZAxisVisibility = true;
-  double AxisLength = 1.5;
+  vtkTypeBool XYPlaneVisibility = true;
+  double AxesLength = 1.5;
 
   // Update the internal props
   void UpdateProps();
