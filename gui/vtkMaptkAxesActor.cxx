@@ -49,6 +49,7 @@ vtkMaptkAxesActor::vtkMaptkAxesActor()
   this->CylinderSource = vtkCylinderSource::New();
   this->CylinderSource->SetRadius(0.04);
   this->CylinderSource->SetResolution(20);
+  this->CylinderSource->SetHeight(1.0);
 
   vtkPolyDataMapper* shaftMapper = vtkPolyDataMapper::New();
   shaftMapper->SetInputConnection(this->CylinderSource->GetOutputPort());
@@ -84,8 +85,8 @@ vtkMaptkAxesActor::vtkMaptkAxesActor()
   this->DiskSource = vtkDiskSource::New();
   this->DiskSource->SetRadialResolution(3);
   this->DiskSource->SetCircumferentialResolution(50);
-  this->DiskSource->SetInnerRadius(0.1 * this->GetAxesLength());
-  this->DiskSource->SetOuterRadius(this->GetAxesLength());
+  this->DiskSource->SetInnerRadius(0.15);
+  this->DiskSource->SetOuterRadius(1.0);
   vtkPolyDataMapper* diskMapper = vtkPolyDataMapper::New();
   diskMapper->SetInputConnection(this->DiskSource->GetOutputPort());
   this->XYPlaneDisk = vtkActor::New();
@@ -230,11 +231,11 @@ void vtkMaptkAxesActor::UpdateProps()
 
   if (this->GetZAxisVisibility())
   {
-    this->CylinderSource->SetHeight(this->AxesLength);
     // 70% shaft
     double shaftLength = 0.7 * this->AxesLength;
 
-    this->ZAxisShaft->SetScale(shaftLength, shaftLength, shaftLength);
+    this->ZAxisShaft->SetScale(
+      this->AxesLength, this->AxesLength, this->AxesLength);
     this->ZAxisShaft->SetPosition(pos[0], pos[1], pos[2] + shaftLength / 2);
     this->ZAxisShaft->SetOrientation(90, 0, 0);
 
@@ -258,14 +259,15 @@ void vtkMaptkAxesActor::UpdateProps()
     this->XYPlaneDisk->SetPosition(pos[0], pos[1], pos[2]);
     this->XYPlaneDisk->SetOrientation(0, 0, 0);
 
-    this->CylinderSource->SetHeight(this->AxesLength);
     // 70% shaft
     double shaftLength = 0.7 * this->AxesLength;
 
-    this->YAxisShaft->SetScale(shaftLength, shaftLength, shaftLength);
+    this->YAxisShaft->SetScale(
+      this->AxesLength, this->AxesLength, this->AxesLength);
     this->YAxisShaft->SetPosition(pos[0], pos[1] + shaftLength / 2, pos[2]);
     this->YAxisShaft->SetOrientation(0, 0, 0);
-    this->XAxisShaft->SetScale(shaftLength, shaftLength, shaftLength);
+    this->XAxisShaft->SetScale(
+      this->AxesLength, this->AxesLength, this->AxesLength);
     this->XAxisShaft->SetPosition(pos[0] + shaftLength / 2, pos[1], pos[2]);
     this->XAxisShaft->SetOrientation(0, 0, -90);
 

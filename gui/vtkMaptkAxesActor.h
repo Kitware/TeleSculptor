@@ -112,8 +112,8 @@ public:
   /**
    * Set/Get the total length of the axes (Default: 1.5)
    */
-  vtkSetMacro(AxesLength, int);
-  vtkGetMacro(AxesLength, int);
+  vtkSetMacro(AxesLength, double);
+  vtkGetMacro(AxesLength, double);
   //@}
 
 protected:

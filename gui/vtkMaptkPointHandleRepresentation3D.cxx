@@ -422,6 +422,7 @@ void vtkMaptkPointHandleRepresentation3D::UpdateAxes()
     this->AxesActor->SetZAxisVisibility(1);
     this->AxesActor->SetXYPlaneVisibility(0);
   }
+  this->AxesActor->SetAxesLength(3 * (bounds[1] - bounds[0]));
 }
 
 //----------------------------------------------------------------------
