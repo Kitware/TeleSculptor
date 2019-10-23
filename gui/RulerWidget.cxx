@@ -445,3 +445,17 @@ void RulerWidget::removeRuler()
   d->resetRuler();
   emit this->rulerPlaced(d->rulerPlaced);
 }
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setRulerTickDistance(double dist)
+{
+  QTE_D();
+  d->repr->SetRulerDistance(dist);
+}
+
+//-----------------------------------------------------------------------------
+double RulerWidget::rulerTickDistance() const
+{
+  QTE_D();
+  return d->repr->GetRulerDistance();
+}

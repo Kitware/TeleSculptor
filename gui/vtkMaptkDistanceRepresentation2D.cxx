@@ -42,6 +42,15 @@
 vtkStandardNewMacro(vtkMaptkDistanceRepresentation2D);
 
 //----------------------------------------------------------------------------
+vtkMaptkDistanceRepresentation2D::vtkMaptkDistanceRepresentation2D()
+{
+  this->RulerMode = true;
+  this->AxisActor->SetTickLength(10);
+  this->AxisActor->SetNumberOfMinorTicks(10);
+  this->SetRulerDistance(0.1);
+}
+
+//----------------------------------------------------------------------------
 void vtkMaptkDistanceRepresentation2D::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
