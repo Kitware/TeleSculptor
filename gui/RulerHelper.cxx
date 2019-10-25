@@ -57,12 +57,43 @@ public:
 
   MainWindow* mainWindow = nullptr;
 
+  void updateCameraViewRulerTickDistance();
+
 private:
   QTE_DECLARE_PUBLIC_PTR(RulerHelper)
   QTE_DECLARE_PUBLIC(RulerHelper)
 };
 
 QTE_IMPLEMENT_D_FUNC(RulerHelper)
+
+//-----------------------------------------------------------------------------
+void RulerHelperPrivate::updateCameraViewRulerTickDistance()
+{
+  vtkMaptkCamera* camera = this->mainWindow->activeCamera();
+  if (!camera)
+  {
+    return;
+  }
+
+  RulerWidget* worldWidget = this->mainWindow->worldView()->rulerWidget();
+  RulerWidget* cameraWidget = this->mainWindow->cameraView()->rulerWidget();
+
+  kv::vector_3d p1 = worldWidget->point1WorldPosition();
+  kv::vector_3d p2 = worldWidget->point2WorldPosition();
+  kv::vector_3d cp1 = cameraWidget->point1WorldPosition();
+  kv::vector_3d cp2 = cameraWidget->point2WorldPosition();
+  double p21[3];
+  p21[0] = p2[0] - p1[0];
+  p21[1] = p2[1] - p1[1];
+  p21[2] = p2[2] - p1[2];
+  double dist = vtkMath::Norm(p21);
+  double numTicks = dist / worldWidget->rulerTickDistance();
+  p21[0] = cp2[0] - cp1[0];
+  p21[1] = cp2[1] - cp1[1];
+  p21[2] = 0;
+  dist = vtkMath::Norm(p21);
+  cameraWidget->setRulerTickDistance(dist / numTicks);
+}
 
 //-----------------------------------------------------------------------------
 RulerHelper::RulerHelper(QObject* parent)
@@ -163,6 +194,7 @@ void RulerHelper::addWorldViewPoint(int pointId)
     worldWidget->setPoint2WorldPosition(p[0], p[1], p[2]);
     worldWidget->render();
     cameraWidget->setDistance(worldWidget->distance());
+    d->updateCameraViewRulerTickDistance();
     cameraWidget->render();
   }
 }
@@ -195,6 +227,7 @@ void RulerHelper::moveCameraViewPoint(int pointId)
     cameraWidget->setPoint2WorldPosition(cameraPt[0], cameraPt[1], 0.0);
   }
   cameraWidget->setDistance(worldWidget->distance());
+  d->updateCameraViewRulerTickDistance();
   cameraWidget->render();
 }
 
@@ -230,6 +263,7 @@ void RulerHelper::moveWorldViewPoint(int pointId)
   }
   worldWidget->render();
   cameraWidget->setDistance(worldWidget->distance());
+  d->updateCameraViewRulerTickDistance();
   cameraWidget->render();
 }
 
@@ -258,22 +292,8 @@ void RulerHelper::addCameraViewPoint(int pointId)
     double cameraPt2[2];
     camera->ProjectPoint(p2, cameraPt2);
     cameraWidget->setPoint2WorldPosition(cameraPt2[0], cameraPt2[1], 0.0);
+    d->updateCameraViewRulerTickDistance();
     cameraWidget->render();
-
-    // set up ruler scale in camera view to match that in world view
-    double * wp1 = p.data();
-    double * wp2 = p2.data();
-    double wp21[3];
-    wp21[0] = wp2[0] - wp1[0];
-    wp21[1] = wp2[1] - wp1[1];
-    wp21[2] = wp2[2] - wp1[2];
-    double dist = vtkMath::Norm(wp21);
-    double numTicks = dist / worldWidget->rulerTickDistance();
-    wp21[0] = cameraPt2[0] - cameraPt[0];
-    wp21[1] = cameraPt2[1] - cameraPt[1];
-    wp21[2] = 0;
-    dist = vtkMath::Norm(wp21);
-    cameraWidget->setRulerTickDistance(dist / numTicks);
   }
 }
 
