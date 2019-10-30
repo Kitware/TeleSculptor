@@ -217,7 +217,7 @@ void vtkMaptkDistanceWidget::UpdateRepresentationConstraint(int id)
       otherW->GetHandleRepresentation());
   if (repr)
   {
-    repr->SetConstrained((this->ConstraintMode < 0 ? false : true));
+    repr->SetConstrained(this->ConstraintMode >= 0);
     repr->SetConstraintAxis(this->ConstraintMode);
     if (repr->GetConstrained() && otherRepr)
     {

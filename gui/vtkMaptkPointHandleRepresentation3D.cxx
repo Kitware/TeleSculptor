@@ -365,6 +365,11 @@ void vtkMaptkPointHandleRepresentation3D::TranslateConstrained(double* p1,
   {
     this->SetWorldPosition(position);
   }
+  this->LastPickPosition[0] = position[0];
+  this->LastPickPosition[1] = position[1];
+  this->LastPickPosition[2] = position[2];
+  this->Cursor3D->SetFocalPoint(position);
+  this->SizeBounds();
 }
 
 //----------------------------------------------------------------------
