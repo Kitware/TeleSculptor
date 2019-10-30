@@ -15,6 +15,17 @@ TeleSculptor
  * Added an option to write out the fused mesh as OBJ. Currently this option
    supports only the mesh and does not write color per vertex.
 
+ * Improve responsiveness and information in progress bar for Compute Depth
+   tool.
+
+ * TeleSculptor now uses image masks in the depth estimation tools if image
+   masks have been loaded.  Masks indicate which pixels to ignore in depth
+   estimation.
+
+ * The tool to batch compute depth maps now provides more frequent status
+   updates and intermediate results.  The cancel option is also more
+   responsive.
+
 
 Fixes since last public release
 -------------------------------
