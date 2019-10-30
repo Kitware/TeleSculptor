@@ -12,25 +12,19 @@ Updates since last public release
 
 TeleSculptor
 
- * Added an option to the Ground Control Points panel to apply the GCP
-   constraints to correct for georegistration.  The apply button estimates
-   a 3D similarity transform that best aligns the GCPs with their specified
-   geodetic locations (latitude, longitude, elevation).  The estimated
-   transform is then applied to all the data to georegister.
+ * Improve responsiveness and information in progress bar for Compute Depth
+   tool.
 
- * Switched from homography to fundamental matrix as the default geometric
-   filter in feature matching.  The fundamental matrix supports more general
-   scenes and does not require a planar scene or small motion assumption.
+ * TeleSculptor now uses image masks in the depth estimation tools if image
+   masks have been loaded.  Masks indicate which pixels to ignore in depth
+   estimation.
 
- * Improved speed of metadata access and loading.
-
- * TeleSculptor now loads all video frames and metadata by default instead
-   of sampling every 10th frame as in the past.  This is feasible because
-   the feature tracking now downsamples frames to a reasonable amount instead.
+ * The tool to batch compute depth maps now provides more frequent status
+   updates and intermediate results.  The cancel option is also more
+   responsive.
 
 
 Fixes since last public release
 -------------------------------
 
 TeleSculptor
-

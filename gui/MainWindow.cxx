@@ -66,6 +66,7 @@
 #include <vital/algo/video_input.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/io/camera_io.h>
+#include <vital/io/camera_from_metadata.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
 #include <vital/types/camera_perspective.h>
@@ -410,6 +411,10 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 //-----------------------------------------------------------------------------
 kv::vector_3d MainWindowPrivate::centerLandmarks() const
 {
+  if (this->landmarks->size() == 0)
+  {
+    return kv::vector_3d(0.0, 0.0, 0.0);
+  }
   std::vector<double> x, y, z;
   x.reserve(this->landmarks->size());
   y.reserve(this->landmarks->size());
@@ -674,9 +679,14 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
 
-  sfmConstraints->set_metadata(videoMetadataMap);
+  bool ignore_metadata =
+    this->freestandingConfig->get_value<bool>(
+      "ignore_metadata", false);
 
-
+  if (!ignore_metadata)
+  {
+    sfmConstraints->set_metadata(videoMetadataMap);
+  }
 
   this->UI.metadata->updateMetadata(mdMap);
 
@@ -744,21 +754,38 @@ void MainWindowPrivate::updateFrames(
         this->freestandingConfig->get_value<bool>(
           "initialize_cameras_with_metadata", true);
 
-      if (init_cams_with_metadata)
+      if (!ignore_metadata && init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
+        K->set_image_width(static_cast<unsigned>(im->width()));
+        K->set_image_height(static_cast<unsigned>(im->height()));
+        baseCamera.set_intrinsics(K);
 
         bool init_intrinsics_with_metadata =
           this->freestandingConfig->get_value<bool>(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
-          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+          // find the first metadata that gives valid intrinsics
+          // and put this in baseCamera as a backup for when
+          // a particular metadata packet is missing data
+          for (auto mdp : mdMap)
+          {
+            auto md_K = kv::intrinsics_from_metadata(
+                          *mdp.second,
+                          static_cast<unsigned>(im->width()),
+                          static_cast<unsigned>(im->height()) );
+            if (md_K != nullptr)
+            {
+              baseCamera.set_intrinsics(md_K);
+              break;
+            }
+          }
         }
 
         kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
         camMap = kv::initialize_cameras_with_metadata(
-          mdMap, baseCamera, lgcs);
+          mdMap, baseCamera, lgcs, init_intrinsics_with_metadata);
 
         sfmConstraints->set_local_geo_cs(lgcs);
 
@@ -2661,6 +2688,18 @@ void MainWindow::acceptToolResults(
 
   if (d->activeTool)
   {
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
+
+    if (data->isProgressOnly() &&
+        data->activeFrame == d->activeCameraIndex)
+    {
+      // nothing else to update
+      return;
+    }
+
     auto const outputs = d->activeTool->outputs();
 
     d->toolUpdateCameras = NULL;
@@ -2702,10 +2741,6 @@ void MainWindow::acceptToolResults(
     {
       d->toolUpdateVolume = data->volume;
     }
-    // Update tool progress
-    d->updateProgress(d->activeTool,
-                      d->activeTool->description(),
-                      d->activeTool->progress());
   }
 
   if (isFinal)
@@ -2836,6 +2871,7 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
     d->currentDepthFrame = d->toolUpdateActiveFrame;
+    d->resetActiveDepthMap(d->toolUpdateActiveFrame);
 
     // In batch depth, each update is a full depth map from a different ref
     // frame that must be saved
@@ -2854,14 +2890,12 @@ void MainWindow::updateToolResults()
   }
   if (d->toolUpdateActiveFrame >= 0)
   {
-    d->UI.camera->setValue(d->toolUpdateActiveFrame);
-    this->setActiveCamera(d->toolUpdateActiveFrame);
+    if (d->toolUpdateActiveFrame != d->activeCameraIndex)
+    {
+      d->UI.camera->setValue(d->toolUpdateActiveFrame);
+      this->setActiveCamera(d->toolUpdateActiveFrame);
+    }
     d->toolUpdateActiveFrame = -1;
-  }
-
-  if (!d->frames.isEmpty())
-  {
-    d->setActiveCamera(d->activeCameraIndex);
   }
 }
 
