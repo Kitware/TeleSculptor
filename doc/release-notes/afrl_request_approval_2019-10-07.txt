@@ -32,6 +32,10 @@ TeleSculptor
    of sampling every 10th frame as in the past.  This is feasible because
    the feature tracking now downsamples frames to a reasonable amount instead.
 
+ * Added support for bundle adjustment callbacks that do not update the GUI
+   state.  This allows the initializer tool to support early termination
+   without making it run slower.
+
  * Added new option "ignore_metadata" to force the camera estimation
    algorithms to ignore the KLV metadata.  This is useful if the metadata is
    known to be incorrect.
