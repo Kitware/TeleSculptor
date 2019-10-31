@@ -69,19 +69,25 @@ public:
           dynamic_cast<vtkRenderWindowInteractor*>(caller);
         if (iren)
         {
-          if (strcmp(iren->GetKeySym(), "z") == 0)
+          if (this->DistanceWidget->ConstraintMode >= 0)
           {
-            this->DistanceWidget->SetConstraintMode(2);
+            if (iren->GetKeyCode() == 27)
+            {
+              // Escape key
+              this->DistanceWidget->SetConstraintMode(-1);
+            }
           }
-          else if ((strcmp(iren->GetKeySym(), "x") == 0) ||
-                   (strcmp(iren->GetKeySym(), "y") == 0))
+          else
           {
-            this->DistanceWidget->SetConstraintMode(0);
-          }
-          else if (iren->GetKeyCode() == 27)
-          {
-            // Escape key
-            this->DistanceWidget->SetConstraintMode(-1);
+            if (strcmp(iren->GetKeySym(), "z") == 0)
+            {
+              this->DistanceWidget->SetConstraintMode(2);
+            }
+            else if ((strcmp(iren->GetKeySym(), "x") == 0) ||
+                     (strcmp(iren->GetKeySym(), "y") == 0))
+            {
+              this->DistanceWidget->SetConstraintMode(0);
+            }
           }
         }
         break;
@@ -98,7 +104,15 @@ public:
           dynamic_cast<vtkRenderWindowInteractor*>(caller);
         if (iren)
         {
-          this->DistanceWidget->SetConstraintMode(-1);
+          int mode = this->DistanceWidget->ConstraintMode;
+          if (((strcmp(iren->GetKeySym(), "z") == 0) && mode == 2) ||
+              ((strcmp(iren->GetKeySym(), "x") == 0 ||
+                (strcmp(iren->GetKeySym(), "y") == 0)) &&
+               mode == 0))
+          {
+
+            this->DistanceWidget->SetConstraintMode(-1);
+          }
         }
         break;
       }
