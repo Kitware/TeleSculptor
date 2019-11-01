@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2017 by Kitware, Inc.
+ * Copyright 2014-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,6 +69,7 @@
 
 #include <arrows/core/metrics.h>
 #include <arrows/core/match_matrix.h>
+#include <arrows/core/necker_reverse.h>
 #include <arrows/core/transform.h>
 
 #include <maptk/colorize.h>
@@ -656,7 +657,7 @@ static int maptk_main(int argc, char const* argv[])
   if (necker_reverse_input)
   {
     LOG_INFO(main_logger, "Applying Necker reversal");
-    kwiver::arrows::necker_reverse(cam_map, lm_map);
+    kwiver::arrows::core::necker_reverse(cam_map, lm_map);
   }
 
   bool init_unloaded_cams = config->get_value<bool>("initialize_unloaded_cameras", true);
@@ -816,8 +817,8 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras and landmarks
     LOG_INFO(main_logger, "Applying transform to cameras and landmarks");
-    cam_map = kwiver::arrows::transform(cam_map, sim_transform);
-    lm_map = kwiver::arrows::transform(lm_map, sim_transform);
+    cam_map = kwiver::arrows::core::transform(cam_map, sim_transform);
+    lm_map = kwiver::arrows::core::transform(lm_map, sim_transform);
   }
 
   //
