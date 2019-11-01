@@ -18,6 +18,10 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * When selecting a subset of video frames in the track features tool the
+   algorithm now considers modifying each selection slightly to give
+   priority to picking nearby frames which have camera metadata.
+
  * Changed feature tracking configuration to use non-maximum suppression to
    achieve a better spatial distribution of features when contrast is unevenly
    distributed across the image.
