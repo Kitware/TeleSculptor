@@ -104,6 +104,7 @@ RulerWidgetPrivate::RulerWidgetPrivate()
   selectedProperty->SetLineWidth(3.0);
   selectedProperty->SetRenderLinesAsTubes(true);
   this->pointRepr->SetSelectedProperty(selectedProperty.GetPointer());
+  this->pointRepr->SetCustomConstraint(true);
 }
 
 //-----------------------------------------------------------------------------
