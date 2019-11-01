@@ -28,6 +28,9 @@ TeleSculptor
 
  * Improved speed of metadata access and loading.
 
+ * Estimate focal length during structure from motion.  This option was
+   previously disabled by default.
+
  * TeleSculptor now loads all video frames and metadata by default instead
    of sampling every 10th frame as in the past.  This is feasible because
    the feature tracking now downsamples frames to a reasonable amount instead.
