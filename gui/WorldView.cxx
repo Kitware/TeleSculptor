@@ -660,6 +660,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->SetVisibility(false);
+  d->cubeAxesActor->PickableOff();
 
   d->renderer->AddActor(d->cubeAxesActor);
 
