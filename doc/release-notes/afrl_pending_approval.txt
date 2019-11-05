@@ -12,12 +12,23 @@ Updates since last public release
 
 TeleSculptor
 
+ * The ruler tool now supports constrained measurements on the vertical (Z)
+   axis by holding the "z" key or in the horizontal (X-Y) plane by holding
+   either the "x" or "y" keys.
+
+ * Improve responsiveness and information in progress bar for Compute Depth
+   tool.
+
  * TeleSculptor now uses image masks in the depth estimation tools if image
    masks have been loaded.  Masks indicate which pixels to ignore in depth
    estimation.
 
  * TeleSculptor now uses image masks in the depth fusion tool if image masks
    have been loaded.
+
+ * The tool to batch compute depth maps now provides more frequent status
+   updates and intermediate results.  The cancel option is also more
+   responsive.
 
 
 Fixes since last public release
