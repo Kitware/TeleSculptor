@@ -108,31 +108,31 @@ bool DepthMapOptions::isFilterEnabled() const
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::bestCostValueMinimum() const
+double DepthMapOptions::weightMinimum() const
 {
   QTE_D();
-  return d->filterOptions->bestCostValueMinimum();
+  return d->filterOptions->weightMinimum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::bestCostValueMaximum() const
+double DepthMapOptions::weightMaximum() const
 {
   QTE_D();
-  return d->filterOptions->bestCostValueMaximum();
+  return d->filterOptions->weightMaximum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::uniquenessRatioMinimum() const
+double DepthMapOptions::uncertaintyMinimum() const
 {
   QTE_D();
-  return d->filterOptions->uniquenessRatioMinimum();
+  return d->filterOptions->uncertaintyMinimum();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapOptions::uniquenessRatioMaximum() const
+double DepthMapOptions::uncertaintyMaximum() const
 {
   QTE_D();
-  return d->filterOptions->uniquenessRatioMaximum();
+  return d->filterOptions->uncertaintyMaximum();
 }
 
 //-----------------------------------------------------------------------------

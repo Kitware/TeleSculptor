@@ -44,7 +44,7 @@ class DepthMapFilterOptionsPrivate
 public:
   Ui::DepthMapFilterOptions UI;
 
-  double initialBCMin, initialBCMax, initialURMin, initialURMax;
+  double initialWeightMin, initialWeightMax, initialUncertMin, initialUncertMax;
 };
 
 //-----------------------------------------------------------------------------
@@ -56,18 +56,18 @@ DepthMapFilterOptions::DepthMapFilterOptions(
 
   d->UI.setupUi(this);
 
-  connect(d->UI.bestCostMinimum,
+  connect(d->UI.weightMinimum,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-          this, &DepthMapFilterOptions::updateBestCostMinimum);
-  connect(d->UI.bestCostMaximum,
+          this, &DepthMapFilterOptions::updateWeightMinimum);
+  connect(d->UI.weightMaximum,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-          this, &DepthMapFilterOptions::updateBestCostMaximum);
-  connect(d->UI.uniquenessRatioMinimum,
+          this, &DepthMapFilterOptions::updateWeightMaximum);
+  connect(d->UI.uncertaintyMinimum,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-          this, &DepthMapFilterOptions::updateUniquenessRatioMinimum);
-  connect(d->UI.uniquenessRatioMaximum,
+          this, &DepthMapFilterOptions::updateUncertaintyMinimum);
+  connect(d->UI.uncertaintyMaximum,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-          this, &DepthMapFilterOptions::updateUniquenessRatioMaximum);
+          this, &DepthMapFilterOptions::updateUncertaintyMaximum);
 
   connect(d->UI.buttonBox->button(QDialogButtonBox::Apply),
           &QAbstractButton::clicked,
@@ -83,91 +83,91 @@ DepthMapFilterOptions::~DepthMapFilterOptions()
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapFilterOptions::bestCostValueMinimum() const
+double DepthMapFilterOptions::weightMinimum() const
 {
   QTE_D();
-  return d->UI.bestCostMinimum->value();
+  return d->UI.weightMinimum->value();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapFilterOptions::bestCostValueMaximum() const
+double DepthMapFilterOptions::weightMaximum() const
 {
   QTE_D();
-  return d->UI.bestCostMaximum->value();
+  return d->UI.weightMaximum->value();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapFilterOptions::uniquenessRatioMinimum() const
+double DepthMapFilterOptions::uncertaintyMinimum() const
 {
   QTE_D();
-  return d->UI.uniquenessRatioMinimum->value();
+  return d->UI.uncertaintyMinimum->value();
 }
 
 //-----------------------------------------------------------------------------
-double DepthMapFilterOptions::uniquenessRatioMaximum() const
+double DepthMapFilterOptions::uncertaintyMaximum() const
 {
   QTE_D();
-  return d->UI.uniquenessRatioMaximum->value();
+  return d->UI.uncertaintyMaximum->value();
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapFilterOptions::updateBestCostMinimum()
+void DepthMapFilterOptions::updateWeightMinimum()
 {
   QTE_D();
 
-  auto const limit = d->UI.bestCostMinimum->value();
-  if (d->UI.bestCostMaximum->value() < limit)
+  auto const limit = d->UI.weightMinimum->value();
+  if (d->UI.weightMaximum->value() < limit)
   {
-    d->UI.bestCostMaximum->setValue(limit);
+    d->UI.weightMaximum->setValue(limit);
   }
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapFilterOptions::updateBestCostMaximum()
+void DepthMapFilterOptions::updateWeightMaximum()
 {
   QTE_D();
 
-  auto const limit = d->UI.bestCostMaximum->value();
-  if (d->UI.bestCostMinimum->value() > limit)
+  auto const limit = d->UI.weightMaximum->value();
+  if (d->UI.weightMinimum->value() > limit)
   {
-    d->UI.bestCostMinimum->setValue(limit);
+    d->UI.weightMinimum->setValue(limit);
   }
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapFilterOptions::updateUniquenessRatioMinimum()
+void DepthMapFilterOptions::updateUncertaintyMinimum()
 {
   QTE_D();
 
-  auto const limit = d->UI.uniquenessRatioMinimum->value();
-  if (d->UI.uniquenessRatioMaximum->value() < limit)
+  auto const limit = d->UI.uncertaintyMinimum->value();
+  if (d->UI.uncertaintyMaximum->value() < limit)
   {
-    d->UI.uniquenessRatioMaximum->setValue(limit);
+    d->UI.uncertaintyMaximum->setValue(limit);
   }
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapFilterOptions::updateUniquenessRatioMaximum()
+void DepthMapFilterOptions::updateUncertaintyMaximum()
 {
   QTE_D();
 
-  auto const limit = d->UI.uniquenessRatioMaximum->value();
-  if (d->UI.uniquenessRatioMinimum->value() > limit)
+  auto const limit = d->UI.uncertaintyMaximum->value();
+  if (d->UI.uncertaintyMinimum->value() > limit)
   {
-    d->UI.uniquenessRatioMinimum->setValue(limit);
+    d->UI.uncertaintyMinimum->setValue(limit);
   }
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapFilterOptions::initializeFilters(double bcMin, double bcMax,
-                                              double urMin, double urMax)
+void DepthMapFilterOptions::initializeFilters(double wMin, double wMax,
+                                              double uMin, double uMax)
 {
   QTE_D();
 
-  d->initialBCMin = bcMin;
-  d->initialBCMax = bcMax;
-  d->initialURMin = urMin;
-  d->initialURMax = urMax;
+  d->initialWeightMin = wMin;
+  d->initialWeightMax = wMax;
+  d->initialUncertMin = uMin;
+  d->initialUncertMax = uMax;
 
   resetFilters();
 }
@@ -184,18 +184,18 @@ void DepthMapFilterOptions::resetFilters()
 {
   QTE_D();
 
-  qtScopedBlockSignals bbcl(d->UI.bestCostMinimum);
-  qtScopedBlockSignals bbcu(d->UI.bestCostMaximum);
-  qtScopedBlockSignals burl(d->UI.uniquenessRatioMinimum);
-  qtScopedBlockSignals buru(d->UI.uniquenessRatioMaximum);
+  qtScopedBlockSignals bbcl(d->UI.weightMinimum);
+  qtScopedBlockSignals bbcu(d->UI.weightMaximum);
+  qtScopedBlockSignals burl(d->UI.uncertaintyMinimum);
+  qtScopedBlockSignals buru(d->UI.uncertaintyMaximum);
 
-  d->UI.bestCostMinimum->setRange(d->initialBCMin, d->initialBCMax);
-  d->UI.bestCostMaximum->setRange(d->initialBCMin, d->initialBCMax);
-  d->UI.bestCostMinimum->setValue(d->initialBCMin);
-  d->UI.bestCostMaximum->setValue(d->initialBCMax);
+  d->UI.weightMinimum->setRange(d->initialWeightMin, d->initialWeightMax);
+  d->UI.weightMaximum->setRange(d->initialWeightMin, d->initialWeightMax);
+  d->UI.weightMinimum->setValue(d->initialWeightMin);
+  d->UI.weightMaximum->setValue(d->initialWeightMax);
 
-  d->UI.uniquenessRatioMinimum->setRange(d->initialURMin, d->initialURMax);
-  d->UI.uniquenessRatioMaximum->setRange(d->initialURMin, d->initialURMax);
-  d->UI.uniquenessRatioMinimum->setValue(d->initialURMin);
-  d->UI.uniquenessRatioMaximum->setValue(d->initialURMax);
+  d->UI.uncertaintyMinimum->setRange(d->initialUncertMin, d->initialUncertMax);
+  d->UI.uncertaintyMaximum->setRange(d->initialUncertMin, d->initialUncertMax);
+  d->UI.uncertaintyMinimum->setValue(d->initialUncertMin);
+  d->UI.uncertaintyMaximum->setValue(d->initialUncertMax);
 }
