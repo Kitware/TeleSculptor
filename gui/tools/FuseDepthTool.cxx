@@ -173,19 +173,16 @@ void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int 
   int dims[3];
   img->GetDimensions(dims);
 
-  kwiver::vital::image depth(dims[0], dims[1], dims[2], false,
-                             kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
-  kwiver::vital::image weight(dims[0], dims[1], dims[2], false,
-                              kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
-
+  kwiver::vital::image_of<double> depth(dims[0], dims[1], dims[2]);
+  kwiver::vital::image_of<double> weight(dims[0], dims[1], dims[2]);
 
   vtkIdType pt_id = 0;
   for (int x = 0; x < dims[0]; x++)
   {
     for (int y = 0; y < dims[1]; y++)
     {
-      depth.at<double>(x, y) = depths->GetValue(pt_id);
-      weight.at<double>(x, y) = weights->GetValue(pt_id);
+      depth(x, y) = depths->GetValue(pt_id);
+      weight(x, y) = weights->GetValue(pt_id);
       pt_id++;
     }
   }
