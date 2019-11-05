@@ -190,8 +190,8 @@ void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int 
     }
   }
 
-  depth_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(depth));
-  weight_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(weight));
+  depth_out = std::make_shared<kwiver::vital::simple_image_container>(depth);
+  weight_out = std::make_shared<kwiver::vital::simple_image_container>(weight);
 }
 
 //-----------------------------------------------------------------------------
