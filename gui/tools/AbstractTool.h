@@ -188,6 +188,9 @@ public:
   /// Set the config file if any
   void setConfig(config_block_sptr&);
 
+  /// Set the tool data
+  void setToolData(std::shared_ptr<ToolData>);
+
   /// Execute the tool.
   ///
   /// Tool implementations should override this method to verify that they have
@@ -199,6 +202,9 @@ public:
   /// \return \c true if tool execution was started successfully, otherwise
   ///         \c false.
   virtual bool execute(QWidget* window = 0);
+
+  /// Block until the tool has finished executing
+  void wait();
 
   /// Get the active frame.
   unsigned int activeFrame() const;
@@ -274,6 +280,9 @@ signals:
 
   /// Emitted when the tool execution terminates due to user cancellation.
   void canceled();
+
+  /// Emitted when the tool execution wishes to save a result to disk
+  void saved();
 
   /// Emitted when the tool execution terminates due to an execution error.
   void failed(QString reason);

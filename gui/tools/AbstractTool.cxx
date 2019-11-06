@@ -333,6 +333,13 @@ void AbstractTool::setConfig(config_block_sptr& config)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setToolData(std::shared_ptr<ToolData> data)
+{
+  QTE_D();
+  d->data = data;
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
@@ -343,6 +350,13 @@ bool AbstractTool::execute(QWidget* window)
   d->cancelRequested = false;
   d->start();
   return true;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::wait()
+{
+  QTE_D();
+  d->wait();
 }
 
 //-----------------------------------------------------------------------------
