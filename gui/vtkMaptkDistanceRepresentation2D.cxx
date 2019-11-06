@@ -47,7 +47,7 @@ vtkMaptkDistanceRepresentation2D::vtkMaptkDistanceRepresentation2D()
   this->RulerMode = true;
   this->AxisActor->SetTickLength(10);
   this->AxisActor->SetNumberOfMinorTicks(10);
-  this->SetRulerDistance(0.1);
+  this->SetRulerDistance(1.0);
 }
 
 //----------------------------------------------------------------------------
