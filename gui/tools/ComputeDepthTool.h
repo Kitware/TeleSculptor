@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018 by Kitware, Inc.
+ * Copyright 2018-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,8 @@ public:
   bool execute(QWidget* window = 0) override;
 
   bool callback_handler(kwiver::vital::image_container_sptr depth,
-                        unsigned int iterations);
+                        std::string const& status,
+                        unsigned int percent_complete);
 
 protected:
   void run() override;
@@ -62,8 +63,11 @@ private:
   QTE_DISABLE_COPY(ComputeDepthTool)
 };
 
+///Convert a kwiver depth map to a colored vtk image with optional mask
 vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img, kwiver::vital::image_container_sptr color_img,
-             int i0, int ni, int j0, int nj);
+depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
+             kwiver::vital::image_container_sptr color_img,
+             int i0, int ni, int j0, int nj,
+             kwiver::vital::image_container_sptr mask_img = NULL);
 
 #endif

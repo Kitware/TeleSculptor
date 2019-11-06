@@ -82,6 +82,13 @@ public:
   /// Deep copy the list of depthmaps into this data class
   void copyDepthLookup(depth_lookup_sptr const&);
 
+  /// Return true if the ToolData does not contain any large data updates
+  bool isProgressOnly() const
+  {
+    return !tracks && !track_changes && !active_depth &&
+           !cameras && !landmarks && !volume;
+  }
+
   int maxFrame;
   unsigned int activeFrame;
   std::string videoPath;

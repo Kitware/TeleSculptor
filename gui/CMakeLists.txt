@@ -124,6 +124,7 @@ set(gui_sources
   VolumeOptions.cxx
   WorldView.cxx
   main.cxx
+  vtkMaptkAxesActor.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkDistanceRepresentation2D.cxx

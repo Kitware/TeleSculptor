@@ -70,11 +70,18 @@ static char const* const BLOCK_MR = "mask_reader";
 class ComputeAllDepthToolPrivate
 {
 public:
+  ComputeAllDepthToolPrivate()
+    : crop(0, 0, 0, 0) {}
 
   video_input_sptr video_reader;
   video_input_sptr mask_reader;
   compute_depth_sptr depth_algo;
   int start_frame, end_frame, num_depth, num_support;
+  kwiver::vital::image_container_sptr ref_img;
+  kwiver::vital::frame_id_t active_frame;
+  kwiver::vital::bounding_box<int> crop;
+  size_t depth_count;
+  size_t num_depth_maps;
 };
 
 QTE_IMPLEMENT_D_FUNC(ComputeAllDepthTool)
@@ -164,6 +171,14 @@ bool ComputeAllDepthTool::execute(QWidget* window)
 
   d->num_support = config->get_value<int>("compute_depth:num_support", 10);
 
+  // Set the callback to receive updates
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  using std::placeholders::_3;
+  typedef compute_depth::callback_t callback_t;
+  callback_t cb = std::bind(&ComputeAllDepthTool::callback_handler,
+                            this, _1, _2, _3);
+  d->depth_algo->set_callback(cb);
 
   return AbstractTool::execute(window);
 }
@@ -192,7 +207,7 @@ void ComputeAllDepthTool::run()
   kwiver::vital::frame_id_t num_frames =
     frames_in_range.size() - 2 * halfsupport;
 
-  const size_t num_depth_maps =
+  d->num_depth_maps =
     std::min(static_cast<size_t>(d->num_depth),
              static_cast<size_t>(num_frames));
 
@@ -212,14 +227,15 @@ void ComputeAllDepthTool::run()
   this->setDescription("Estimating Depth");
   this->updateProgress(0, 100);
   auto data = std::make_shared<ToolData>();
-  data->activeFrame = 0;
   emit updated(data);
-  for (size_t c = 0; c < num_depth_maps; ++c)
+  for (size_t c = 0; c < d->num_depth_maps && !this->isCanceled(); ++c)
   {
-    size_t curr_frame_idx = halfsupport + (c * num_frames) / (num_depth_maps-1);
+    d->depth_count = c;
+    size_t curr_frame_idx = halfsupport + (c * num_frames) / (d->num_depth_maps-1);
     this->updateProgress(static_cast<int>(c),
-                         static_cast<int>(num_depth_maps));
+                         static_cast<int>(d->num_depth_maps));
     auto fitr = frames_in_range.begin() + curr_frame_idx;
+    d->active_frame = *fitr;
 
     // Compute an iterator range containing total_support entries and
     // centered at the current frame.  When at the boundary the window
@@ -242,7 +258,7 @@ void ComputeAllDepthTool::run()
     std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
     std::vector<kwiver::vital::image_container_sptr> masks_out;
     std::vector<kwiver::vital::frame_id_t> frame_ids;
-    int ref_frame = 0; //local ref frame
+    size_t ref_frame = 0; //local ref frame
 
     kwiver::vital::timestamp currentTimestamp;
     d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
@@ -289,9 +305,18 @@ void ComputeAllDepthTool::run()
       {
         masks_out.push_back(d->mask_reader->frame_image());
       }
+      // update status message
+      std::stringstream ss;
+      ss << "Depth frame " << c << " of " << d->num_depth_maps
+         << ": Accumulating frame " << frames_out.size()
+         << " of " << total_support;
+      this->setDescription(QString::fromStdString(ss.str()));
+      data->active_depth = nullptr;
+      data->activeFrame = *fitr;
+      emit updated(data);
     }
 
-    kwiver::vital::image_container_sptr ref_img = frames_out[ref_frame];
+    d->ref_img = frames_out[ref_frame];
 
     vtkBox* roi = this->ROI();
     double minptd[3], maxptd[3];
@@ -300,10 +325,10 @@ void ComputeAllDepthTool::run()
     kwiver::vital::vector_3d minpt(minptd);
     kwiver::vital::vector_3d maxpt(maxptd);
 
-    kwiver::vital::bounding_box<int> crop = kwiver::arrows::core::project_3d_bounds(
+    d->crop = kwiver::arrows::core::project_3d_bounds(
       minpt, maxpt, *cameras_out[ref_frame],
-      static_cast<int>(ref_img->width()),
-      static_cast<int>(ref_img->height()));
+      static_cast<int>(d->ref_img->width()),
+      static_cast<int>(d->ref_img->height()));
 
     double height_min, height_max;
     kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
@@ -311,17 +336,53 @@ void ComputeAllDepthTool::run()
     //compute depth
     auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                         height_min, height_max,
-                                        ref_frame, crop, masks_out);
-    auto image_data = depth_to_vtk(depth, frames_out[ref_frame], crop.min_x(), crop.width(),
-                                   crop.min_y(), crop.height());
+                                        ref_frame, d->crop, masks_out);
+    if (!depth)
+    {
+      // depth computation terminated early or failed to produce a result
+      continue;
+    }
+    auto image_data = depth_to_vtk(depth, d->ref_img,
+                                   d->crop.min_x(), d->crop.width(),
+                                   d->crop.min_y(), d->crop.height());
 
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
     data->activeFrame = *fitr;
     emit updated(data);
-    if (this->isCanceled())
-      return;
-    //this->updateDepth(image_data);
   }
 }
 
+//-----------------------------------------------------------------------------
+bool
+ComputeAllDepthTool
+::callback_handler(kwiver::vital::image_container_sptr depth,
+                   std::string const& status,
+                   unsigned int percent_complete)
+{
+  QTE_D();
+  // make a copy of the tool data
+  auto data = std::make_shared<ToolData>();
+  if (depth)
+  {
+    auto depthData = depth_to_vtk(depth, d->ref_img, d->crop.min_x(), d->crop.width(),
+      d->crop.min_y(), d->crop.height());
+    data->copyDepth(depthData);
+  }
+  // Compute overall percent complete accounting for the percentage of depth
+  // frames complete and the percent complete of the current depth frame.
+  percent_complete = static_cast<unsigned int>(
+                       (d->depth_count * 100 + percent_complete) /
+                         d->num_depth_maps);
+  // Create overall status message
+  std::stringstream ss;
+  ss << "Depth frame "<<d->depth_count << " of " << d->num_depth_maps
+     << ": " << status;
+
+  data->activeFrame = d->active_frame;
+  this->setDescription(QString::fromStdString(ss.str()));
+  this->updateProgress(percent_complete);
+
+  emit updated(data);
+  return !this->isCanceled();
+}

@@ -2700,6 +2700,18 @@ void MainWindow::acceptToolResults(
 
   if (d->activeTool)
   {
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
+
+    if (data->isProgressOnly() &&
+        data->activeFrame == d->activeCameraIndex)
+    {
+      // nothing else to update
+      return;
+    }
+
     auto const outputs = d->activeTool->outputs();
 
     d->toolUpdateCameras = NULL;
@@ -2741,10 +2753,6 @@ void MainWindow::acceptToolResults(
     {
       d->toolUpdateVolume = data->volume;
     }
-    // Update tool progress
-    d->updateProgress(d->activeTool,
-                      d->activeTool->description(),
-                      d->activeTool->progress());
   }
 
   if (isFinal)
@@ -2875,6 +2883,7 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
     d->currentDepthFrame = d->toolUpdateActiveFrame;
+    d->resetActiveDepthMap(d->toolUpdateActiveFrame);
 
     // In batch depth, each update is a full depth map from a different ref
     // frame that must be saved
@@ -2893,14 +2902,12 @@ void MainWindow::updateToolResults()
   }
   if (d->toolUpdateActiveFrame >= 0)
   {
-    d->UI.camera->setValue(d->toolUpdateActiveFrame);
-    this->setActiveCamera(d->toolUpdateActiveFrame);
+    if (d->toolUpdateActiveFrame != d->activeCameraIndex)
+    {
+      d->UI.camera->setValue(d->toolUpdateActiveFrame);
+      this->setActiveCamera(d->toolUpdateActiveFrame);
+    }
     d->toolUpdateActiveFrame = -1;
-  }
-
-  if (!d->frames.isEmpty())
-  {
-    d->setActiveCamera(d->activeCameraIndex);
   }
 }
 
@@ -3076,11 +3083,11 @@ void MainWindow::applySimilarityTransform()
   sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
 
   // Transform landmarks
-  d->landmarks = kwiver::arrows::transform(d->landmarks, sim_transform);
+  d->landmarks = kwiver::arrows::core::transform(d->landmarks, sim_transform);
 
   // Transform cameras
   auto camera_map = d->cameraMap();
-  camera_map = kwiver::arrows::transform(camera_map, sim_transform);
+  camera_map = kwiver::arrows::core::transform(camera_map, sim_transform);
   d->updateCameras(camera_map);
 
   // Transform GCP's
