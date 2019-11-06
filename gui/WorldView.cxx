@@ -40,6 +40,7 @@
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "RulerOptions.h"
 #include "RulerWidget.h"
 #include "VolumeOptions.h"
 #include "vtkMaptkCamera.h"
@@ -505,11 +506,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowVolume);
   this->addAction(d->UI.actionPlaceEditGCP);
 
-  auto const rulerMenu = new QMenu(this);
-  rulerMenu->addAction(d->UI.actionResetRuler);
-  d->UI.actionResetRuler->setDisabled(true);
-  d->setPopup(d->UI.actionShowRuler, rulerMenu);
-
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
   connect(d->UI.actionViewResetLandmarks, &QAction::triggered,
@@ -561,12 +557,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
   connect(d->UI.actionShowRuler, &QAction::toggled,
           this, &WorldView::rulerEnabled);
-  connect(d->rulerWidget, &RulerWidget::rulerPlaced,
-          d->UI.actionResetRuler, &QAction::setEnabled);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, &WorldView::rulerReset);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, [=](){d->UI.actionShowRuler->setChecked(false);});
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
@@ -1714,4 +1704,13 @@ RulerWidget* WorldView::rulerWidget() const
   QTE_D();
 
   return d->rulerWidget;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setRulerOptions(RulerOptions* r)
+{
+  QTE_D();
+  d->setPopup(d->UI.actionShowRuler, r);
+  connect(r, &RulerOptions::resetRuler,
+          this, [=]() { d->UI.actionShowRuler->setChecked(false); });
 }

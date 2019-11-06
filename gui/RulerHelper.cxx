@@ -329,3 +329,17 @@ void RulerHelper::resetRuler()
   d->mainWindow->worldView()->rulerWidget()->removeRuler();
   d->mainWindow->cameraView()->rulerWidget()->removeRuler();
 }
+
+//-----------------------------------------------------------------------------
+RulerWidget* RulerHelper::worldWidget()
+{
+  QTE_D();
+  return d->mainWindow->worldView()->rulerWidget();
+}
+
+//-----------------------------------------------------------------------------
+RulerWidget* RulerHelper::cameraWidget()
+{
+  QTE_D();
+  return d->mainWindow->cameraView()->rulerWidget();
+}

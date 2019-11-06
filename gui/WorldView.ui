@@ -382,14 +382,6 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="actionResetRuler">
-   <property name="text">
-    <string>Reset Measurement Tool</string>
-   </property>
-   <property name="toolTip">
-    <string>Reset ruler for new distance measurement</string>
-   </property>
-  </action>
  </widget>
  <customwidgets>
   <customwidget>

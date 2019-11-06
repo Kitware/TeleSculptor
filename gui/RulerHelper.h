@@ -39,6 +39,7 @@
 
 // Forward declarations
 class RulerHelperPrivate;
+class RulerWidget;
 
 class RulerHelper : public QObject
 {
@@ -50,6 +51,9 @@ public:
 
   // Update the camera view ruler from the world view
   void updateCameraViewRuler();
+
+  RulerWidget* worldWidget();
+  RulerWidget* cameraWidget();
 
 public slots:
   void enableWidgets(bool);
