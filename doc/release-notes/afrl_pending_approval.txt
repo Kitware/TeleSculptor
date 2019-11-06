@@ -35,3 +35,6 @@ Fixes since last public release
 -------------------------------
 
 TeleSculptor
+
+* Improved placement of ground control points and ruler tool based on picking
+  the closest cell or point in the scene along the camera direction. 
