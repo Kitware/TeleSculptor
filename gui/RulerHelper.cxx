@@ -105,8 +105,8 @@ RulerHelper::RulerHelper(QObject* parent)
   d->mainWindow = qobject_cast<MainWindow*>(parent);
   Q_ASSERT(d->mainWindow);
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
+  RulerWidget* cameraWidget = this->cameraWidget();
 
   QObject::connect(worldWidget,
                    &RulerWidget::pointPlaced,
@@ -146,8 +146,8 @@ void RulerHelper::addWorldViewPoint(int pointId)
     return;
   }
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
+  RulerWidget* cameraWidget = this->cameraWidget();
 
   kv::vector_3d cameraPt = (pointId == 0 ? cameraWidget->point1WorldPosition()
                                          : cameraWidget->point2WorldPosition());
@@ -210,8 +210,8 @@ void RulerHelper::moveCameraViewPoint(int pointId)
     return;
   }
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
+  RulerWidget* cameraWidget = this->cameraWidget();
 
   kv::vector_3d worldPt = (pointId == 0 ? worldWidget->point1WorldPosition()
                                         : worldWidget->point2WorldPosition());
@@ -242,8 +242,8 @@ void RulerHelper::moveWorldViewPoint(int pointId)
     return;
   }
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
+  RulerWidget* cameraWidget = this->cameraWidget();
 
   kv::vector_3d cameraPt = (pointId == 0 ? cameraWidget->point1WorldPosition()
                                          : cameraWidget->point2WorldPosition());
@@ -277,8 +277,8 @@ void RulerHelper::addCameraViewPoint(int pointId)
     return;
   }
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = d->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
+  RulerWidget* cameraWidget = this->cameraWidget();
 
   kv::vector_3d p = worldWidget->point1WorldPosition();
   double cameraPt[2];
@@ -307,7 +307,7 @@ void RulerHelper::updateCameraViewRuler()
     return;
   }
 
-  RulerWidget* worldWidget = d->mainWindow->worldView()->rulerWidget();
+  RulerWidget* worldWidget = this->worldWidget();
   if (worldWidget->isRulerPlaced())
   {
     this->addCameraViewPoint(1);
@@ -317,17 +317,15 @@ void RulerHelper::updateCameraViewRuler()
 //-----------------------------------------------------------------------------
 void RulerHelper::enableWidgets(bool enable)
 {
-  QTE_D();
-  d->mainWindow->worldView()->rulerWidget()->enableWidget(enable);
-  d->mainWindow->cameraView()->rulerWidget()->enableWidget(enable);
+  this->worldWidget()->enableWidget(enable);
+  this->cameraWidget()->enableWidget(enable);
 }
 
 //-----------------------------------------------------------------------------
 void RulerHelper::resetRuler()
 {
-  QTE_D();
-  d->mainWindow->worldView()->rulerWidget()->removeRuler();
-  d->mainWindow->cameraView()->rulerWidget()->removeRuler();
+  this->worldWidget()->removeRuler();
+  this->cameraWidget()->removeRuler();
 }
 
 //-----------------------------------------------------------------------------
