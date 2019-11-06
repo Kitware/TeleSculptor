@@ -12,6 +12,9 @@ Updates since last public release
 
 TeleSculptor
 
+ * Added an option to write out the fused mesh as OBJ. Currently this option
+   supports only the mesh and does not write color per vertex.
+
  * The ruler tool now supports constrained measurements on the vertical (Z)
    axis by holding the "z" key or in the horizontal (X-Y) plane by holding
    either the "x" or "y" keys.
@@ -30,8 +33,20 @@ TeleSculptor
    updates and intermediate results.  The cancel option is also more
    responsive.
 
+ * The auxiliary data fields provided along with depth maps and shown in the
+   depth map viewer have been renamed.  "Best Cost" and "UniquenessRatio" have
+   been replaced with "Weight" and "Uncertainty".  The previous names were
+   specific to an older algorithm that is no longer used.  Weight is an image
+   of zero to one values indicating how much each pixel contributes to the
+   final fused model.  One use case for weight is the use of masks to disable
+   contribution for some pixels.  Uncertainty is not used yet but is a place
+   holder for measurements of how uncertain the depth estimate is each pixel.
+
 
 Fixes since last public release
 -------------------------------
 
 TeleSculptor
+
+* Improved placement of ground control points and ruler tool based on picking
+  the closest cell or point in the scene along the camera direction. 

@@ -57,10 +57,10 @@ public:
 
   DisplayMode displayMode() const;
 
-  double bestCostValueMinimum() const;
-  double bestCostValueMaximum() const;
-  double uniquenessRatioMinimum() const;
-  double uniquenessRatioMaximum() const;
+  double weightMinimum() const;
+  double weightMaximum() const;
+  double uncertaintyMinimum() const;
+  double uncertaintyMaximum() const;
 
   void initializeFilters(double bcMin, double bcMax,
                          double urMin, double urMax);
