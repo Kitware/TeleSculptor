@@ -56,14 +56,14 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QRadioButton" name="bestCostValue">
+      <widget class="QRadioButton" name="weight">
        <property name="text">
-        <string>Best Cost Value</string>
+        <string>Weight</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QToolButton" name="bestCostValueOptions">
+      <widget class="QToolButton" name="weightOptions">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -85,14 +85,14 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QRadioButton" name="uniquenessRatio">
+      <widget class="QRadioButton" name="uncertainty">
        <property name="text">
-        <string>Uniqueness Ratio</string>
+        <string>Uncertainty</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QToolButton" name="uniquenessRatioOptions">
+      <widget class="QToolButton" name="uncertaintyOptions">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -136,9 +136,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>bestCostValue</sender>
+   <sender>weight</sender>
    <signal>toggled(bool)</signal>
-   <receiver>bestCostValueOptions</receiver>
+   <receiver>weightOptions</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -152,9 +152,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>uniquenessRatio</sender>
+   <sender>uncertainty</sender>
    <signal>toggled(bool)</signal>
-   <receiver>uniquenessRatioOptions</receiver>
+   <receiver>uncertaintyOptions</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">

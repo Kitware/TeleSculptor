@@ -43,8 +43,8 @@ namespace DepthMapArrays
   // CAUTION: These must match the names in the VTI files
   static char const* const Depth = "Depths";
   static char const* const TrueColor = "Color";
-  static char const* const BestCostValues = "Best Cost Values";
-  static char const* const UniquenessRatios = "Uniqueness Ratios";
+  static char const* const Weight = "Weight";
+  static char const* const Uncertainty = "Uncertainty";
 }
 
 #endif

@@ -186,13 +186,13 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
              int i0, int ni, int j0, int nj,
              kwiver::vital::image_container_sptr mask_img)
 {
-  vtkNew<vtkDoubleArray> uniquenessRatios;
-  uniquenessRatios->SetName("Uniqueness Ratios");
-  uniquenessRatios->SetNumberOfValues(ni * nj);
+  vtkNew<vtkDoubleArray> uncertainty;
+  uncertainty->SetName("Uncertainty");
+  uncertainty->SetNumberOfValues(ni * nj);
 
-  vtkNew<vtkDoubleArray> bestCost;
-  bestCost->SetName("Best Cost Values");
-  bestCost->SetNumberOfValues(ni * nj);
+  vtkNew<vtkDoubleArray> weight;
+  weight->SetName("Weight");
+  weight->SetNumberOfValues(ni * nj);
 
   vtkNew<vtkUnsignedCharArray> color;
   color->SetName("Color");
@@ -222,17 +222,17 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
   {
     for (int x = 0; x < ni; x++)
     {
-      uniquenessRatios->SetValue(pt_id, 0);
+      uncertainty->SetValue(pt_id, 0);
       if (mask_img)
       {
         if (mask_img->get_image().at<unsigned char>(x, y) > 127)
-          bestCost->SetValue(pt_id, 1.0);
+          weight->SetValue(pt_id, 1.0);
         else
-          bestCost->SetValue(pt_id, 0.0);
+          weight->SetValue(pt_id, 0.0);
       }
       else
       {
-        bestCost->SetValue(pt_id, 1.0);
+        weight->SetValue(pt_id, 1.0);
       }
 
       depths->SetValue(pt_id, dep_im.at<double>(x, y));
@@ -250,8 +250,8 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
   imageData->SetDimensions(ni, nj, 1);
   imageData->GetPointData()->AddArray(depths.Get());
   imageData->GetPointData()->AddArray(color.Get());
-  imageData->GetPointData()->AddArray(uniquenessRatios.Get());
-  imageData->GetPointData()->AddArray(bestCost.Get());
+  imageData->GetPointData()->AddArray(uncertainty.Get());
+  imageData->GetPointData()->AddArray(weight.Get());
   imageData->GetFieldData()->AddArray(crop.Get());
   return imageData;
 }

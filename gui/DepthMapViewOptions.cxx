@@ -71,8 +71,8 @@ public:
   Ui::DepthMapViewOptions UI;
 
   DataColorOptions* depthOptions;
-  DataColorOptions* bestCostValueOptions;
-  DataColorOptions* uniquenessRatioOptions;
+  DataColorOptions* weightOptions;
+  DataColorOptions* uncertaintyOptions;
 
   QButtonGroup* modeButtons;
   QList<ModeInformation> modes;
@@ -120,34 +120,34 @@ DepthMapViewOptions::DepthMapViewOptions(
   connect(d->depthOptions, &DataColorOptions::iconChanged,
           this, &DepthMapViewOptions::setDepthIcon);
 
-  d->bestCostValueOptions =
-    new DataColorOptions(settingsGroup + "/BestCostValue", this);
-  d->setPopup(d->UI.bestCostValueOptions, d->bestCostValueOptions);
-  setBestCostValueIcon(d->bestCostValueOptions->icon());
-  connect(d->bestCostValueOptions, &DataColorOptions::iconChanged,
-          this, &DepthMapViewOptions::setBestCostValueIcon);
+  d->weightOptions =
+    new DataColorOptions(settingsGroup + "/Weight", this);
+  d->setPopup(d->UI.weightOptions, d->weightOptions);
+  setWeightIcon(d->weightOptions->icon());
+  connect(d->weightOptions, &DataColorOptions::iconChanged,
+          this, &DepthMapViewOptions::setWeightIcon);
 
-  d->uniquenessRatioOptions =
-    new DataColorOptions(settingsGroup + "/UniquenessRatio", this);
-  d->setPopup(d->UI.uniquenessRatioOptions, d->uniquenessRatioOptions);
-  setUniquenessRatioIcon(d->uniquenessRatioOptions->icon());
-  connect(d->uniquenessRatioOptions, &DataColorOptions::iconChanged,
-          this, &DepthMapViewOptions::setUniquenessRatioIcon);
+  d->uncertaintyOptions =
+    new DataColorOptions(settingsGroup + "/Uncertainty", this);
+  d->setPopup(d->UI.uncertaintyOptions, d->uncertaintyOptions);
+  setUncertaintyIcon(d->uncertaintyOptions->icon());
+  connect(d->uncertaintyOptions, &DataColorOptions::iconChanged,
+          this, &DepthMapViewOptions::setUncertaintyIcon);
 
   d->modeButtons = new QButtonGroup(this);
   d->addMode(d->UI.color, DepthMapArrays::TrueColor, 0);
   d->addMode(d->UI.depth, DepthMapArrays::Depth,
              d->depthOptions);
-  d->addMode(d->UI.bestCostValue, DepthMapArrays::BestCostValues,
-             d->bestCostValueOptions);
-  d->addMode(d->UI.uniquenessRatio, DepthMapArrays::UniquenessRatios,
-             d->uniquenessRatioOptions);
+  d->addMode(d->UI.weight, DepthMapArrays::Weight,
+             d->weightOptions);
+  d->addMode(d->UI.uncertainty, DepthMapArrays::Uncertainty,
+             d->uncertaintyOptions);
 
   connect(d->depthOptions, &DataColorOptions::modified,
           this, &DepthMapViewOptions::updateActor);
-  connect(d->bestCostValueOptions, &DataColorOptions::modified,
+  connect(d->weightOptions, &DataColorOptions::modified,
           this, &DepthMapViewOptions::updateActor);
-  connect(d->uniquenessRatioOptions, &DataColorOptions::modified,
+  connect(d->uncertaintyOptions, &DataColorOptions::modified,
           this, &DepthMapViewOptions::updateActor);
 
   connect(d->modeButtons, QOverload<int>::of(&QButtonGroup::buttonClicked),
@@ -239,15 +239,15 @@ void DepthMapViewOptions::setDepthIcon(QIcon const& icon)
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapViewOptions::setBestCostValueIcon(QIcon const& icon)
+void DepthMapViewOptions::setWeightIcon(QIcon const& icon)
 {
   QTE_D();
-  d->UI.bestCostValueOptions->setIcon(icon);
+  d->UI.weightOptions->setIcon(icon);
 }
 
 //-----------------------------------------------------------------------------
-void DepthMapViewOptions::setUniquenessRatioIcon(QIcon const& icon)
+void DepthMapViewOptions::setUncertaintyIcon(QIcon const& icon)
 {
   QTE_D();
-  d->UI.uniquenessRatioOptions->setIcon(icon);
+  d->UI.uncertaintyOptions->setIcon(icon);
 }

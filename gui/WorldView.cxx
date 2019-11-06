@@ -809,8 +809,8 @@ void WorldView::updateThresholdRanges()
     }
 
     auto const pd = imageData->GetPointData();
-    auto const bcArray = pd->GetArray(DepthMapArrays::BestCostValues);
-    auto const urArray = pd->GetArray(DepthMapArrays::UniquenessRatios);
+    auto const bcArray = pd->GetArray(DepthMapArrays::Weight);
+    auto const urArray = pd->GetArray(DepthMapArrays::Uncertainty);
 
     if (bcArray && urArray)
     {
@@ -1403,15 +1403,15 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 {
   QTE_D();
 
-  double bestCostValueMin = d->depthMapOptions->bestCostValueMinimum();
-  double bestCostValueMax = d->depthMapOptions->bestCostValueMaximum();
-  double uniquenessRatioMin = d->depthMapOptions->uniquenessRatioMinimum();
-  double uniquenessRatioMax = d->depthMapOptions->uniquenessRatioMaximum();
+  double weightMin = d->depthMapOptions->weightMinimum();
+  double weightMax = d->depthMapOptions->weightMaximum();
+  double uncertaintyMin = d->depthMapOptions->uncertaintyMinimum();
+  double uncertaintyMax = d->depthMapOptions->uncertaintyMaximum();
 
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::BestCostValues, bestCostValueMin, bestCostValueMax);
+    DepthMapArrays::Weight, weightMin, weightMax);
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::UniquenessRatios, uniquenessRatioMin, uniquenessRatioMax);
+    DepthMapArrays::Uncertainty, uncertaintyMin, uncertaintyMax);
   d->inputDepthGeometryFilter->SetThresholdCells(filterState);
 
   emit depthMapThresholdsChanged();
