@@ -12,6 +12,9 @@ Updates since last public release
 
 TeleSculptor
 
+ * Added an option to write out the fused mesh as OBJ. Currently this option
+   supports only the mesh and does not write color per vertex.
+
  * The ruler tool now supports constrained measurements on the vertical (Z)
    axis by holding the "z" key or in the horizontal (X-Y) plane by holding
    either the "x" or "y" keys.
