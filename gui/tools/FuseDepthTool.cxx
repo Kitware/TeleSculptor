@@ -190,7 +190,7 @@ void load_depth_map(const std::string &filename,
     for (int y = 0; y < dims[1]; y++)
     {
       depth(x, y) = depths->GetValue(pt_id);
-      weight(x, y) = weights->GetValue(pt_id);
+      weight(x, y) = weights ? weights->GetValue(pt_id) : 1.0;
       pt_id++;
     }
   }
