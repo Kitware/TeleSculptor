@@ -140,13 +140,15 @@ bool FuseDepthTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  integrate_depth_maps::set_nested_algo_configuration(BLOCK_IDM, config, d->fuse_algo);
+  integrate_depth_maps::
+    set_nested_algo_configuration(BLOCK_IDM, config, d->fuse_algo);
 
   return AbstractTool::execute(window);
 }
 
 //-----------------------------------------------------------------------------
-void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int &nj,
+void load_depth_map(const std::string &filename,
+                    int &i0, int &ni, int &j0, int &nj,
                     kwiver::vital::image_container_sptr &depth_out,
                     kwiver::vital::image_container_sptr &weight_out)
 {
@@ -155,16 +157,20 @@ void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int 
   depthReader->Update();
   vtkImageData *img = depthReader->GetOutput();
 
-  vtkIntArray* crop = static_cast<vtkIntArray*>(img->GetFieldData()->GetArray("Crop"));
+  vtkIntArray* crop = static_cast<vtkIntArray*>(
+    img->GetFieldData()->GetArray("Crop"));
   if (crop)
   {
-    i0 = crop->GetValue(0);    ni = crop->GetValue(1);
-    j0 = crop->GetValue(2);    nj = crop->GetValue(3);
+    i0 = crop->GetValue(0);
+    ni = crop->GetValue(1);
+    j0 = crop->GetValue(2);
+    nj = crop->GetValue(3);
   }
   else
   {
     i0 = j0 = 0;
-    ni = img->GetDimensions()[0];    nj = img->GetDimensions()[1];
+    ni = img->GetDimensions()[0];
+    nj = img->GetDimensions()[1];
   }
 
   vtkDoubleArray *depths = dynamic_cast<vtkDoubleArray *>(
@@ -175,30 +181,29 @@ void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int 
   int dims[3];
   img->GetDimensions(dims);
 
-  kwiver::vital::image depth(dims[0], dims[1], dims[2], false,
-                             kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
-  kwiver::vital::image weight(dims[0], dims[1], dims[2], false,
-                              kwiver::vital::image_pixel_traits(kwiver::vital::image_pixel_traits::FLOAT, 8));
-
+  kwiver::vital::image_of<double> depth(dims[0], dims[1], dims[2]);
+  kwiver::vital::image_of<double> weight(dims[0], dims[1], dims[2]);
 
   vtkIdType pt_id = 0;
   for (int x = 0; x < dims[0]; x++)
   {
     for (int y = 0; y < dims[1]; y++)
     {
-      depth.at<double>(x, y) = depths->GetValue(pt_id);
-      weight.at<double>(x, y) = weights->GetValue(pt_id);
+      depth(x, y) = depths->GetValue(pt_id);
+      weight(x, y) = weights ? weights->GetValue(pt_id) : 1.0;
       pt_id++;
     }
   }
 
-  depth_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(depth));
-  weight_out = std::shared_ptr<kwiver::vital::image_container>(new kwiver::vital::simple_image_container(weight));
+  depth_out = std::make_shared<kwiver::vital::simple_image_container>(depth);
+  weight_out = std::make_shared<kwiver::vital::simple_image_container>(weight);
 }
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkStructuredGrid>
-volume_to_vtk(kwiver::vital::image_container_sptr volume, kwiver::vital::vector_3d const& origin, kwiver::vital::vector_3d const& spacing)
+volume_to_vtk(kwiver::vital::image_container_sptr volume,
+              kwiver::vital::vector_3d const& origin,
+              kwiver::vital::vector_3d const& spacing)
 {
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
   grid->SetOrigin(origin[0], origin[1], origin[2]);
@@ -241,9 +246,9 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume, kwiver::vital::vector_
 }
 
 //-----------------------------------------------------------------------------
-
-kwiver::vital::camera_perspective_sptr crop_camera(const kwiver::vital::camera_perspective_sptr& cam,
-                                                  int i0, int ni, int j0, int nj)
+kwiver::vital::camera_perspective_sptr
+crop_camera(const kwiver::vital::camera_perspective_sptr& cam,
+            int i0, int ni, int j0, int nj)
 {
   kwiver::vital::simple_camera_intrinsics newIntrinsics(*cam->intrinsics());
   kwiver::vital::vector_2d pp = newIntrinsics.principal_point();
@@ -257,31 +262,34 @@ kwiver::vital::camera_perspective_sptr crop_camera(const kwiver::vital::camera_p
                                                    cam->rotation(),
                                                    newIntrinsics);
 
-  return std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cropCam.clone());
+  return std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(
+    cropCam.clone());
 }
 
 //-----------------------------------------------------------------------------
 void FuseDepthTool::run()
 {
+  using namespace kwiver::vital;
   QTE_D();
 
   auto const& depths = this->depthLookup();
   auto const& cameras = this->cameras()->cameras();
   vtkBox *roi = this->ROI();
 
-  std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
-  std::vector<kwiver::vital::image_container_sptr> depths_out;
-  std::vector<kwiver::vital::image_container_sptr> weights_out;
+  std::vector<camera_perspective_sptr> cameras_out;
+  std::vector<image_container_sptr> depths_out;
+  std::vector<image_container_sptr> weights_out;
 
-  for (std::map<kwiver::vital::frame_id_t, std::string>::iterator itr = depths->begin(); itr != depths->end(); itr++)
+  for (auto const& item : *depths)
   {
-    auto camitr = cameras.find(itr->first);
+    auto camitr = cameras.find(item.first);
     if (camitr == cameras.end())
       continue;
-    kwiver::vital::camera_perspective_sptr cam = std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(camitr->second);
+    camera_perspective_sptr cam =
+      std::dynamic_pointer_cast<camera_perspective>(camitr->second);
     int i0, ni, j0, nj;
-    kwiver::vital::image_container_sptr depth, weight;
-    load_depth_map(itr->second, i0, ni, j0, nj, depth, weight);
+    image_container_sptr depth, weight;
+    load_depth_map(item.second, i0, ni, j0, nj, depth, weight);
     depths_out.push_back(depth);
     weights_out.push_back(weight);
     cameras_out.push_back(crop_camera(cam, i0, ni, j0, nj));
@@ -289,17 +297,20 @@ void FuseDepthTool::run()
 
   double minptd[3];
   roi->GetXMin(minptd);
-  kwiver::vital::vector_3d minpt(minptd);
+  vector_3d minpt(minptd);
 
   double maxptd[3];
   roi->GetXMax(maxptd);
-  kwiver::vital::vector_3d maxpt(maxptd);
+  vector_3d maxpt(maxptd);
 
-  kwiver::vital::image_container_sptr volume;
-  kwiver::vital::vector_3d spacing;
-  d->fuse_algo->integrate(minpt, maxpt, depths_out, weights_out, cameras_out, volume, spacing);
+  image_container_sptr volume;
+  vector_3d spacing;
+  d->fuse_algo->integrate(minpt, maxpt,
+                          depths_out, weights_out, cameras_out,
+                          volume, spacing);
 
-  vtkSmartPointer<vtkStructuredGrid> vtk_volume = volume_to_vtk(volume, minpt, spacing);
+  vtkSmartPointer<vtkStructuredGrid> vtk_volume =
+    volume_to_vtk(volume, minpt, spacing);
 
   this->updateFusion(vtk_volume);
 }
