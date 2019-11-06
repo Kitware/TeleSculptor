@@ -18,6 +18,10 @@ TeleSculptor
    geodetic locations (latitude, longitude, elevation).  The estimated
    transform is then applied to all the data to georegister.
 
+ * When selecting a subset of video frames in the track features tool the
+   algorithm now considers modifying each selection slightly to give
+   priority to picking nearby frames which have camera metadata.
+
  * Changed feature tracking configuration to use non-maximum suppression to
    achieve a better spatial distribution of features when contrast is unevenly
    distributed across the image.
@@ -27,6 +31,9 @@ TeleSculptor
    scenes and does not require a planar scene or small motion assumption.
 
  * Improved speed of metadata access and loading.
+
+ * Estimate focal length during structure from motion.  This option was
+   previously disabled by default.
 
  * TeleSculptor now loads all video frames and metadata by default instead
    of sampling every 10th frame as in the past.  This is feasible because

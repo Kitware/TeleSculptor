@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,6 +125,6 @@ void CanonicalTransformTool::run()
   auto const& xf =
     d->algorithm->estimate_transform(this->cameras(), this->landmarks());
 
-  this->updateCameras(kwiver::arrows::transform(this->cameras(), xf));
-  this->updateLandmarks(kwiver::arrows::transform(this->landmarks(), xf));
+  this->updateCameras(kwiver::arrows::core::transform(this->cameras(), xf));
+  this->updateLandmarks(kwiver::arrows::core::transform(this->landmarks(), xf));
 }

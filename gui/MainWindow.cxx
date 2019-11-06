@@ -3072,11 +3072,11 @@ void MainWindow::applySimilarityTransform()
   sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
 
   // Transform landmarks
-  d->landmarks = kwiver::arrows::transform(d->landmarks, sim_transform);
+  d->landmarks = kwiver::arrows::core::transform(d->landmarks, sim_transform);
 
   // Transform cameras
   auto camera_map = d->cameraMap();
-  camera_map = kwiver::arrows::transform(camera_map, sim_transform);
+  camera_map = kwiver::arrows::core::transform(camera_map, sim_transform);
   d->updateCameras(camera_map);
 
   // Transform GCP's
