@@ -69,14 +69,15 @@ QTE_IMPLEMENT_D_FUNC(RulerHelper)
 //-----------------------------------------------------------------------------
 void RulerHelperPrivate::updateCameraViewRulerTickDistance()
 {
+  QTE_Q();
   vtkMaptkCamera* camera = this->mainWindow->activeCamera();
   if (!camera)
   {
     return;
   }
 
-  RulerWidget* worldWidget = this->mainWindow->worldView()->rulerWidget();
-  RulerWidget* cameraWidget = this->mainWindow->cameraView()->rulerWidget();
+  RulerWidget* worldWidget = q->worldWidget();
+  RulerWidget* cameraWidget = q->cameraWidget();
 
   kv::vector_3d p1 = worldWidget->point1WorldPosition();
   kv::vector_3d p2 = worldWidget->point2WorldPosition();
@@ -340,4 +341,19 @@ RulerWidget* RulerHelper::cameraWidget()
 {
   QTE_D();
   return d->mainWindow->cameraView()->rulerWidget();
+}
+
+//-----------------------------------------------------------------------------
+void RulerHelper::setRulerTickDistance(double dist)
+{
+  QTE_D();
+  this->worldWidget()->setRulerTickDistance(dist);
+  d->updateCameraViewRulerTickDistance();
+}
+
+//-----------------------------------------------------------------------------
+void RulerHelper::setRulerColor(const QColor& rgb)
+{
+  this->worldWidget()->setRulerColor(rgb);
+  this->cameraWidget()->setRulerColor(rgb);
 }

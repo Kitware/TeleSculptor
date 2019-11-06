@@ -63,8 +63,8 @@
      <property name="toolTip">
       <string>Choose unit distance between ruler major ticks</string>
      </property>
-     <property name="singleStep">
-      <double>0.000000000000000</double>
+     <property name="stepType">
+      <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
      </property>
      <property name="value">
       <double>0.010000000000000</double>

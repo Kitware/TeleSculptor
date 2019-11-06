@@ -35,6 +35,7 @@
 #include <qtGlobal.h>
 
 // Qt declarations
+#include <QColor>
 #include <QObject>
 
 // Forward declarations
@@ -58,6 +59,8 @@ public:
 public slots:
   void enableWidgets(bool);
   void resetRuler();
+  void setRulerTickDistance(double scale);
+  void setRulerColor(const QColor& rgb);
 
 protected slots:
   void addWorldViewPoint(int pId);

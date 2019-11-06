@@ -135,6 +135,9 @@ void RulerOptions::setRulerHelper(RulerHelper* h)
   d->helper = h;
   if (d->helper)
   {
+    d->helper->setRulerTickDistance(d->UI.unitDistance->value());
+    d->helper->setRulerColor(d->UI.rulerColor->color());
+
     connect(d->UI.resetRuler,
             &QAbstractButton::clicked,
             d->helper,
@@ -143,6 +146,14 @@ void RulerOptions::setRulerHelper(RulerHelper* h)
             &RulerWidget::rulerPlaced,
             d->UI.resetRuler,
             &QAbstractButton::setEnabled);
+    connect(d->UI.unitDistance,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            d->helper,
+            &RulerHelper::setRulerTickDistance);
+    connect(d->UI.rulerColor,
+            &ActorColorButton::colorChanged,
+            d->helper,
+            &RulerHelper::setRulerColor);
   }
 }
 
