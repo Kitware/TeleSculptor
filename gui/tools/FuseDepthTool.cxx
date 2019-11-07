@@ -170,7 +170,7 @@ void load_depth_map(const std::string &filename, int &i0, int &ni, int &j0, int 
   vtkDoubleArray *depths = dynamic_cast<vtkDoubleArray *>(
     img->GetPointData()->GetArray("Depths"));
   vtkDoubleArray *weights = dynamic_cast<vtkDoubleArray*>(
-    img->GetPointData()->GetArray("Weights"));
+    img->GetPointData()->GetArray("Weight"));
 
   int dims[3];
   img->GetDimensions(dims);
