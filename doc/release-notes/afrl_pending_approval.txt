@@ -16,6 +16,12 @@ TeleSculptor
    axis by holding the "z" key or in the horizontal (X-Y) plane by holding
    either the "x" or "y" keys.
 
+ * The ruler tool now behaves like a ruler with a fixed tick unit distance.
+   Dragging the ruler progressively increases the number of ruler ticks.
+
+ * The user can set the ruler tick distance and color via a popup menu next to
+   the ruler measurement button.
+
  * Improve responsiveness and information in progress bar for Compute Depth
    tool.
 
