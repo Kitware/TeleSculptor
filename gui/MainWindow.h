@@ -133,6 +133,8 @@ protected slots:
   void updateVideoImportProgress(QString const&, int);
   void enableAntiAliasing(bool enable);
 
+  void setIgnoreMetadata(bool);
+
 private:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);
 
