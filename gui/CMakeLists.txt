@@ -84,6 +84,7 @@ set(gui_ui
   FeatureOptions.ui
   ImageOptions.ui
   PointOptions.ui
+  RulerOptions.ui
   VolumeOptions.ui
 )
 
@@ -119,6 +120,7 @@ set(gui_sources
   PointOptions.cxx
   Project.cxx
   RulerHelper.cxx
+  RulerOptions.cxx
   RulerWidget.cxx
   Utils.cxx
   VideoImport.cxx

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RulerOptions</class>
+ <widget class="QWidget" name="RulerOptions">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>239</width>
+    <height>264</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="2">
+    <widget class="QPushButton" name="resetRuler">
+     <property name="toolTip">
+      <string>Reset ruler for new distance measurement</string>
+     </property>
+     <property name="text">
+      <string>Reset Ruler</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="rulerColorLabel">
+     <property name="toolTip">
+      <string>Choose ruler color</string>
+     </property>
+     <property name="text">
+      <string>Color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="ActorColorButton" name="rulerColor">
+     <property name="toolTip">
+      <string>Choose ruler color</string>
+     </property>
+     <property name="color" stdset="0">
+      <color>
+       <red>0</red>
+       <green>255</green>
+       <blue>0</blue>
+      </color>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="unitDistanceLabel">
+     <property name="toolTip">
+      <string>Choose unit distance between ruler major ticks</string>
+     </property>
+     <property name="text">
+      <string>Unit Distance</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QDoubleSpinBox" name="unitDistance">
+     <property name="toolTip">
+      <string>Choose unit distance between ruler major ticks</string>
+     </property>
+     <property name="singleStep">
+      <double>0.100000000000000</double>
+     </property>
+     <property name="value">
+      <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>qtColorButton</class>
+   <extends>QPushButton</extends>
+   <header>qtColorButton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ActorColorButton</class>
+   <extends>qtColorButton</extends>
+   <header>ActorColorButton.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

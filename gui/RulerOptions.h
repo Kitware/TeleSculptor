@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2019 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TELESCULPTOR_VTKMAPTKDISTANCEREPRESENTATION2D_H_
-#define TELESCULPTOR_VTKMAPTKDISTANCEREPRESENTATION2D_H_
+#ifndef TELESCULPTOR_RULEROPTIONS_H_
+#define TELESCULPTOR_RULEROPTIONS_H_
 
-// VTK includes
-#include <vtkDistanceRepresentation2D.h>
+#include <qtGlobal.h>
 
-class vtkMaptkDistanceRepresentation2D : public vtkDistanceRepresentation2D
+#include <QWidget>
+
+class RulerHelper;
+class RulerOptionsPrivate;
+
+class RulerOptions : public QWidget
 {
+  Q_OBJECT
+
 public:
-  vtkTypeMacro(vtkMaptkDistanceRepresentation2D, vtkDistanceRepresentation2D);
-  void PrintSelf(ostream& os, vtkIndent indent) override;
+  explicit RulerOptions(QString const& settingsGroup,
+                        QWidget* parent = 0,
+                        Qt::WindowFlags flags = 0);
+  ~RulerOptions() override;
 
-  static vtkMaptkDistanceRepresentation2D* New();
+  void setRulerHelper(RulerHelper* helper);
 
-  /**
-   * Set the distance measurement
-   */
-  vtkSetMacro(Distance, double);
-
-  /**
-   * Override to use the pre-set distance measurement
-   */
-  void BuildRepresentation() override;
-
-  /**
-   * Set/Get whether to compute the distance label
-   */
-  vtkSetMacro(ComputeDistance, vtkTypeBool);
-  vtkGetMacro(ComputeDistance, vtkTypeBool);
-  vtkBooleanMacro(ComputeDistance, vtkTypeBool);
-
-protected:
-  vtkMaptkDistanceRepresentation2D();
-  ~vtkMaptkDistanceRepresentation2D() = default;
-
-  vtkTypeBool ComputeDistance = true;
+signals:
+  void modified();
+  void resetRuler();
 
 private:
-  vtkMaptkDistanceRepresentation2D(
-    const vtkMaptkDistanceRepresentation2D&) = delete;
-  void operator=(const vtkMaptkDistanceRepresentation2D) = delete;
+  QTE_DECLARE_PRIVATE_RPTR(RulerOptions);
+  QTE_DECLARE_PRIVATE(RulerOptions);
+  QTE_DISABLE_COPY(RulerOptions);
 };
 
 #endif
