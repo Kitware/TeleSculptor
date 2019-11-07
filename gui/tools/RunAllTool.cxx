@@ -36,8 +36,8 @@
 #include "BundleAdjustTool.h"
 #include "ComputeAllDepthTool.h"
 #include "FuseDepthTool.h"
-#include "TrackFeaturesTool.h"
 #include "InitCamerasLandmarksTool.h"
+#include "TrackFeaturesTool.h"
 
 #include <QMessageBox>
 #include <qtStlUtil.h>
@@ -48,11 +48,18 @@
 class RunAllToolPrivate
 {
 public:
-  RunAllToolPrivate() : output(0) {}
-
+  RunAllToolPrivate()
+    : output(0), failed(false)
+  {
+  }
 
   AbstractTool::Outputs output;
+  bool failed;
 
+  std::unique_ptr<TrackFeaturesTool> tracker;
+  std::unique_ptr<InitCamerasLandmarksTool> initializer;
+  std::unique_ptr<ComputeAllDepthTool> depther;
+  std::unique_ptr<FuseDepthTool> fuser;
   QWidget* window;
 };
 
@@ -82,17 +89,6 @@ AbstractTool::Outputs RunAllTool::outputs() const
 }
 
 //-----------------------------------------------------------------------------
-void RunAllTool::connectTool(AbstractTool* tool)
-{
-  QObject::connect(tool, &AbstractTool::updated,
-                   this, &RunAllTool::forwardInterimResults);
-  QObject::connect(tool, &AbstractTool::completed,
-                   this, &RunAllTool::forwardFinalResults);
-  QObject::connect(tool, &AbstractTool::failed,
-                   this, &RunAllTool::reportToolError);
-}
-
-//-----------------------------------------------------------------------------
 bool RunAllTool::execute(QWidget* window)
 {
   QTE_D();
@@ -104,10 +100,28 @@ bool RunAllTool::execute(QWidget* window)
     return false;
   }
 
+  d->tracker = std::unique_ptr<TrackFeaturesTool>(new TrackFeaturesTool);
+  d->initializer = std::unique_ptr<InitCamerasLandmarksTool>(new InitCamerasLandmarksTool);
+  d->depther = std::unique_ptr<ComputeAllDepthTool>(new ComputeAllDepthTool);
+  d->fuser = std::unique_ptr<FuseDepthTool>(new FuseDepthTool);
+
   d->window = window;
+  d->failed = false;
 
   return AbstractTool::execute(window);
 }
+
+//-----------------------------------------------------------------------------
+void RunAllTool::cancel()
+{
+  QTE_D();
+  d->tracker->cancel();
+  d->initializer->cancel();
+  d->depther->cancel();
+  d->fuser->cancel();
+  AbstractTool::cancel();
+}
+
 //-----------------------------------------------------------------------------
 void RunAllTool::forwardInterimResults(std::shared_ptr<ToolData> data)
 {
@@ -115,14 +129,32 @@ void RunAllTool::forwardInterimResults(std::shared_ptr<ToolData> data)
 }
 
 //-----------------------------------------------------------------------------
-void RunAllTool::forwardFinalResults()
+void RunAllTool::reportToolError(QString const& msg)
 {
+  QTE_D();
+  d->failed = true;
+  emit AbstractTool::failed(msg);
 }
 
 //-----------------------------------------------------------------------------
-void RunAllTool::reportToolError(QString const& msg)
+bool RunAllTool::runTool(AbstractTool* tool)
 {
-  emit AbstractTool::failed(msg);
+  QTE_D();
+  QObject::connect(tool, &AbstractTool::updated,
+                   this, &RunAllTool::forwardInterimResults);
+  QObject::connect(tool, &AbstractTool::failed,
+                   this, &RunAllTool::reportToolError);
+
+  tool->setToolData(this->data());
+  d->output = tool->outputs();
+  tool->execute(d->window);
+  tool->wait();
+  if (d->failed || isCanceled())
+    return false;
+  emit AbstractTool::saved();
+  tool->disconnect();
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -130,37 +162,15 @@ void RunAllTool::run()
 {
   QTE_D();
 
-  std::unique_ptr<TrackFeaturesTool> tracker = std::make_unique<TrackFeaturesTool>();
-  connectTool(tracker.get());
-  tracker->setToolData(this->data());
-  d->output = Tracks;
-  tracker->execute(d->window);
-  tracker->wait();
-  
-  emit AbstractTool::saved();
-  tracker->disconnect();
-  tracker.reset(); //delete tracker
+  if (!runTool(d->tracker.get()))
+  {
+    return;
+  }
 
-  std::unique_ptr<InitCamerasLandmarksTool> initializer = std::make_unique<InitCamerasLandmarksTool>();
-  connectTool(initializer.get());
-  initializer->setToolData(this->data());
-  d->output = Cameras | Landmarks | TrackChanges | Tracks;
-  initializer->execute(d->window);
-  initializer->wait();
-  
-  emit AbstractTool::saved();
-  initializer->disconnect();
-  initializer.reset();
-
-  std::unique_ptr<BundleAdjustTool> bundler = std::make_unique<BundleAdjustTool>();
-  connectTool(bundler.get());
-  bundler->setToolData(this->data());
-  d->output = Cameras | Landmarks;
-  bundler->execute(d->window);
-  bundler->wait();  
-  emit AbstractTool::saved();
-  bundler->disconnect();
-  bundler.reset();
+  if (!runTool(d->initializer.get()))
+  {
+    return;
+  }
 
   //Compute an ROI from landmarks
   auto const& lm = this->landmarks()->landmarks();
@@ -175,25 +185,10 @@ void RunAllTool::run()
   roi->AddBounds(bounds);
   setROI(roi);
 
-  std::unique_ptr<ComputeAllDepthTool> depther = std::make_unique<ComputeAllDepthTool>();
-  connectTool(depther.get());
-  depther->setToolData(this->data());
-  d->output = Depth | ActiveFrame | BatchDepth;
-  depther->execute(d->window);
-  depther->wait();
-  emit AbstractTool::saved();
-  depther->disconnect();
-  depther.reset();
+  if (!runTool(d->depther.get()))
+  {
+    return;
+  }
 
-  std::unique_ptr<FuseDepthTool> fuser = std::make_unique<FuseDepthTool>();
-  connectTool(fuser.get());
-  fuser->setToolData(this->data());
-  d->output = Fusion;
-  fuser->execute(d->window);
-  fuser->wait();
-  emit AbstractTool::saved();
-  fuser->disconnect();
-  fuser.reset();
-
-  d->output = 0;
+  runTool(d->fuser.get());
 }

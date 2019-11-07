@@ -50,13 +50,15 @@ public:
 
   bool execute(QWidget* window = 0) override;
 
+public slots:
+  void cancel();
+
 protected:
   void run() override;
-  void connectTool(AbstractTool* tool);
+  bool runTool(AbstractTool* tool);
 
 protected slots:
   void forwardInterimResults(std::shared_ptr<ToolData> data);
-  void forwardFinalResults();
   void reportToolError(QString const& msg);
 
 private:
@@ -64,6 +66,5 @@ private:
   QTE_DECLARE_PRIVATE(RunAllTool)
   QTE_DISABLE_COPY(RunAllTool)
 };
-
 
 #endif

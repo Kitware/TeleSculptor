@@ -517,7 +517,7 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
   QObject::connect(tool, &AbstractTool::completed,
                    mainWindow, &MainWindow::acceptToolFinalResults);
   QObject::connect(tool, &AbstractTool::saved,
-                   mainWindow, &MainWindow::acceptToolSaveResults);
+                   mainWindow, &MainWindow::acceptToolSaveResults, Qt::BlockingQueuedConnection);
   QObject::connect(tool, &AbstractTool::failed,
                    mainWindow, &MainWindow::reportToolError);
 
