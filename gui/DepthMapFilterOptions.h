@@ -47,13 +47,13 @@ public:
                                  Qt::WindowFlags flags = 0);
   ~DepthMapFilterOptions() override;
 
-  double bestCostValueMinimum() const;
-  double bestCostValueMaximum() const;
-  double uniquenessRatioMinimum() const;
-  double uniquenessRatioMaximum() const;
+  double weightMinimum() const;
+  double weightMaximum() const;
+  double uncertaintyMinimum() const;
+  double uncertaintyMaximum() const;
 
-  void initializeFilters(double bcMin, double bcMax,
-                         double urMin, double urMax);
+  void initializeFilters(double wMin, double wMax,
+                         double uMin, double uMax);
 
   bool isFilterPersistent() const;
 
@@ -61,10 +61,10 @@ signals:
   void filtersChanged();
 
 public slots:
-  void updateBestCostMinimum();
-  void updateBestCostMaximum();
-  void updateUniquenessRatioMinimum();
-  void updateUniquenessRatioMaximum();
+  void updateWeightMinimum();
+  void updateWeightMaximum();
+  void updateUncertaintyMinimum();
+  void updateUncertaintyMaximum();
 
   void resetFilters();
 

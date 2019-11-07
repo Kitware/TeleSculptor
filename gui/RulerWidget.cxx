@@ -44,6 +44,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkProperty.h>
+#include <vtkProperty2D.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
@@ -53,6 +54,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QColor>
 
 QTE_IMPLEMENT_D_FUNC(RulerWidget)
 
@@ -445,4 +447,37 @@ void RulerWidget::removeRuler()
   QTE_D();
   d->resetRuler();
   emit this->rulerPlaced(d->rulerPlaced);
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setRulerTickDistance(double dist)
+{
+  QTE_D();
+  d->repr->SetRulerDistance(dist);
+  d->widget->Render();
+}
+
+//-----------------------------------------------------------------------------
+double RulerWidget::rulerTickDistance() const
+{
+  QTE_D();
+  return d->repr->GetRulerDistance();
+}
+
+//-----------------------------------------------------------------------------
+void RulerWidget::setRulerColor(const QColor& color)
+{
+  QTE_D();
+  double rgb[3];
+  color.getRgbF(&rgb[0], &rgb[1], &rgb[2]);
+  d->repr->GetAxisProperty()->SetColor(rgb[0], rgb[1], rgb[2]);
+  d->widget->Render();
+}
+
+//-----------------------------------------------------------------------------
+QColor RulerWidget::rulerColor() const
+{
+  QTE_D();
+  double* rgb = d->repr->GetAxisProperty()->GetColor();
+  return QColor::fromRgbF(rgb[0], rgb[1], rgb[2]);
 }

@@ -40,6 +40,7 @@
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "RulerOptions.h"
 #include "RulerWidget.h"
 #include "VolumeOptions.h"
 #include "vtkMaptkCamera.h"
@@ -70,6 +71,7 @@
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
+#include <vtkOBJWriter.h>
 #include <vtkPLYWriter.h>
 #include <vtkPlaneSource.h>
 #include <vtkPointData.h>
@@ -505,11 +507,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowVolume);
   this->addAction(d->UI.actionPlaceEditGCP);
 
-  auto const rulerMenu = new QMenu(this);
-  rulerMenu->addAction(d->UI.actionResetRuler);
-  d->UI.actionResetRuler->setDisabled(true);
-  d->setPopup(d->UI.actionShowRuler, rulerMenu);
-
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
   connect(d->UI.actionViewResetLandmarks, &QAction::triggered,
@@ -561,12 +558,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
   connect(d->UI.actionShowRuler, &QAction::toggled,
           this, &WorldView::rulerEnabled);
-  connect(d->rulerWidget, &RulerWidget::rulerPlaced,
-          d->UI.actionResetRuler, &QAction::setEnabled);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, &WorldView::rulerReset);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, [=](){d->UI.actionShowRuler->setChecked(false);});
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
@@ -808,8 +799,8 @@ void WorldView::updateThresholdRanges()
     }
 
     auto const pd = imageData->GetPointData();
-    auto const bcArray = pd->GetArray(DepthMapArrays::BestCostValues);
-    auto const urArray = pd->GetArray(DepthMapArrays::UniquenessRatios);
+    auto const bcArray = pd->GetArray(DepthMapArrays::Weight);
+    auto const urArray = pd->GetArray(DepthMapArrays::Uncertainty);
 
     if (bcArray && urArray)
     {
@@ -1402,15 +1393,15 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 {
   QTE_D();
 
-  double bestCostValueMin = d->depthMapOptions->bestCostValueMinimum();
-  double bestCostValueMax = d->depthMapOptions->bestCostValueMaximum();
-  double uniquenessRatioMin = d->depthMapOptions->uniquenessRatioMinimum();
-  double uniquenessRatioMax = d->depthMapOptions->uniquenessRatioMaximum();
+  double weightMin = d->depthMapOptions->weightMinimum();
+  double weightMax = d->depthMapOptions->weightMaximum();
+  double uncertaintyMin = d->depthMapOptions->uncertaintyMinimum();
+  double uncertaintyMax = d->depthMapOptions->uncertaintyMaximum();
 
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::BestCostValues, bestCostValueMin, bestCostValueMax);
+    DepthMapArrays::Weight, weightMin, weightMax);
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::UniquenessRatios, uniquenessRatioMin, uniquenessRatioMax);
+    DepthMapArrays::Uncertainty, uncertaintyMin, uncertaintyMax);
   d->inputDepthGeometryFilter->SetThresholdCells(filterState);
 
   emit depthMapThresholdsChanged();
@@ -1522,6 +1513,14 @@ void WorldView::saveFusedMesh(const QString &path,
       writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
+    writer->AddInputDataObject(mesh);
+    writer->Write();
+  }
+  else if (ext == "obj")
+  {
+    vtkNew<vtkOBJWriter> writer;
+    writer->SetFileName(qPrintable(path));
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     writer->AddInputDataObject(mesh);
     writer->Write();
   }
@@ -1715,4 +1714,13 @@ RulerWidget* WorldView::rulerWidget() const
   QTE_D();
 
   return d->rulerWidget;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setRulerOptions(RulerOptions* r)
+{
+  QTE_D();
+  d->setPopup(d->UI.actionShowRuler, r);
+  connect(r, &RulerOptions::resetRuler,
+          this, [=]() { d->UI.actionShowRuler->setChecked(false); });
 }

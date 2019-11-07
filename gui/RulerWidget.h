@@ -101,6 +101,14 @@ public:
   // Remove the ruler from the view
   void removeRuler();
 
+  // Set/Get ruler scale
+  void setRulerTickDistance(double scale);
+  double rulerTickDistance() const;
+
+  // Set/Get ruler color
+  void setRulerColor(const QColor& rgb);
+  QColor rulerColor() const;
+
 signals:
   void pointPlaced(int pointId);
   void pointMoved(int pointId);

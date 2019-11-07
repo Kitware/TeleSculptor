@@ -35,10 +35,12 @@
 #include <qtGlobal.h>
 
 // Qt declarations
+#include <QColor>
 #include <QObject>
 
 // Forward declarations
 class RulerHelperPrivate;
+class RulerWidget;
 
 class RulerHelper : public QObject
 {
@@ -51,9 +53,14 @@ public:
   // Update the camera view ruler from the world view
   void updateCameraViewRuler();
 
+  RulerWidget* worldWidget();
+  RulerWidget* cameraWidget();
+
 public slots:
   void enableWidgets(bool);
   void resetRuler();
+  void setRulerTickDistance(double scale);
+  void setRulerColor(const QColor& rgb);
 
 protected slots:
   void addWorldViewPoint(int pId);

@@ -53,6 +53,7 @@
 #include "MatchMatrixWindow.h"
 #include "Project.h"
 #include "RulerHelper.h"
+#include "RulerOptions.h"
 #include "VideoImport.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
@@ -382,7 +383,10 @@ public:
 
   // Manual landmarks
   GroundControlPointsHelper* groundControlPointsHelper;
+
+  // Ruler measurement
   RulerHelper* rulerHelper;
+  RulerOptions* rulerOptions;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -1552,8 +1556,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->rulerHelper = new RulerHelper(this);
   connect(d->UI.worldView, &WorldView::rulerEnabled,
           d->rulerHelper, &RulerHelper::enableWidgets);
-  connect(d->UI.worldView, &WorldView::rulerReset,
-          d->rulerHelper, &RulerHelper::resetRuler);
+  d->rulerOptions = new RulerOptions("WorldView/Ruler", d->UI.worldView);
+  d->rulerOptions->setRulerHelper(d->rulerHelper);
+  d->UI.worldView->setRulerOptions(d->rulerOptions);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,
@@ -2494,6 +2499,7 @@ void MainWindow::saveFusedMesh()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
     "PLY File (*.ply);;"
+    "OBJ File (*.obj);;"
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "All Files (*)");

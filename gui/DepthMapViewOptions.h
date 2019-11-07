@@ -62,8 +62,8 @@ public slots:
 
 protected slots:
   void setDepthIcon(QIcon const&);
-  void setBestCostValueIcon(QIcon const&);
-  void setUniquenessRatioIcon(QIcon const&);
+  void setWeightIcon(QIcon const&);
+  void setUncertaintyIcon(QIcon const&);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(DepthMapViewOptions)

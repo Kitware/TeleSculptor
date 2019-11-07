@@ -113,7 +113,12 @@ void vtkMaptkScalarsToGradient::SetRange(double min, double max)
   QTE_D();
 
   d->lower = min;
-  d->scale = 1.0 / (max - min);
+  double range = max - min;
+  if (range <= 0.0)
+  {
+    range = 1.0;
+  }
+  d->scale = 1.0 / range;
 
   this->vtkScalarsToColors::SetRange(min, max);
 }

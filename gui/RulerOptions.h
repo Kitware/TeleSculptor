@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2016 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TELESCULPTOR_COMPUTEDEPTHTOOL_H_
-#define TELESCULPTOR_COMPUTEDEPTHTOOL_H_
+#ifndef TELESCULPTOR_RULEROPTIONS_H_
+#define TELESCULPTOR_RULEROPTIONS_H_
 
-#include "AbstractTool.h"
+#include <qtGlobal.h>
 
-class ComputeDepthToolPrivate;
+#include <QWidget>
 
-class ComputeDepthTool : public AbstractTool
+class RulerHelper;
+class RulerOptionsPrivate;
+
+class RulerOptions : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit ComputeDepthTool(QObject* parent = 0);
-  ~ComputeDepthTool() override;
+  explicit RulerOptions(QString const& settingsGroup,
+                        QWidget* parent = 0,
+                        Qt::WindowFlags flags = 0);
+  ~RulerOptions() override;
 
-  Outputs outputs() const override;
+  void setRulerHelper(RulerHelper* helper);
 
-  /// Get if the tool can be canceled.
-  bool isCancelable() const override { return true; }
-
-  bool execute(QWidget* window = 0) override;
-
-  bool callback_handler(kwiver::vital::image_container_sptr depth,
-                        std::string const& status,
-                        unsigned int percent_complete);
-
-protected:
-  void run() override;
+signals:
+  void modified();
+  void resetRuler();
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(ComputeDepthTool)
-  QTE_DECLARE_PRIVATE(ComputeDepthTool)
-  QTE_DISABLE_COPY(ComputeDepthTool)
+  QTE_DECLARE_PRIVATE_RPTR(RulerOptions);
+  QTE_DECLARE_PRIVATE(RulerOptions);
+  QTE_DISABLE_COPY(RulerOptions);
 };
-
-///Convert a kwiver depth map to a colored vtk image with optional mask
-vtkSmartPointer<vtkImageData>
-depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
-             const kwiver::vital::image_of<unsigned char>& color_img,
-             int i0, int ni, int j0, int nj,
-             const kwiver::vital::image_of<unsigned char>& mask_img = {});
 
 #endif
