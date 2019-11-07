@@ -77,7 +77,8 @@ public:
   video_input_sptr mask_reader;
   compute_depth_sptr depth_algo;
   int start_frame, end_frame, num_depth, num_support;
-  kwiver::vital::image_container_sptr ref_img;
+  kwiver::vital::image_of<unsigned char> ref_img;
+  kwiver::vital::image_of<unsigned char> ref_mask;
   kwiver::vital::frame_id_t active_frame;
   kwiver::vital::bounding_box<int> crop;
   size_t depth_count;
@@ -289,6 +290,16 @@ void ComputeAllDepthTool::run()
         LOG_WARN(this->data()->logger, "No image available on frame " << *f);
         continue;
       }
+      image_container_sptr mask = nullptr;
+      if (hasMask)
+      {
+        mask = d->mask_reader->frame_image();
+        if (!mask)
+        {
+          LOG_WARN(this->data()->logger, "No mask available on frame " << *f);
+          continue;
+        }
+      }
       auto const mdv = d->video_reader->frame_metadata();
       if (!mdv.empty())
       {
@@ -303,7 +314,7 @@ void ComputeAllDepthTool::run()
       frame_ids.push_back(*f);
       if (hasMask)
       {
-        masks_out.push_back(d->mask_reader->frame_image());
+        masks_out.push_back(mask);
       }
       // update status message
       std::stringstream ss;
@@ -316,7 +327,11 @@ void ComputeAllDepthTool::run()
       emit updated(data);
     }
 
-    d->ref_img = frames_out[ref_frame];
+    d->ref_img = frames_out[ref_frame]->get_image();
+    if (hasMask)
+    {
+      d->ref_mask = masks_out[ref_frame]->get_image();
+    }
 
     vtkBox* roi = this->ROI();
     double minptd[3], maxptd[3];
@@ -327,8 +342,8 @@ void ComputeAllDepthTool::run()
 
     d->crop = kwiver::arrows::core::project_3d_bounds(
       minpt, maxpt, *cameras_out[ref_frame],
-      static_cast<int>(d->ref_img->width()),
-      static_cast<int>(d->ref_img->height()));
+      static_cast<int>(d->ref_img.width()),
+      static_cast<int>(d->ref_img.height()));
 
     double height_min, height_max;
     kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
@@ -342,9 +357,11 @@ void ComputeAllDepthTool::run()
       // depth computation terminated early or failed to produce a result
       continue;
     }
-    auto image_data = depth_to_vtk(depth, d->ref_img,
+    kwiver::vital::image_of<double> depth_img(depth->get_image());
+    auto image_data = depth_to_vtk(depth_img, d->ref_img,
                                    d->crop.min_x(), d->crop.width(),
-                                   d->crop.min_y(), d->crop.height());
+                                   d->crop.min_y(), d->crop.height(),
+                                   d->ref_mask);
 
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
@@ -365,8 +382,11 @@ ComputeAllDepthTool
   auto data = std::make_shared<ToolData>();
   if (depth)
   {
-    auto depthData = depth_to_vtk(depth, d->ref_img, d->crop.min_x(), d->crop.width(),
-      d->crop.min_y(), d->crop.height());
+    kwiver::vital::image_of<double> depth_img(depth->get_image());
+    auto depthData = depth_to_vtk(depth_img, d->ref_img,
+                                  d->crop.min_x(), d->crop.width(),
+                                  d->crop.min_y(), d->crop.height(),
+                                  d->ref_mask);
     data->copyDepth(depthData);
   }
   // Compute overall percent complete accounting for the percentage of depth

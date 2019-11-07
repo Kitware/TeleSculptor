@@ -65,9 +65,9 @@ private:
 
 ///Convert a kwiver depth map to a colored vtk image with optional mask
 vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
-             kwiver::vital::image_container_sptr color_img,
+depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
+             const kwiver::vital::image_of<unsigned char>& color_img,
              int i0, int ni, int j0, int nj,
-             kwiver::vital::image_container_sptr mask_img = NULL);
+             const kwiver::vital::image_of<unsigned char>& mask_img = {});
 
 #endif
