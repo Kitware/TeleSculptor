@@ -77,7 +77,8 @@ public:
   compute_depth_sptr depth_algo;
   unsigned int max_iterations;
   int num_support;
-  kwiver::vital::image_container_sptr ref_img;
+  kwiver::vital::image_of<unsigned char> ref_img;
+  kwiver::vital::image_of<unsigned char> ref_mask;
   kwiver::vital::frame_id_t ref_frame;
   kwiver::vital::bounding_box<int> crop;
 };
@@ -181,11 +182,19 @@ bool ComputeDepthTool::execute(QWidget* window)
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkImageData>
-depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
-             kwiver::vital::image_container_sptr color_img,
+depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
+             const kwiver::vital::image_of<unsigned char>& color_img,
              int i0, int ni, int j0, int nj,
-             kwiver::vital::image_container_sptr mask_img)
+             const kwiver::vital::image_of<unsigned char>&mask_img)
 {
+  if (depth_img.size() == 0 ||
+      color_img.size() == 0 ||
+      depth_img.width() != color_img.width() ||
+      depth_img.height() != color_img.height())
+  {
+    return nullptr;
+  }
+
   vtkNew<vtkDoubleArray> uncertainty;
   uncertainty->SetName("Uncertainty");
   uncertainty->SetNumberOfValues(ni * nj);
@@ -215,17 +224,14 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
 
   vtkIdType pt_id = 0;
 
-  auto dep_im = depth_img->get_image();
-  auto col_im = color_img->get_image();
-
   for (int y = nj - 1; y >= 0; y--)
   {
     for (int x = 0; x < ni; x++)
     {
       uncertainty->SetValue(pt_id, 0);
-      if (mask_img)
+      if (mask_img.size() > 0)
       {
-        if (mask_img->get_image().at<unsigned char>(x, y) > 127)
+        if (mask_img(x, y) > 127)
           weight->SetValue(pt_id, 1.0);
         else
           weight->SetValue(pt_id, 0.0);
@@ -235,11 +241,11 @@ depth_to_vtk(kwiver::vital::image_container_sptr depth_img,
         weight->SetValue(pt_id, 1.0);
       }
 
-      depths->SetValue(pt_id, dep_im.at<double>(x, y));
+      depths->SetValue(pt_id, depth_img(x, y));
       color->SetTuple3(pt_id,
-                       (int)col_im.at<unsigned char>(x + i0, y + j0, 0),
-                       (int)col_im.at<unsigned char>(x + i0, y + j0, 1),
-                       (int)col_im.at<unsigned char>(x + i0, y + j0, 2));
+                       (int)color_img(x + i0, y + j0, 0),
+                       (int)color_img(x + i0, y + j0, 1),
+                       (int)color_img(x + i0, y + j0, 2));
       pt_id++;
     }
   }
@@ -379,7 +385,11 @@ void ComputeDepthTool::run()
     landmarks_out.push_back(l.second);
   }
 
-  d->ref_img = frames_out[ref_frame];
+  d->ref_img = frames_out[ref_frame]->get_image();
+  if (hasMask)
+  {
+    d->ref_mask = masks_out[ref_frame]->get_image();
+  }
   d->ref_frame = frame; //absolute ref frame in video
 
   vtkBox* roi = this->ROI();
@@ -390,8 +400,8 @@ void ComputeDepthTool::run()
   kwiver::vital::vector_3d maxpt(maxptd);
 
   d->crop = kwiver::arrows::core::project_3d_bounds(minpt, maxpt, *cameras_out[ref_frame],
-                                                    static_cast<int>(d->ref_img->width()),
-                                                    static_cast<int>(d->ref_img->height()));
+                                                    static_cast<int>(d->ref_img.width()),
+                                                    static_cast<int>(d->ref_img.height()));
 
   double height_min, height_max;
   kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
@@ -409,8 +419,11 @@ void ComputeDepthTool::run()
     // processing was terminated before any result was produced
     return;
   }
-  auto image_data = depth_to_vtk(depth, frames_out[ref_frame], d->crop.min_x(), d->crop.width(),
-                                 d->crop.min_y(), d->crop.height());
+  kwiver::vital::image_of<double> depth_img(depth->get_image());
+  auto image_data = depth_to_vtk(depth_img, d->ref_img,
+                                 d->crop.min_x(), d->crop.width(),
+                                 d->crop.min_y(), d->crop.height(),
+                                 d->ref_mask);
 
   this->updateDepth(image_data);
 }
@@ -426,8 +439,11 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
   auto data = std::make_shared<ToolData>();
   if (depth)
   {
-    auto depthData = depth_to_vtk(depth, d->ref_img, d->crop.min_x(), d->crop.width(),
-                                  d->crop.min_y(), d->crop.height());
+    kwiver::vital::image_of<double> depth_img(depth->get_image());
+    auto depthData = depth_to_vtk(depth_img, d->ref_img,
+                                  d->crop.min_x(), d->crop.width(),
+                                  d->crop.min_y(), d->crop.height(),
+                                  d->ref_mask);
     data->copyDepth(depthData);
   }
   data->activeFrame = d->ref_frame;
