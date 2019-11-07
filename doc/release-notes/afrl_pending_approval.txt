@@ -50,3 +50,8 @@ TeleSculptor
 
 * Improved placement of ground control points and ruler tool based on picking
   the closest cell or point in the scene along the camera direction. 
+
+ * Fixed a crash that occured when applying a color gradient to data with all
+   the same value.  This occured when selecting to visualize Uncertainty of
+   depth maps which is currently unused and all zeros.  Likewise with Weights
+   of depth maps when no mask is used.
