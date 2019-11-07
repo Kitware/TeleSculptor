@@ -1468,6 +1468,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(&d->toolDispatcher, QOverload<QObject*>::of(&QSignalMapper::mapped),
           this, &MainWindow::executeTool);
+  connect(d->UI.actionIgnoreMetadata, &QAction::toggled,
+          this, &MainWindow::setIgnoreMetadata);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1751,6 +1753,12 @@ void MainWindow::loadProject(QString const& path)
                   "to project directory"
                << d->project->workingDir.absolutePath();
   }
+
+  bool ignore_metadata =
+    d->project->config->get_value<bool>("ignore_metadata", false);
+  auto oldSignalState = d->UI.actionIgnoreMetadata->blockSignals(true);
+  d->UI.actionIgnoreMetadata->setChecked(ignore_metadata);
+  d->UI.actionIgnoreMetadata->blockSignals(oldSignalState);
 
   // Get the video and mask sources
   if (d->project->config->has_value("video_reader:type"))
@@ -2897,6 +2905,18 @@ void MainWindow::updateToolResults()
       this->setActiveCamera(d->toolUpdateActiveFrame);
     }
     d->toolUpdateActiveFrame = -1;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setIgnoreMetadata(bool state)
+{
+  QTE_D();
+
+  if (d->project)
+  {
+    d->project->config->set_value("ignore_metadata", state ? "true" : "false");
+    d->project->write();
   }
 }
 
