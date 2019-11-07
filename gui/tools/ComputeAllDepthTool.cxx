@@ -290,6 +290,16 @@ void ComputeAllDepthTool::run()
         LOG_WARN(this->data()->logger, "No image available on frame " << *f);
         continue;
       }
+      image_container_sptr mask = nullptr;
+      if (hasMask)
+      {
+        mask = d->mask_reader->frame_image();
+        if (!mask)
+        {
+          LOG_WARN(this->data()->logger, "No mask available on frame " << *f);
+          continue;
+        }
+      }
       auto const mdv = d->video_reader->frame_metadata();
       if (!mdv.empty())
       {
@@ -304,7 +314,7 @@ void ComputeAllDepthTool::run()
       frame_ids.push_back(*f);
       if (hasMask)
       {
-        masks_out.push_back(d->mask_reader->frame_image());
+        masks_out.push_back(mask);
       }
       // update status message
       std::stringstream ss;
