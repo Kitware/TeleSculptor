@@ -112,9 +112,17 @@
       <string>&amp;Advanced</string>
      </property>
     </widget>
+    <widget class="qtMenu" name="menuComputeOptions">
+     <property name="title">
+      <string>&amp;Options</string>
+     </property>
+     <addaction name="actionIgnoreMetadata"/>
+    </widget>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
+    <addaction name="separator"/>
+    <addaction name="menuComputeOptions"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>
@@ -557,6 +565,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O, G</string>
+   </property>
+  </action>
+  <action name="actionIgnoreMetadata">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignore Metadata</string>
+   </property>
+   <property name="toolTip">
+    <string>Disable the use of loaded metadata as a constraint in camera estimation</string>
    </property>
   </action>
  </widget>

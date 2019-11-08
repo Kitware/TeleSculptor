@@ -28,6 +28,9 @@ TeleSculptor
  * Improve responsiveness and information in progress bar for Compute Depth
    tool.
 
+ * Improved the information in the progress bar for Initialize Cameras and
+   Landmarks tool.
+
  * TeleSculptor now uses image masks in the depth estimation tools if image
    masks have been loaded.  Masks indicate which pixels to ignore in depth
    estimation.
@@ -47,6 +50,9 @@ TeleSculptor
    final fused model.  One use case for weight is the use of masks to disable
    contribution for some pixels.  Uncertainty is not used yet but is a place
    holder for measurements of how uncertain the depth estimate is each pixel.
+
+ * Added a menu for compute options including the option to specify whether
+   or not to use metadata as constraints in computations.
 
 
 Fixes since last public release
