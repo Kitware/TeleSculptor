@@ -1399,13 +1399,16 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
+  QAction * runAllSep = d->UI.menuCompute->insertSeparator(d->toolSeparator);
 
-  d->addTool(new RunAllTool(this), this);
   d->addTool(new TrackFeaturesTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
   d->addTool(new ComputeAllDepthTool(this), this);
   d->addTool(new FuseDepthTool(this), this);
+
+  d->toolSeparator = runAllSep;
+  d->addTool(new RunAllTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
