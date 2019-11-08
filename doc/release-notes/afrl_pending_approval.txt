@@ -28,6 +28,9 @@ TeleSculptor
  * Improve responsiveness and information in progress bar for Compute Depth
    tool.
 
+ * Improved the information in the progress bar for Initialize Cameras and
+   Landmarks tool.
+
  * TeleSculptor now uses image masks in the depth estimation tools if image
    masks have been loaded.  Masks indicate which pixels to ignore in depth
    estimation.
