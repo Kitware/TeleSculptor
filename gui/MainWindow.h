@@ -126,6 +126,7 @@ protected slots:
   void reportToolError(QString const&);
   void acceptToolInterimResults(std::shared_ptr<ToolData> data);
   void acceptToolFinalResults();
+  void acceptToolSaveResults(std::shared_ptr<ToolData> data);
   void updateToolResults();
   void addFrame(int);
   void updateFrames(

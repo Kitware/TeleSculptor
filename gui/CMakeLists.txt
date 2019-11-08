@@ -151,6 +151,7 @@ set(gui_sources
   tools/InitCamerasLandmarksTool.cxx
   tools/MeshColoration.cxx
   tools/NeckerReversalTool.cxx
+  tools/RunAllTool.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
   tools/TrackFeaturesSprokitTool.cxx
