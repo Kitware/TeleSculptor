@@ -475,28 +475,13 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   }
 
   // shift the landmarks
-  for (auto lm : this->landmarks->landmarks())
-  {
-    auto lmd = std::dynamic_pointer_cast<kv::landmark_d>(lm.second);
-    if (lmd)
-    {
-      lmd->set_loc(lm.second->loc() - offset);
-    }
-  }
+  kwiver::arrows::core::translate_inplace(*this->landmarks, -offset);
   this->UI.worldView->setLandmarks(*landmarks);
   this->UI.cameraView->setLandmarksData(*landmarks);
 
   // shift the cameras
   auto cameras = this->cameraMap();
-  for (auto cam : cameras->cameras())
-  {
-    auto cam_ptr =
-      std::dynamic_pointer_cast<kv::simple_camera_perspective>(cam.second);
-    if (cam_ptr)
-    {
-      cam_ptr->set_center(cam_ptr->center() - offset);
-    }
-  }
+  kwiver::arrows::core::translate_inplace(*cameras, -offset);
   this->updateCameras(cameras);
 
   // shift the GCPs
