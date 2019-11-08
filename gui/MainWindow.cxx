@@ -2685,6 +2685,10 @@ void MainWindow::acceptToolSaveResults(std::shared_ptr<ToolData> data)
   {
     this->acceptToolResults(data, true);
     this->saveToolResults();
+
+    // update the depth look-up for the active tool
+    // to include any newly saved depth data
+    d->activeTool->setDepthLookup(d->depthLookup());
   }
 }
 
