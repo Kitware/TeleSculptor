@@ -138,7 +138,7 @@ void RunAllTool::reportToolError(QString const& msg)
 }
 
 //-----------------------------------------------------------------------------
-bool RunAllTool::runTool(AbstractTool* tool)
+bool RunAllTool::runTool(AbstractTool* tool, bool last_tool)
 {
   QTE_D();
   QObject::connect(tool, &AbstractTool::updated,
@@ -152,7 +152,10 @@ bool RunAllTool::runTool(AbstractTool* tool)
   tool->wait();
   if (d->failed || isCanceled())
     return false;
-  saveResults(tool);
+  if (!last_tool)
+  {
+    saveResults(tool);
+  }
   tool->disconnect();
 
   return true;
@@ -181,7 +184,7 @@ void RunAllTool::saveResults(AbstractTool* tool)
   {
     savedata->copyTrackChanges(this->track_changes());
   }
-  if (out.testFlag(AbstractTool::Depth)) 
+  if (out.testFlag(AbstractTool::Depth))
   {
     savedata->copyDepth(this->depth());
   }
@@ -229,5 +232,5 @@ void RunAllTool::run()
     return;
   }
 
-  runTool(d->fuser.get());
+  runTool(d->fuser.get(), true);
 }
