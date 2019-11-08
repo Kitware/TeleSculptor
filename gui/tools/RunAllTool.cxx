@@ -32,6 +32,8 @@
 #include "GuiCommon.h"
 
 #include <arrows/core/depth_utils.h>
+#include <arrows/core/sfm_utils.h>
+#include <arrows/core/transform.h>
 
 #include "BundleAdjustTool.h"
 #include "ComputeAllDepthTool.h"
@@ -203,15 +205,35 @@ void RunAllTool::saveResults(AbstractTool* tool)
 void RunAllTool::run()
 {
   QTE_D();
-
+#if 0
   if (!runTool(d->tracker.get()))
   {
     return;
   }
+#endif
 
   if (!runTool(d->initializer.get()))
   {
     return;
+  }
+
+  // shift the coordinates
+  auto constraints = this->sfmConstraints();
+  auto lgcs = constraints->get_local_geo_cs();
+  if (!lgcs.origin().is_empty())
+  {
+    auto landmarks = this->landmarks();
+    auto cameras = this->cameras();
+    kwiver::vital::vector_3d offset =
+      kwiver::arrows::core::landmarks_ground_center(*landmarks);
+
+    kwiver::vital::vector_3d new_origin = lgcs.origin().location() + offset;
+    lgcs.set_origin(kwiver::vital::geo_point(new_origin, lgcs.origin().crs()));
+    constraints->set_local_geo_cs(lgcs);
+    this->setSfmConstraints(constraints);
+
+    kwiver::arrows::core::translate_inplace(*landmarks, -offset);
+    kwiver::arrows::core::translate_inplace(*cameras, -offset);
   }
 
   //Compute an ROI from landmarks
