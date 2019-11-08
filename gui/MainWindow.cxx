@@ -2677,13 +2677,13 @@ void MainWindow::acceptToolFinalResults()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::acceptToolSaveResults()
+void MainWindow::acceptToolSaveResults(std::shared_ptr<ToolData> data)
 {
   QTE_D();
 
   if (d->activeTool)
   {
-    this->acceptToolResults(d->activeTool->data(), true);
+    this->acceptToolResults(data, true);
     this->saveToolResults();
   }
 }

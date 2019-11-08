@@ -63,6 +63,7 @@ public:
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
   typedef std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depth_lookup_sptr;
+  typedef vtkSmartPointer<vtkStructuredGrid> fusion_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -81,6 +82,9 @@ public:
 
   /// Deep copy the list of depthmaps into this data class
   void copyDepthLookup(depth_lookup_sptr const&);
+
+  /// Deep copy the fusion volume into this data class
+  void copyFusion(fusion_sptr const& newVolume);
 
   /// Return true if the ToolData does not contain any large data updates
   bool isProgressOnly() const
@@ -105,7 +109,7 @@ public:
   std::string description;
   vtkNew<vtkBox> roi;
   depth_lookup_sptr depthLookup;
-  vtkSmartPointer<vtkStructuredGrid> volume;
+  fusion_sptr volume;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ToolData>)
@@ -122,6 +126,7 @@ public:
   typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
+  typedef vtkSmartPointer<vtkStructuredGrid> fusion_sptr;
 
   enum Output
   {
@@ -279,6 +284,15 @@ public:
   /// This returns a textual description of what the tool is doing.
   QString description() const;
 
+  /// Get track changes
+  feature_track_set_changes_sptr track_changes() const;
+
+  /// Get depth
+  ToolData::depth_sptr depth() const;
+ 
+  /// Get volume
+  ToolData::fusion_sptr volume() const;
+
 signals:
   /// Emitted when the tool execution is completed.
   void completed();
@@ -289,7 +303,7 @@ signals:
   void canceled();
 
   /// Emitted when the tool execution wishes to save a result to disk
-  void saved();
+  void saved(std::shared_ptr<ToolData>);
 
   /// Emitted when the tool execution terminates due to an execution error.
   void failed(QString reason);

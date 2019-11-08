@@ -56,6 +56,7 @@ public slots:
 protected:
   void run() override;
   bool runTool(AbstractTool* tool);
+  void saveResults(AbstractTool* tool);
 
 protected slots:
   void forwardInterimResults(std::shared_ptr<ToolData> data);

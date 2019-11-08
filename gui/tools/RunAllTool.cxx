@@ -151,10 +151,48 @@ bool RunAllTool::runTool(AbstractTool* tool)
   tool->wait();
   if (d->failed || isCanceled())
     return false;
-  emit AbstractTool::saved();
+  saveResults(tool);
   tool->disconnect();
 
   return true;
+}
+
+//-----------------------------------------------------------------------------
+void RunAllTool::saveResults(AbstractTool* tool)
+{
+  QTE_D();
+  //Copy data to allow visualization of last finished tool
+  auto savedata = std::make_shared<ToolData>();
+  AbstractTool::Outputs out = tool->outputs();
+  if (out.testFlag(AbstractTool::Cameras))
+  {
+    savedata->copyCameras(this->cameras());
+  }
+  if (out.testFlag(AbstractTool::Landmarks))
+  {
+    savedata->copyLandmarks(this->landmarks());
+  }
+  if (out.testFlag(AbstractTool::Tracks))
+  {
+    savedata->copyTracks(this->tracks());
+  }
+  if (out.testFlag(AbstractTool::TrackChanges))
+  {
+    savedata->copyTrackChanges(this->track_changes());
+  }
+  if (out.testFlag(AbstractTool::Depth)) 
+  {
+    savedata->copyDepth(this->depth());
+  }
+  if (out.testFlag(AbstractTool::ActiveFrame))
+  {
+    savedata->activeFrame = this->activeFrame();
+  }
+  if (out.testFlag(AbstractTool::Fusion))
+  {
+    savedata->copyFusion(this->volume());
+  }
+  emit saved(savedata);
 }
 
 //-----------------------------------------------------------------------------
