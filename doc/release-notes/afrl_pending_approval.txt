@@ -54,6 +54,10 @@ TeleSculptor
  * Added a menu for compute options including the option to specify whether
    or not to use metadata as constraints in computations.
 
+ * Added a special "Run End-to-End" tool to the compute menu that runs a
+   pipeline of all main tools in order to start from a video and end with
+   a fused 3D surface mesh without any user interaction.
+
 
 Fixes since last public release
 -------------------------------
