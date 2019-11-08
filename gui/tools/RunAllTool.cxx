@@ -72,8 +72,9 @@ RunAllTool::RunAllTool(QObject* parent)
   this->data()->logger =
     kwiver::vital::get_logger("telesculptor.tools.run_all");
 
-  this->setText("&Runs all main tools");
-  this->setToolTip("Computes 3D model from video");
+  this->setText("&Run End-to-End");
+  this->setToolTip("Runs the end-to-end reconstruction pipeline starting with "
+                   "a video and ending with a surface mesh.");
 }
 
 //-----------------------------------------------------------------------------
