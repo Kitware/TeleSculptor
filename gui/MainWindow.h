@@ -135,9 +135,11 @@ protected slots:
   void enableAntiAliasing(bool enable);
 
   void setIgnoreMetadata(bool);
+  void setVariableLens(bool);
 
 private:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);
+  void setComputeOption(std::string const& name, bool state);
 
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)

@@ -1464,6 +1464,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::executeTool);
   connect(d->UI.actionIgnoreMetadata, &QAction::toggled,
           this, &MainWindow::setIgnoreMetadata);
+  connect(d->UI.actionVariableLens, &QAction::toggled,
+          this, &MainWindow::setVariableLens);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1749,11 +1751,18 @@ void MainWindow::loadProject(QString const& path)
                << d->project->workingDir.absolutePath();
   }
 
+
+  auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
+
   bool ignore_metadata =
     d->project->config->get_value<bool>("ignore_metadata", false);
-  auto oldSignalState = d->UI.actionIgnoreMetadata->blockSignals(true);
   d->UI.actionIgnoreMetadata->setChecked(ignore_metadata);
-  d->UI.actionIgnoreMetadata->blockSignals(oldSignalState);
+
+  bool variable_lens =
+    d->project->config->get_value<bool>("variable_lens", false);
+  d->UI.actionVariableLens->setChecked(variable_lens);
+
+  d->UI.menuComputeOptions->blockSignals(oldSignalState);
 
   // Get the video and mask sources
   if (d->project->config->has_value("video_reader:type"))
@@ -2920,11 +2929,23 @@ void MainWindow::updateToolResults()
 //-----------------------------------------------------------------------------
 void MainWindow::setIgnoreMetadata(bool state)
 {
+  setComputeOption("ignore_metadata", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setVariableLens(bool state)
+{
+  setComputeOption("variable_lens", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setComputeOption(std::string const& name, bool state)
+{
   QTE_D();
 
   if (d->project)
   {
-    d->project->config->set_value("ignore_metadata", state ? "true" : "false");
+    d->project->config->set_value(name, state ? "true" : "false");
     d->project->write();
   }
 }

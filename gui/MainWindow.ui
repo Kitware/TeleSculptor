@@ -117,6 +117,7 @@
       <string>&amp;Options</string>
      </property>
      <addaction name="actionIgnoreMetadata"/>
+     <addaction name="actionVariableLens"/>
     </widget>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
@@ -576,6 +577,17 @@
    </property>
    <property name="toolTip">
     <string>Disable the use of loaded metadata as a constraint in camera estimation</string>
+   </property>
+  </action>
+  <action name="actionVariableLens">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Variable Lens</string>
+   </property>
+   <property name="toolTip">
+    <string>Allow estimation of variable camera lens across the video</string>
    </property>
   </action>
  </widget>
