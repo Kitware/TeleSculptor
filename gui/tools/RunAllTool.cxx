@@ -205,12 +205,10 @@ void RunAllTool::saveResults(AbstractTool* tool)
 void RunAllTool::run()
 {
   QTE_D();
-#if 0
   if (!runTool(d->tracker.get()))
   {
     return;
   }
-#endif
 
   if (!runTool(d->initializer.get()))
   {
