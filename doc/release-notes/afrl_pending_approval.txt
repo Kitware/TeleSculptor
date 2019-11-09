@@ -52,7 +52,8 @@ TeleSculptor
    holder for measurements of how uncertain the depth estimate is each pixel.
 
  * Added a menu for compute options including the option to specify whether
-   or not to use metadata as constraints in computations.
+   or not to use metadata as constraints in computations and an option to
+   specify whether or not to allow variable (e.g. zooming, swaping) lens.
 
  * Added a special "Run End-to-End" tool to the compute menu that runs a
    pipeline of all main tools in order to start from a video and end with
