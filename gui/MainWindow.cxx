@@ -2938,6 +2938,7 @@ void MainWindow::setIgnoreMetadata(bool state)
     d->project->config->set_value("ignore_metadata", state ? "true" : "false");
     d->project->write();
   }
+  d->freestandingConfig->set_value(name, state ? "true" : "false");
 }
 
 //-----------------------------------------------------------------------------
