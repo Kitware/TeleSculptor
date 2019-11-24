@@ -82,6 +82,7 @@ set(gui_ui
   DepthMapViewOptions.ui
   FeatureOptions.ui
   ImageOptions.ui
+  LoggerView.ui
   PointOptions.ui
   VolumeOptions.ui
 )
@@ -111,6 +112,7 @@ set(gui_sources
   GroundControlPointsWidget.cxx
   GuiCommon.cxx
   ImageOptions.cxx
+  LoggerView.cxx
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
   MatchMatrixWindow.cxx

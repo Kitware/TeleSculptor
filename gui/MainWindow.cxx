@@ -102,6 +102,8 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <functional>
+
 namespace kv = kwiver::vital;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1358,6 +1360,13 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  using std::placeholders::_3;
+  using std::placeholders::_4;
+  kv::kwiver_logger::callback_t cb = std::bind(&LoggerView::logHandler, d->UI.Logger, _1, _2, _3, _4);
+  kv::kwiver_logger::set_global_callback(cb);
 
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
