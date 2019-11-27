@@ -12,6 +12,8 @@ TeleSculptor Application
 
  * Updated the code to work with API changes to kwiver::vital::geo_point.
 
+ * Added a logger panel to show log message.
+
 
 Fixes since v1.0.0
 ------------------
