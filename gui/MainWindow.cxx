@@ -102,6 +102,8 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <functional>
+
 namespace kv = kwiver::vital;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1359,6 +1361,13 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  using std::placeholders::_3;
+  using std::placeholders::_4;
+  kv::kwiver_logger::callback_t cb = std::bind(&LoggerView::logHandler, d->UI.Logger, _1, _2, _3, _4);
+  kv::kwiver_logger::set_global_callback(cb);
+
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
@@ -1386,6 +1395,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addAction(d->UI.metadataDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.groundControlPointsDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.loggerDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
