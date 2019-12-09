@@ -40,7 +40,10 @@
 #include <QFile>
 #include <QFileInfo>
 
+#include <ctime>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 namespace
 {
@@ -50,6 +53,7 @@ static QString const LANDMARKS_PATH = "results/landmarks.ply";
 static QString const GEO_ORIGIN_PATH = "results/geo_origin.txt";
 static QString const DEPTH_PATH = "results/depth";
 static QString const GROUND_CONTROL_PATH = "results/ground_control_points.ply";
+static QString const LOG_FILE_FMT = "telesculptor_%Y%m%d_%H%M%S.log";
 }
 
 //-----------------------------------------------------------------------------
@@ -86,6 +90,7 @@ Project::Project(QString const& dir, QObject* parent) : QObject{parent}
   geoOriginFile = GEO_ORIGIN_PATH;
   depthPath = DEPTH_PATH;
   groundControlPath = GROUND_CONTROL_PATH;
+  logFilePath = this->logFileName();
 }
 
 //-----------------------------------------------------------------------------
@@ -118,6 +123,7 @@ bool Project::read(QString const& path)
     this->landmarksPath = getPath(this, "output_ply_file", LANDMARKS_PATH);
     this->tracksPath = getPath(this, "input_track_file", TRACKS_PATH,
                                "output_tracks_file");
+    this->logFilePath = this->logFileName();
 
     if (config->has_value("ground_control_points_file"))
     {
@@ -180,6 +186,18 @@ QString Project::getContingentRelativePath(QString const& filepath)
   {
     return rel;
   }
+}
+
+//-----------------------------------------------------------------------------
+// Construct the log filename from the format string and current date/time
+QString Project::logFileName() const
+{
+  QString fmt = getPath(this, "log_filename_format", LOG_FILE_FMT);
+  std::time_t t = std::time(nullptr);
+  std::tm tm = *std::localtime(&t);
+  std::stringstream ss;
+  ss << std::put_time(&tm, qPrintable(fmt));
+  return qtString(ss.str());
 }
 
 //-----------------------------------------------------------------------------
