@@ -2614,12 +2614,23 @@ void MainWindow::executeTool(QObject* object)
       d->project->config->set_value("ROI", d->roiToString());
     }
 
+    bool ignore_metadata =
+      d->freestandingConfig->get_value<bool>(
+        "ignore_metadata", false);
+
+    kv::sfm_constraints_sptr constraints = d->sfmConstraints;
+    if (ignore_metadata)
+    {
+      constraints = std::make_shared<kv::sfm_constraints>(*constraints);
+      constraints->set_metadata(nullptr);
+    }
+
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
-    tool->setSfmConstraints(d->sfmConstraints);
+    tool->setSfmConstraints(constraints);
     tool->setVideoPath(stdString(d->videoPath));
     tool->setMaskPath(stdString(d->maskPath));
     tool->setConfig(d->project->config);
@@ -2927,6 +2938,7 @@ void MainWindow::setIgnoreMetadata(bool state)
     d->project->config->set_value("ignore_metadata", state ? "true" : "false");
     d->project->write();
   }
+  d->freestandingConfig->set_value(name, state ? "true" : "false");
 }
 
 //-----------------------------------------------------------------------------
