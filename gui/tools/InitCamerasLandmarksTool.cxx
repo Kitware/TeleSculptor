@@ -110,6 +110,15 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
+  bool variable_lens =
+    config->get_value<bool>("variable_lens", false);
+  if (config->has_value("variable_lens"))
+  {
+    bool variable_lens = config->get_value<bool>("variable_lens");
+    config->set_value("initializer:keyframe:force_common_intrinsics",
+                      !variable_lens);
+  }
+
   // Create algorithm from configuration
   initialize_cameras_landmarks::set_nested_algo_configuration(
     BLOCK, config, d->algorithm);
