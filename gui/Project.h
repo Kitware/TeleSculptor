@@ -51,6 +51,8 @@ public:
 
   QString getContingentRelativePath(QString const& filepath);
 
+  QString logFileName() const;
+
   QDir workingDir;
 
   QString filePath;
@@ -64,6 +66,7 @@ public:
   QString geoOriginFile;
   QString depthPath;
   QString groundControlPath;
+  QString logFilePath;
 
   std::string ROI;
 
