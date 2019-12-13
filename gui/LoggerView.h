@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,53 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TELESCULPTOR_PROJECT_H_
-#define TELESCULPTOR_PROJECT_H_
+#ifndef TELESCULPTOR_LOGGERVIEW_H_
+#define TELESCULPTOR_LOGGERVIEW_H_
 
-#include <vital/config/config_block_io.h>
+#include <qtGlobal.h>
 
-#include <QtCore/QDir>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <QWidget>
 
-class Project : public QObject
+#include <vital/logger/logger.h>
+
+class LoggerViewPrivate;
+
+class LoggerView : public QWidget
 {
   Q_OBJECT
 
-// TODO: Encapsulate data and add accessors
 public:
+  explicit LoggerView(
+    QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  ~LoggerView();
 
-  Project(QObject* parent = nullptr);
-  Project(QString const& dir, QObject* parent = nullptr);
-
-  bool read(QString const& path);
-
-  QString getContingentRelativePath(QString const& filepath);
-
-  QString logFileName() const;
-
-  QDir workingDir;
-
-  QString filePath;
-  QString videoPath;
-  QString maskPath;
-
-  QString tracksPath;
-  QString landmarksPath;
-  QString volumePath;
-  QString cameraPath;
-  QString geoOriginFile;
-  QString depthPath;
-  QString groundControlPath;
-  QString logFilePath;
-
-  std::string ROI;
-
-  kwiver::vital::config_block_sptr config =
-    kwiver::vital::config_block::empty_config();
+  void logHandler(kwiver::vital::kwiver_logger::log_level_t,
+                  std::string const& name,
+                  std::string const& msg,
+                  kwiver::vital::logger_ns::location_info const& loc);
+signals:
+  void logMessage(QString const& msg);
 
 public slots:
-  void write();
+  void appendMessage(QString const& msg);
+
+private:
+  QTE_DECLARE_PRIVATE_RPTR(LoggerView)
+  QTE_DECLARE_PRIVATE(LoggerView)
+
+  QTE_DISABLE_COPY(LoggerView)
 };
 
 #endif

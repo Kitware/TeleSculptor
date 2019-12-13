@@ -110,6 +110,10 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <ctime>
+#include <functional>
+#include <iomanip>
+
 namespace kv = kwiver::vital;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -319,11 +323,17 @@ public:
   std::string roiToString();
   void loadroi(const std::string& roistr);
   void resetActiveDepthMap(int);
+  void handleLogMessage(kv::kwiver_logger::log_level_t level,
+                        std::string const& name,
+                        std::string const& msg,
+                        kv::logger_ns::location_info const& loc);
 
   // Member variables
   Ui::MainWindow UI;
   Am::MainWindow AM;
   qtUiState uiState;
+
+  std::ofstream logFileStream;
 
   StateValue<QColor>* viewBackgroundColor = nullptr;
 
@@ -1365,6 +1375,27 @@ void MainWindowPrivate::resetActiveDepthMap(int frame)
   this->currentDepthFrame = frame;
 }
 
+//-----------------------------------------------------------------------------
+void MainWindowPrivate
+::handleLogMessage(kv::kwiver_logger::log_level_t level,
+                   std::string const& name,
+                   std::string const& msg,
+                   kv::logger_ns::location_info const& loc)
+{
+  this->UI.Logger->logHandler(level, name, msg, loc);
+
+  if (logFileStream.is_open())
+  {
+    constexpr char * date_format = "%Y-%m-%d %H:%M:%S - ";
+    std::time_t t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    logFileStream << "[" << std::setfill(' ') << std::setw(5)
+                  << kv::kwiver_logger::get_level_string(level) << "] "
+                  << std::put_time(&tm, date_format)
+                  << name << ": " << msg << std::endl;
+  }
+}
+
 //END MainWindowPrivate
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1380,6 +1411,14 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  using std::placeholders::_3;
+  using std::placeholders::_4;
+  kv::kwiver_logger::callback_t cb =
+    std::bind(&MainWindowPrivate::handleLogMessage, d, _1, _2, _3, _4);
+  kv::kwiver_logger::set_global_callback(cb);
 
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
@@ -1412,6 +1451,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.menuView->addAction(d->UI.metadataDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.groundControlPointsDock->toggleViewAction());
   d->UI.menuView->addAction(d->UI.depthMapViewDock->toggleViewAction());
+  d->UI.menuView->addAction(d->UI.loggerDock->toggleViewAction());
 
   d->UI.playSlideshowButton->setDefaultAction(d->UI.actionSlideshowPlay);
   d->UI.loopSlideshowButton->setDefaultAction(d->UI.actionSlideshowLoop);
@@ -1703,6 +1743,10 @@ void MainWindow::newProject()
 
     d->project.reset(new Project{dirname});
 
+    // Open log file for appending
+    d->logFileStream.open(d->project->logFilePath.toStdString(),
+                          std::ofstream::out | std::ofstream::app);
+
     if (d->videoSource)
     {
       d->project->config->merge_config(d->freestandingConfig);
@@ -1751,6 +1795,9 @@ void MainWindow::loadProject(QString const& path)
                << d->project->workingDir.absolutePath();
   }
 
+  // Open log file for appending
+  d->logFileStream.open(d->project->logFilePath.toStdString(),
+                        std::ofstream::out | std::ofstream::app);
 
   auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
 

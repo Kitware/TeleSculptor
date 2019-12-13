@@ -257,6 +257,15 @@
    </attribute>
    <widget class="GroundControlPointsView" name="groundControlPoints"/>
   </widget>
+  <widget class="QDockWidget" name="loggerDock">
+   <property name="windowTitle">
+    <string>Log Viewer</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="LoggerView" name="Logger"/>
+  </widget>
   <action name="actionNewProject">
    <property name="text">
     <string>&amp;New Project</string>
@@ -631,6 +640,12 @@
    <class>GroundControlPointsView</class>
    <extends>QWidget</extends>
    <header>GroundControlPointsView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LoggerView</class>
+   <extends>QWidget</extends>
+   <header>LoggerView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
