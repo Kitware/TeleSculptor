@@ -3236,6 +3236,11 @@ void MainWindow::applySimilarityTransform()
 
       vtkSmartPointer<vtkDoubleArray> depthData = vtkDoubleArray::FastDownCast(
         depthImg->GetPointData()->GetAbstractArray("Depths"));
+      // skip invalid depth maps
+      if (!depthData)
+      {
+        continue;
+      }
       auto numValues = depthData->GetNumberOfValues();
       for (vtkIdType i = 0; i < numValues; ++i)
       {
