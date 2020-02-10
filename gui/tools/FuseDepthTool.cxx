@@ -208,9 +208,9 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume,
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
   grid->SetOrigin(origin[0], origin[1], origin[2]);
   // vtk cells are dim - 1 for some reason
-  grid->SetDimensions(static_cast<int>(volume->width() + 1),
-                      static_cast<int>(volume->height() + 1),
-                      static_cast<int>(volume->depth() + 1));
+  grid->SetDimensions(static_cast<int>(volume->width()),
+                      static_cast<int>(volume->height()),
+                      static_cast<int>(volume->depth()));
   grid->SetSpacing(spacing[0], spacing[1], spacing[2]);
 
   // initialize output
@@ -233,8 +233,8 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume,
     }
   }
 
-  grid->GetPointData()->SetScalars(vals.Get());
-  grid->GetPointData()->GetScalars()->SetName("reconstruction_scalar");
+  grid->GetPointData()->SetScalars(vals);
+  grid->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
   return grid;
 }
 
