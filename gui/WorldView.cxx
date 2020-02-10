@@ -847,6 +847,11 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 //-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString const& path)
 {
+  QFileInfo check_file(path);
+  if (!check_file.exists() || !check_file.isFile())
+  {
+    return;
+  }
   // Create the vtk pipeline
   // Read volume
   vtkNew<vtkMetaImageReader> reader;
