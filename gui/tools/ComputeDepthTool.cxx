@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2018-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -189,8 +189,8 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
 {
   if (depth_img.size() == 0 ||
       color_img.size() == 0 ||
-      depth_img.width() != color_img.width() ||
-      depth_img.height() != color_img.height())
+      depth_img.width() + i0 > color_img.width() ||
+      depth_img.height() + j0 > color_img.height())
   {
     return nullptr;
   }
