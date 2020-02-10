@@ -200,7 +200,7 @@ void load_depth_map(const std::string &filename,
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkStructuredGrid>
+vtkSmartPointer<vtkImageData>
 volume_to_vtk(kwiver::vital::image_container_sptr volume,
               kwiver::vital::vector_3d const& origin,
               kwiver::vital::vector_3d const& spacing)
@@ -233,16 +233,9 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume,
     }
   }
 
-  grid->GetCellData()->AddArray(vals.Get());
-
-  vtkSmartPointer<vtkCellDataToPointData> celltopts =
-    vtkSmartPointer<vtkCellDataToPointData>::New();
-
-  celltopts->SetInputData(grid);
-  celltopts->Update();
-  vtkStructuredGrid* output = (vtkStructuredGrid *)celltopts->GetOutput();
-  output->GetPointData()->SetActiveScalars("reconstruction_scalar");
-  return vtkSmartPointer<vtkStructuredGrid>(output);
+  grid->GetPointData()->SetScalars(vals.Get());
+  grid->GetPointData()->GetScalars()->SetName("reconstruction_scalar");
+  return grid;
 }
 
 //-----------------------------------------------------------------------------
@@ -309,7 +302,7 @@ void FuseDepthTool::run()
                           depths_out, weights_out, cameras_out,
                           volume, spacing);
 
-  vtkSmartPointer<vtkStructuredGrid> vtk_volume =
+  vtkSmartPointer<vtkImageData> vtk_volume =
     volume_to_vtk(volume, minpt, spacing);
 
   this->updateFusion(vtk_volume);

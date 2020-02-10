@@ -68,7 +68,7 @@ public:
 
   void loadVolume(QString const& path);
 
-  void setVolume(vtkSmartPointer<vtkStructuredGrid> volume);
+  void setVolume(vtkSmartPointer<vtkImageData> volume);
 
   void resetVolume();
 

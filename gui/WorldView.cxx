@@ -194,7 +194,7 @@ public:
   vtkNew<vtkActor> depthMapActor;
 
   vtkNew<vtkActor> volumeActor;
-  vtkSmartPointer<vtkStructuredGrid> volume;
+  vtkSmartPointer<vtkImageData> volume;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -851,20 +851,19 @@ void WorldView::loadVolume(QString const& path)
   // Read volume
   vtkNew<vtkMetaImageReader> reader;
   reader->SetFileName(qPrintable(path));
+  reader->Update();
 
-  vtkNew<vtkImageToStructuredGrid> toGrid;
-  toGrid->SetInputConnection(reader->GetOutputPort());
-  toGrid->Update();
-
-  vtkSmartPointer<vtkStructuredGrid> volume = vtkStructuredGrid::SafeDownCast(toGrid->GetOutput());
-  volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
-
-  this->setVolume(volume);
+  vtkSmartPointer<vtkImageData> volume = vtkImageData::SafeDownCast(reader->GetOutput());
+  if (volume->GetPointData()->GetNumberOfArrays() > 0)
+  {
+    volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+    this->setVolume(volume);
+  }
 }
 
 //-----------------------------------------------------------------------------
 //TODO: add camera and video for coloring
-void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
+void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
 {
   QTE_D();
 
@@ -1493,9 +1492,8 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->SetCompression(true);
   mIWriter->Write();
 
-
-
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+  auto logger = kwiver::vital::get_logger("telesculptor.worldview");
+  LOG_INFO(logger, "Saved : " << qPrintable(path));
 }
 
 //-----------------------------------------------------------------------------
