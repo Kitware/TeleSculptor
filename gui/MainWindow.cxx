@@ -2526,8 +2526,8 @@ void MainWindow::saveVolume()
 
   auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", name + QString("_volume.vts"),
-    "Mesh file (*.vts);;"
+    this, "Export Volume", name + QString("_volume.mha"),
+    "MetaImage (*.mha);;"
     "All Files (*)");
 
   if (!path.isEmpty())

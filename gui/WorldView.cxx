@@ -70,6 +70,8 @@
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
+#include <vtkMetaImageWriter.h>
+#include <vtkMetaImageReader.h>
 #include <vtkNew.h>
 #include <vtkOBJWriter.h>
 #include <vtkPLYWriter.h>
@@ -89,8 +91,6 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
-#include <vtkXMLStructuredGridReader.h>
-#include <vtkXMLStructuredGridWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -849,10 +849,16 @@ void WorldView::loadVolume(QString const& path)
 {
   // Create the vtk pipeline
   // Read volume
-  vtkNew<vtkXMLStructuredGridReader> readerV;
-  readerV->SetFileName(qPrintable(path));
+  vtkNew<vtkMetaImageReader> reader;
+  reader->SetFileName(qPrintable(path));
 
-  vtkSmartPointer<vtkStructuredGrid> volume = readerV->GetOutput();
+  vtkNew<vtkImageToStructuredGrid> toGrid;
+  toGrid->SetInputConnection(reader->GetOutputPort());
+  toGrid->Update();
+
+  vtkSmartPointer<vtkStructuredGrid> volume = vtkStructuredGrid::SafeDownCast(toGrid->GetOutput());
+  volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+
   this->setVolume(volume);
 }
 
@@ -866,13 +872,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
 
   d->volume = volume;
 
-  // Transform cell data to point data for contour filter
-  vtkNew<vtkCellDataToPointData> transformCellToPointData;
-  transformCellToPointData->SetInputData(volume);
-  transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetInputData(volume);
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.0);
   // Declare which table will be use for the contour
@@ -1485,12 +1487,13 @@ void WorldView::saveVolume(const QString &path)
   //NOTE: For now, the volume is set in the configuration parameters.
   //      It may be generated directly from the GUI in the future.
 
-  vtkNew<vtkXMLStructuredGridWriter> writer;
+  vtkNew<vtkMetaImageWriter> mIWriter;
+  mIWriter->SetFileName(qPrintable(path));
+  mIWriter->SetInputData(d->volume);
+  mIWriter->SetCompression(true);
+  mIWriter->Write();
 
-  writer->SetFileName(qPrintable(path));
-  writer->AddInputDataObject(d->volume);
-  writer->SetDataModeToBinary();
-  writer->Write();
+
 
   std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
