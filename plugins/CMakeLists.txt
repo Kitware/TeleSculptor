@@ -28,7 +28,7 @@ add_custom_target(sketchup-movefiles
 
 # Zip kw_telesculptor and kw_telesculptor.rb into kw_telesculptor.rbz
 add_custom_target(sketchup-rubyzip ALL
-  COMMAND ${CMAKE_COMMAND} -E tar "cfx"
+  COMMAND ${CMAKE_COMMAND} -E tar "cf"
     "${CMAKE_CURRENT_BINARY_DIR}/kw_telesculptor.rbz" --format=zip
     "${CMAKE_CURRENT_BINARY_DIR}/kw_telesculptor.rb"
     "${CMAKE_CURRENT_BINARY_DIR}/kw_telesculptor")
