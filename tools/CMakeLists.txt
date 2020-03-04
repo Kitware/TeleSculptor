@@ -8,6 +8,7 @@ get_property(telesculptor_libs GLOBAL PROPERTY telesculptor_libraries)
 kwiver_add_executable(maptk_detect_and_describe detect_and_describe.cxx)
 target_link_libraries(maptk_detect_and_describe
   PRIVATE             maptk
+                      kwiver::kwiver_algo_core
                       kwiver::vital_algo
                       kwiver::vital_vpm
                       kwiver::kwiversys
@@ -16,6 +17,7 @@ target_link_libraries(maptk_detect_and_describe
 kwiver_add_executable(maptk_track_features track_features.cxx)
 target_link_libraries(maptk_track_features
   PRIVATE             maptk
+                      kwiver::kwiver_algo_core
                       kwiver::vital_algo
                       kwiver::vital_vpm
                       kwiver::kwiversys
