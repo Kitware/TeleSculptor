@@ -70,6 +70,8 @@
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
+#include <vtkMetaImageWriter.h>
+#include <vtkMetaImageReader.h>
 #include <vtkNew.h>
 #include <vtkOBJWriter.h>
 #include <vtkPLYWriter.h>
@@ -89,8 +91,6 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
-#include <vtkXMLStructuredGridReader.h>
-#include <vtkXMLStructuredGridWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -194,7 +194,7 @@ public:
   vtkNew<vtkActor> depthMapActor;
 
   vtkNew<vtkActor> volumeActor;
-  vtkSmartPointer<vtkStructuredGrid> volume;
+  vtkSmartPointer<vtkImageData> volume;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -847,18 +847,28 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 //-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString const& path)
 {
+  QFileInfo check_file(path);
+  if (!check_file.exists() || !check_file.isFile())
+  {
+    return;
+  }
   // Create the vtk pipeline
   // Read volume
-  vtkNew<vtkXMLStructuredGridReader> readerV;
-  readerV->SetFileName(qPrintable(path));
+  vtkNew<vtkMetaImageReader> reader;
+  reader->SetFileName(qPrintable(path));
+  reader->Update();
 
-  vtkSmartPointer<vtkStructuredGrid> volume = readerV->GetOutput();
-  this->setVolume(volume);
+  vtkSmartPointer<vtkImageData> volume = vtkImageData::SafeDownCast(reader->GetOutput());
+  if (volume->GetPointData()->GetNumberOfArrays() > 0)
+  {
+    volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+    this->setVolume(volume);
+  }
 }
 
 //-----------------------------------------------------------------------------
 //TODO: add camera and video for coloring
-void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
+void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
 {
   QTE_D();
 
@@ -866,13 +876,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
 
   d->volume = volume;
 
-  // Transform cell data to point data for contour filter
-  vtkNew<vtkCellDataToPointData> transformCellToPointData;
-  transformCellToPointData->SetInputData(volume);
-  transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetInputData(volume);
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.0);
   // Declare which table will be use for the contour
@@ -1485,14 +1491,14 @@ void WorldView::saveVolume(const QString &path)
   //NOTE: For now, the volume is set in the configuration parameters.
   //      It may be generated directly from the GUI in the future.
 
-  vtkNew<vtkXMLStructuredGridWriter> writer;
+  vtkNew<vtkMetaImageWriter> mIWriter;
+  mIWriter->SetFileName(qPrintable(path));
+  mIWriter->SetInputData(d->volume);
+  mIWriter->SetCompression(true);
+  mIWriter->Write();
 
-  writer->SetFileName(qPrintable(path));
-  writer->AddInputDataObject(d->volume);
-  writer->SetDataModeToBinary();
-  writer->Write();
-
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+  auto logger = kwiver::vital::get_logger("telesculptor.worldview");
+  LOG_INFO(logger, "Saved : " << qPrintable(path));
 }
 
 //-----------------------------------------------------------------------------

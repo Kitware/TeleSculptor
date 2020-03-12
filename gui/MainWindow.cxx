@@ -350,7 +350,7 @@ public:
   kv::feature_track_set_sptr toolUpdateTracks;
   kv::feature_track_set_changes_sptr toolUpdateTrackChanges;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
-  vtkSmartPointer<vtkStructuredGrid> toolUpdateVolume;
+  vtkSmartPointer<vtkImageData> toolUpdateVolume;
   bool toolSaveDepthFlag = false;
 
   kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
@@ -2526,8 +2526,8 @@ void MainWindow::saveVolume()
 
   auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", name + QString("_volume.vts"),
-    "Mesh file (*.vts);;"
+    this, "Export Volume", name + QString("_volume.mha"),
+    "MetaImage (*.mha);;"
     "All Files (*)");
 
   if (!path.isEmpty())

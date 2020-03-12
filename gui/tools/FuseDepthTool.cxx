@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2018-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -200,17 +200,16 @@ void load_depth_map(const std::string &filename,
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkStructuredGrid>
+vtkSmartPointer<vtkImageData>
 volume_to_vtk(kwiver::vital::image_container_sptr volume,
               kwiver::vital::vector_3d const& origin,
               kwiver::vital::vector_3d const& spacing)
 {
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
   grid->SetOrigin(origin[0], origin[1], origin[2]);
-  // vtk cells are dim - 1 for some reason
-  grid->SetDimensions(static_cast<int>(volume->width() + 1),
-                      static_cast<int>(volume->height() + 1),
-                      static_cast<int>(volume->depth() + 1));
+  grid->SetDimensions(static_cast<int>(volume->width()),
+                      static_cast<int>(volume->height()),
+                      static_cast<int>(volume->depth()));
   grid->SetSpacing(spacing[0], spacing[1], spacing[2]);
 
   // initialize output
@@ -233,16 +232,9 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume,
     }
   }
 
-  grid->GetCellData()->AddArray(vals.Get());
-
-  vtkSmartPointer<vtkCellDataToPointData> celltopts =
-    vtkSmartPointer<vtkCellDataToPointData>::New();
-
-  celltopts->SetInputData(grid);
-  celltopts->Update();
-  vtkStructuredGrid* output = (vtkStructuredGrid *)celltopts->GetOutput();
-  output->GetPointData()->SetActiveScalars("reconstruction_scalar");
-  return vtkSmartPointer<vtkStructuredGrid>(output);
+  grid->GetPointData()->SetScalars(vals);
+  grid->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+  return grid;
 }
 
 //-----------------------------------------------------------------------------
@@ -309,7 +301,7 @@ void FuseDepthTool::run()
                           depths_out, weights_out, cameras_out,
                           volume, spacing);
 
-  vtkSmartPointer<vtkStructuredGrid> vtk_volume =
+  vtkSmartPointer<vtkImageData> vtk_volume =
     volume_to_vtk(volume, minpt, spacing);
 
   this->updateFusion(vtk_volume);

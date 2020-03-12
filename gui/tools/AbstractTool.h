@@ -63,7 +63,7 @@ public:
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
   typedef std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depth_lookup_sptr;
-  typedef vtkSmartPointer<vtkStructuredGrid> fusion_sptr;
+  typedef vtkSmartPointer<vtkImageData> fusion_sptr;
 
   /// Deep copy the feature tracks into this data class
   void copyTracks(feature_track_set_sptr const&);
@@ -126,7 +126,7 @@ public:
   typedef kwiver::vital::sfm_constraints_sptr sfm_constraints_sptr;
   typedef kwiver::vital::config_block_sptr config_block_sptr;
   typedef vtkSmartPointer<vtkImageData> depth_sptr;
-  typedef vtkSmartPointer<vtkStructuredGrid> fusion_sptr;
+  typedef vtkSmartPointer<vtkImageData> fusion_sptr;
 
   enum Output
   {
@@ -289,7 +289,7 @@ public:
 
   /// Get depth
   ToolData::depth_sptr depth() const;
- 
+
   /// Get volume
   ToolData::fusion_sptr volume() const;
 
@@ -384,7 +384,7 @@ protected:
   void updateProgress(int value, int maximum = 100);
 
   /// Set the volume produced by the tool
-  void updateFusion(vtkSmartPointer<vtkStructuredGrid>);
+  void updateFusion(vtkSmartPointer<vtkImageData>);
 
   /// Set tool execution description.
   ///

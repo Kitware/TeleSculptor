@@ -165,7 +165,7 @@ void ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
 //-----------------------------------------------------------------------------
 void ToolData::copyFusion(fusion_sptr const& newVolume)
 {
-  this->volume = vtkSmartPointer<vtkStructuredGrid>::New();
+  this->volume = vtkSmartPointer<vtkImageData>::New();
   if (newVolume)
   {
     this->volume->DeepCopy(newVolume);
@@ -485,7 +485,7 @@ void AbstractTool::updateProgress(int value, int maximum)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::updateFusion(vtkSmartPointer<vtkStructuredGrid> newVolume)
+void AbstractTool::updateFusion(vtkSmartPointer<vtkImageData> newVolume)
 {
   QTE_D();
   d->data->volume = newVolume;
