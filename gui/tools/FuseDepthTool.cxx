@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2018-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -207,7 +207,6 @@ volume_to_vtk(kwiver::vital::image_container_sptr volume,
 {
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
   grid->SetOrigin(origin[0], origin[1], origin[2]);
-  // vtk cells are dim - 1 for some reason
   grid->SetDimensions(static_cast<int>(volume->width()),
                       static_cast<int>(volume->height()),
                       static_cast<int>(volume->depth()));
