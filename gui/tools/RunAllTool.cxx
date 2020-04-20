@@ -166,7 +166,6 @@ bool RunAllTool::runTool(AbstractTool* tool, bool last_tool)
 //-----------------------------------------------------------------------------
 void RunAllTool::saveResults(AbstractTool* tool)
 {
-  QTE_D();
   //Copy data to allow visualization of last finished tool
   auto savedata = std::make_shared<ToolData>();
   AbstractTool::Outputs out = tool->outputs();

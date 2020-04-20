@@ -51,7 +51,7 @@ public:
   bool execute(QWidget* window = 0) override;
 
 public slots:
-  void cancel();
+  void cancel() override;
 
 protected:
   void run() override;

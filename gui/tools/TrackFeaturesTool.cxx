@@ -202,7 +202,6 @@ select_frames(std::vector<kwiver::vital::frame_id_t> const& valid_frames,
   {
     auto c_itr = camera_frames.begin();
     auto s_itr = selected_frames.begin();
-    const auto c_itr_last = camera_frames.end() - 1;
 
     // Step through each selected frame and if there is no camera data
     // on the frame look at the frames between this selected frame and
