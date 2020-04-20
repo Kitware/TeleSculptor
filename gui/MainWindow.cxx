@@ -2779,7 +2779,7 @@ void MainWindow::acceptToolResults(
                       d->activeTool->progress());
 
     if (data->isProgressOnly() &&
-        data->activeFrame == d->activeCameraIndex)
+        static_cast<int>(data->activeFrame) == d->activeCameraIndex)
     {
       // nothing else to update
       return;

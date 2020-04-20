@@ -351,7 +351,8 @@ void ComputeAllDepthTool::run()
     //compute depth
     auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                         height_min, height_max,
-                                        ref_frame, d->crop, masks_out);
+                                        static_cast<unsigned int>(ref_frame),
+                                        d->crop, masks_out);
     if (!depth)
     {
       // depth computation terminated early or failed to produce a result

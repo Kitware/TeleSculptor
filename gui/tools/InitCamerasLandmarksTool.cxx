@@ -49,7 +49,7 @@ class InitCamerasLandmarksToolPrivate
 {
 public:
   initialize_cameras_landmarks_sptr algorithm;
-  unsigned int num_frames;
+  size_t num_frames;
 };
 
 QTE_IMPLEMENT_D_FUNC(InitCamerasLandmarksTool)
@@ -206,7 +206,8 @@ bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
   QTE_D();
   if (cameras || landmarks || track_changes)
   {
-    unsigned int percent_complete = cameras->size() * 100 / d->num_frames;
+    unsigned int percent_complete =
+      static_cast<unsigned int>(cameras->size() * 100 / d->num_frames);
     // Create overall status message
     std::stringstream ss;
     ss << "Initialized " << cameras->size() << " of " << d->num_frames << " cameras";
