@@ -1386,7 +1386,7 @@ void MainWindowPrivate
 
   if (logFileStream.is_open())
   {
-    constexpr char * date_format = "%Y-%m-%d %H:%M:%S - ";
+    constexpr const char* const date_format = "%Y-%m-%d %H:%M:%S - ";
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
     logFileStream << "[" << std::setfill(' ') << std::setw(5)
