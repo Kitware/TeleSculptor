@@ -1,4 +1,5 @@
-file(GLOB config_files *.conf *.pipe *.properties)
+file(GLOB config_files *.conf *.pipe)
+file(GLOB prop_files *.properties)
 file(GLOB model_files *.gz)
 
 # Ensure target directory exists
@@ -12,7 +13,7 @@ add_custom_command(
 add_custom_target(telesculptor-data-config ALL DEPENDS "${out_dir}")
 
 # Add targets to copy config files
-foreach(file ${config_files})
+foreach(file ${config_files} ${prop_files})
   get_filename_component(basename ${file} NAME_WE)
   get_filename_component(filename ${file} NAME)
   set(target ${basename})
@@ -37,4 +38,11 @@ kwiver_install(
   FILES ${config_files} ${model_files}
   COMPONENT runtime
   DESTINATION share/telesculptor/${TeleSculptor_VERSION}/config
+  )
+
+# Install Logger Properties
+kwiver_install(
+  FILES ${prop_files}
+  COMPONENT runtime
+  DESTINATION lib/kwiver
   )
