@@ -110,8 +110,6 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
-  bool variable_lens =
-    config->get_value<bool>("variable_lens", false);
   if (config->has_value("variable_lens"))
   {
     bool variable_lens = config->get_value<bool>("variable_lens");
