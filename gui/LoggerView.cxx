@@ -74,7 +74,6 @@ void LoggerView::logHandler(kv::kwiver_logger::log_level_t level,
                             std::string const& msg,
                             kv::logger_ns::location_info const& loc)
 {
-  QTE_D();
   std::string level_str = kv::kwiver_logger::get_level_string(level);
   auto full_msg = QString::fromStdString(
     "<b><font color=\"red\">" + level_str + "</font> " +

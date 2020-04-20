@@ -240,8 +240,6 @@ QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 void GroundControlPointsHelperPrivate::addPoint(
   id_t id, kv::ground_control_point_sptr const& point)
 {
-  QTE_Q();
-
   // Add point to internal map
   this->groundControlPoints[id] = point;
 
