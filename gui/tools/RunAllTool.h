@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
+ * Copyright 2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TELESCULPTOR_COMPUTEDEPTHTOOL_H_
-#define TELESCULPTOR_COMPUTEDEPTHTOOL_H_
+#ifndef TELESCULPTOR_RUNALLTOOL_H_
+#define TELESCULPTOR_RUNALLTOOL_H_
 
 #include "AbstractTool.h"
 
-class ComputeDepthToolPrivate;
+class RunAllToolPrivate;
 
-class ComputeDepthTool : public AbstractTool
+class RunAllTool : public AbstractTool
 {
   Q_OBJECT
 
 public:
-  explicit ComputeDepthTool(QObject* parent = 0);
-  ~ComputeDepthTool() override;
+  explicit RunAllTool(QObject* parent = 0);
+  ~RunAllTool() override;
 
   Outputs outputs() const override;
 
@@ -50,24 +50,22 @@ public:
 
   bool execute(QWidget* window = 0) override;
 
-  bool callback_handler(kwiver::vital::image_container_sptr depth,
-                        std::string const& status,
-                        unsigned int percent_complete);
+public slots:
+  void cancel();
 
 protected:
   void run() override;
+  bool runTool(AbstractTool* tool, bool last_tool = false);
+  void saveResults(AbstractTool* tool);
+
+protected slots:
+  void forwardInterimResults(std::shared_ptr<ToolData> data);
+  void reportToolError(QString const& msg);
 
 private:
-  QTE_DECLARE_PRIVATE_RPTR(ComputeDepthTool)
-  QTE_DECLARE_PRIVATE(ComputeDepthTool)
-  QTE_DISABLE_COPY(ComputeDepthTool)
+  QTE_DECLARE_PRIVATE_RPTR(RunAllTool)
+  QTE_DECLARE_PRIVATE(RunAllTool)
+  QTE_DISABLE_COPY(RunAllTool)
 };
-
-///Convert a kwiver depth map to a colored vtk image with optional mask
-vtkSmartPointer<vtkImageData>
-depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
-             const kwiver::vital::image_of<unsigned char>& color_img,
-             int i0, int ni, int j0, int nj,
-             const kwiver::vital::image_of<unsigned char>& mask_img = {});
 
 #endif

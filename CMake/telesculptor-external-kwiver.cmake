@@ -18,7 +18,7 @@ ExternalProject_Add(kwiver
   BINARY_DIR ${TELESCULPTOR_EXTERNAL_DIR}/kwiver-build
   STAMP_DIR ${TELESCULPTOR_STAMP_DIR}
   GIT_REPOSITORY "https://github.com/Kitware/kwiver.git"
-  GIT_TAG 1b51b99b3126cd7a280ebdf5c158df1d24defe1c
+  GIT_TAG bf3957ee081eb240d69bd74e5fe8bff9e0e0edb9
   #GIT_SHALLOW 1
   CMAKE_CACHE_ARGS
     -DBUILD_SHARED_LIBS:BOOL=ON

@@ -34,6 +34,7 @@
 
 #include <maptk/version.h>
 
+#include <kwiversys/SystemTools.hxx>
 #include <vital/plugin_loader/plugin_manager.h>
 
 #include <qtCliArgs.h>
@@ -98,6 +99,13 @@ int main(int argc, char** argv)
   // Create application instance and set icon
   QApplication app(args.qtArgc(), args.qtArgv());
   qtUtil::setApplicationIcon("telesculptor");
+
+  // Prefer the log4cplus logger if no logger is specified
+  std::string logger;
+  if (!kwiversys::SystemTools::GetEnv("VITAL_LOGGER_FACTORY", logger))
+  {
+    kwiversys::SystemTools::PutEnv("VITAL_LOGGER_FACTORY=vital_log4cplus_logger");
+  }
 
   // Load KWIVER plugins
   auto const exeDir = QDir{QApplication::applicationDirPath()};

@@ -155,6 +155,7 @@ void GroundControlPointsViewPrivate::enableControls(
 
   this->UI.actionDelete->setEnabled(state);
   this->UI.actionRevert->setEnabled(state);
+  this->UI.actionApplySimilarity->setEnabled(state);
   this->UI.actionCopyLocationLatLon->setEnabled(state && haveLocation);
   this->UI.actionCopyLocationLatLonElev->setEnabled(state && haveLocation);
   this->UI.actionCopyLocationLonLat->setEnabled(state && haveLocation);
@@ -333,8 +334,8 @@ GroundControlPointsView::GroundControlPointsView(
   auto* const spacer = new QWidget{d->UI.toolBar};
   spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  d->UI.toolBar->insertWidget(d->UI.actionRevert, d->copyLocationButton);
-  d->UI.toolBar->insertWidget(d->UI.actionRevert, spacer);
+  d->UI.toolBar->insertWidget(d->UI.actionApplySimilarity, d->copyLocationButton);
+  d->UI.toolBar->insertWidget(d->UI.actionApplySimilarity, spacer);
 
   d->popupMenu = new QMenu{this};
   d->popupMenu->addMenu(clMenu);
@@ -366,6 +367,11 @@ GroundControlPointsView::GroundControlPointsView(
               d->helper->resetPoint(d->currentPoint);
               d->model.modifyPoint(d->currentPoint);
             }
+          });
+
+  connect(d->UI.actionApplySimilarity, &QAction::triggered,
+          this, [d]{
+            d->helper->applySimilarityTransform();
           });
 
   connect(d->UI.actionCopyLocationLatLon, &QAction::triggered,

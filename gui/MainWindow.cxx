@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "GuiCommon.h"
 #include "MainWindow.h"
+#include "GuiCommon.h"
 
 #include "am_MainWindow.h"
 #include "ui_MainWindow.h"
@@ -41,6 +41,7 @@
 #include "tools/FuseDepthTool.h"
 #include "tools/InitCamerasLandmarksTool.h"
 #include "tools/NeckerReversalTool.h"
+#include "tools/RunAllTool.h"
 #include "tools/SaveFrameTool.h"
 #include "tools/SaveKeyFrameTool.h"
 #include "tools/TrackFeaturesTool.h"
@@ -52,6 +53,7 @@
 #include "MatchMatrixWindow.h"
 #include "Project.h"
 #include "RulerHelper.h"
+#include "RulerOptions.h"
 #include "VideoImport.h"
 #include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
@@ -62,7 +64,10 @@
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
+#include <arrows/core/transform.h>
+#include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/video_input.h>
+#include <vital/io/camera_from_metadata.h>
 #include <vital/io/camera_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/track_set_io.h>
@@ -71,12 +76,15 @@
 #include <vital/types/metadata_map.h>
 #include <vital/types/sfm_constraints.h>
 
+#include <vtkBoundingBox.h>
 #include <vtkBox.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkImageReader2.h>
 #include <vtkImageReader2Collection.h>
 #include <vtkImageReader2Factory.h>
 #include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataReader.h>
@@ -250,7 +258,7 @@ protected:
   T data;
 };
 
-} // namespace <anonymous>
+} // namespace
 
 //END miscellaneous helpers
 
@@ -314,6 +322,7 @@ public:
   void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
+  void resetActiveDepthMap(int);
   void handleLogMessage(kv::kwiver_logger::log_level_t level,
                         std::string const& name,
                         std::string const& msg,
@@ -341,7 +350,7 @@ public:
   kv::feature_track_set_sptr toolUpdateTracks;
   kv::feature_track_set_changes_sptr toolUpdateTrackChanges;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
-  vtkSmartPointer<vtkStructuredGrid> toolUpdateVolume;
+  vtkSmartPointer<vtkImageData> toolUpdateVolume;
   bool toolSaveDepthFlag = false;
 
   kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
@@ -384,7 +393,10 @@ public:
 
   // Manual landmarks
   GroundControlPointsHelper* groundControlPointsHelper;
+
+  // Ruler measurement
   RulerHelper* rulerHelper;
+  RulerOptions* rulerOptions;
 };
 
 QTE_IMPLEMENT_D_FUNC(MainWindow)
@@ -406,7 +418,7 @@ MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 void MainWindowPrivate::saveGeoOrigin(QString const& path)
 {
   project->config->set_value("geo_origin_file", kvPath(
-    project->getContingentRelativePath(path)));
+                                                  project->getContingentRelativePath(path)));
   kv::write_local_geo_cs_to_file(sfmConstraints->get_local_geo_cs(),
                                  stdString(path));
 }
@@ -414,6 +426,10 @@ void MainWindowPrivate::saveGeoOrigin(QString const& path)
 //-----------------------------------------------------------------------------
 kv::vector_3d MainWindowPrivate::centerLandmarks() const
 {
+  if (this->landmarks->size() == 0)
+  {
+    return kv::vector_3d(0.0, 0.0, 0.0);
+  }
   std::vector<double> x, y, z;
   x.reserve(this->landmarks->size());
   y.reserve(this->landmarks->size());
@@ -469,28 +485,13 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   }
 
   // shift the landmarks
-  for (auto lm : this->landmarks->landmarks())
-  {
-    auto lmd = std::dynamic_pointer_cast<kv::landmark_d>(lm.second);
-    if (lmd)
-    {
-      lmd->set_loc(lm.second->loc() - offset);
-    }
-  }
+  kwiver::arrows::core::translate_inplace(*this->landmarks, -offset);
   this->UI.worldView->setLandmarks(*landmarks);
   this->UI.cameraView->setLandmarksData(*landmarks);
 
   // shift the cameras
   auto cameras = this->cameraMap();
-  for (auto cam : cameras->cameras())
-  {
-    auto cam_ptr =
-      std::dynamic_pointer_cast<kv::simple_camera_perspective>(cam.second);
-    if (cam_ptr)
-    {
-      cam_ptr->set_center(cam_ptr->center() - offset);
-    }
-  }
+  kwiver::arrows::core::translate_inplace(*cameras, -offset);
   this->updateCameras(cameras);
 
   // shift the GCPs
@@ -498,7 +499,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   {
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
-  this->groundControlPointsHelper->pointsReloaded();
+  this->groundControlPointsHelper->updateViewsFromGCPs();
 }
 
 //-----------------------------------------------------------------------------
@@ -514,6 +515,8 @@ void MainWindowPrivate::addTool(AbstractTool* tool, MainWindow* mainWindow)
                    mainWindow, &MainWindow::acceptToolInterimResults);
   QObject::connect(tool, &AbstractTool::completed,
                    mainWindow, &MainWindow::acceptToolFinalResults);
+  QObject::connect(tool, &AbstractTool::saved,
+                   mainWindow, &MainWindow::acceptToolSaveResults, Qt::BlockingQueuedConnection);
   QObject::connect(tool, &AbstractTool::failed,
                    mainWindow, &MainWindow::reportToolError);
 
@@ -678,16 +681,22 @@ void MainWindowPrivate::updateFrames(
 {
   this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
 
-  sfmConstraints->set_metadata(videoMetadataMap);
+  bool ignore_metadata =
+    this->freestandingConfig->get_value<bool>(
+      "ignore_metadata", false);
 
-
+  if (!ignore_metadata)
+  {
+    sfmConstraints->set_metadata(videoMetadataMap);
+  }
 
   this->UI.metadata->updateMetadata(mdMap);
 
   int num_cams_loaded_from_krtd = 0;
 
   if (this->project &&
-      this->project->config->has_value("output_krtd_dir"))
+      this->project->config->has_value("output_krtd_dir") &&
+      QDir(this->project->cameraPath).exists())
   {
     qWarning() << "Loading project cameras with frames.count = "
                << this->frames.count();
@@ -715,7 +724,7 @@ void MainWindowPrivate::updateFrames(
     this->UI.worldView->setCameras(this->cameraMap());
   }
 
-  if(num_cams_loaded_from_krtd == 0)
+  if (num_cams_loaded_from_krtd == 0)
   {
 #define GET_K_CONFIG(type, name) \
   this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
@@ -747,21 +756,38 @@ void MainWindowPrivate::updateFrames(
         this->freestandingConfig->get_value<bool>(
           "initialize_cameras_with_metadata", true);
 
-      if (init_cams_with_metadata)
+      if (!ignore_metadata && init_cams_with_metadata)
       {
         auto im = this->videoSource->frame_image();
+        K->set_image_width(static_cast<unsigned>(im->width()));
+        K->set_image_height(static_cast<unsigned>(im->height()));
+        baseCamera.set_intrinsics(K);
 
         bool init_intrinsics_with_metadata =
           this->freestandingConfig->get_value<bool>(
             "initialize_intrinsics_with_metadata", true);
         if (init_intrinsics_with_metadata)
         {
-          kv::set_intrinsics_from_metadata(baseCamera, mdMap, im);
+          // find the first metadata that gives valid intrinsics
+          // and put this in baseCamera as a backup for when
+          // a particular metadata packet is missing data
+          for (auto mdp : mdMap)
+          {
+            auto md_K = kv::intrinsics_from_metadata(
+              *mdp.second,
+              static_cast<unsigned>(im->width()),
+              static_cast<unsigned>(im->height()));
+            if (md_K != nullptr)
+            {
+              baseCamera.set_intrinsics(md_K);
+              break;
+            }
+          }
         }
 
         kv::local_geo_cs lgcs = sfmConstraints->get_local_geo_cs();
         camMap = kv::initialize_cameras_with_metadata(
-          mdMap, baseCamera, lgcs);
+          mdMap, baseCamera, lgcs, init_intrinsics_with_metadata);
 
         sfmConstraints->set_local_geo_cs(lgcs);
 
@@ -771,7 +797,6 @@ void MainWindowPrivate::updateFrames(
         {
           saveGeoOrigin(project->geoOriginFile);
         }
-
       }
     }
 
@@ -985,21 +1010,7 @@ void MainWindowPrivate::setActiveCamera(int id)
   //load from memory if cached
   if (id >= 0 && id == this->activeDepthFrame)
   {
-    this->depthReader->SetFileName("");
-    this->depthFilter->RemoveAllInputConnections(0);
-    this->depthFilter->SetInputData(this->activeDepth);
-
-    this->UI.depthMapView->setValidDepthInput(true);
-    this->UI.worldView->setValidDepthInput(true);
-
-    if (auto* const fr = qtGet(qAsConst(this->frames), id))
-    {
-      this->depthFilter->SetCamera(fr->camera);
-    }
-    this->UI.worldView->updateDepthMap();
-    this->UI.depthMapView->updateView(true);
-    this->UI.actionExportDepthPoints->setEnabled(true);
-
+    this->resetActiveDepthMap(id);
     this->currentDepthFrame = id;
   }
   else // load from file
@@ -1108,12 +1119,11 @@ void MainWindowPrivate::updateCameraView()
 //-----------------------------------------------------------------------------
 std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
-  kwiver::vital::metadata_map::map_metadata_t md;
   if (videoMetadataMap)
   {
-    md = videoMetadataMap->metadata();
+    return frameName(frameId, *this->videoMetadataMap);
   }
-  return frameName(frameId, md);
+  return frameName(frameId, kwiver::vital::simple_metadata_map());
 }
 
 //-----------------------------------------------------------------------------
@@ -1197,16 +1207,8 @@ void MainWindowPrivate::loadImage(FrameData frame)
       }
       else
       {
-        auto md_map = this->videoMetadataMap->metadata();
-        auto mdi = md_map.find(frame.id);
-        if (mdi == md_map.end())
-        {
-          this->UI.metadata->updateMetadata(kwiver::vital::metadata_vector{});
-        }
-        else
-        {
-          this->UI.metadata->updateMetadata(mdi->second);
-        }
+        auto const& mdv = this->videoMetadataMap->get_vector(frame.id);
+        this->UI.metadata->updateMetadata(mdv);
       }
     }
   }
@@ -1346,11 +1348,31 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
 {
   double minpt[3], maxpt[3];
   std::istringstream stream(roistr);
-  stream >> minpt[0] >> minpt[1] >> minpt[2]
-         >> maxpt[0] >> maxpt[1] >> maxpt[2];
+  stream >> minpt[0] >> minpt[1] >> minpt[2] >> maxpt[0] >> maxpt[1] >> maxpt[2];
   this->roi->SetXMin(minpt);
   this->roi->SetXMax(maxpt);
   UI.worldView->setROI(roi.GetPointer(), true);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::resetActiveDepthMap(int frame)
+{
+  this->depthReader->SetFileName("");
+  this->depthFilter->RemoveAllInputConnections(0);
+  this->depthFilter->SetInputData(this->activeDepth);
+
+  this->UI.depthMapView->setValidDepthInput(true);
+  this->UI.worldView->setValidDepthInput(true);
+
+  if (auto* const fr = qtGet(qAsConst(this->frames), frame))
+  {
+    this->depthFilter->SetCamera(fr->camera);
+  }
+  this->UI.worldView->updateDepthMap();
+  this->UI.depthMapView->updateView(true);
+  this->UI.actionExportDepthPoints->setEnabled(true);
+
+  this->currentDepthFrame = frame;
 }
 
 //-----------------------------------------------------------------------------
@@ -1401,12 +1423,16 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
+  QAction * runAllSep = d->UI.menuCompute->insertSeparator(d->toolSeparator);
 
   d->addTool(new TrackFeaturesTool(this), this);
   d->addTool(new InitCamerasLandmarksTool(this), this);
   d->addTool(new SaveFrameTool(this), this);
   d->addTool(new ComputeAllDepthTool(this), this);
   d->addTool(new FuseDepthTool(this), this);
+
+  d->toolSeparator = runAllSep;
+  d->addTool(new RunAllTool(this), this);
 
   d->toolMenu = d->UI.menuAdvanced;
   d->toolSeparator =
@@ -1476,6 +1502,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   connect(&d->toolDispatcher, QOverload<QObject*>::of(&QSignalMapper::mapped),
           this, &MainWindow::executeTool);
+  connect(d->UI.actionIgnoreMetadata, &QAction::toggled,
+          this, &MainWindow::setIgnoreMetadata);
+  connect(d->UI.actionVariableLens, &QAction::toggled,
+          this, &MainWindow::setVariableLens);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1558,8 +1588,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->rulerHelper = new RulerHelper(this);
   connect(d->UI.worldView, &WorldView::rulerEnabled,
           d->rulerHelper, &RulerHelper::enableWidgets);
-  connect(d->UI.worldView, &WorldView::rulerReset,
-          d->rulerHelper, &RulerHelper::resetRuler);
+  d->rulerOptions = new RulerOptions("WorldView/Ruler", d->UI.worldView);
+  d->rulerOptions->setRulerHelper(d->rulerHelper);
+  d->UI.worldView->setRulerOptions(d->rulerOptions);
 
   // Antialiasing
   connect(d->UI.actionAntialiasing, &QAction::toggled,
@@ -1768,6 +1799,18 @@ void MainWindow::loadProject(QString const& path)
   d->logFileStream.open(d->project->logFilePath.toStdString(),
                         std::ofstream::out | std::ofstream::app);
 
+  auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
+
+  bool ignore_metadata =
+    d->project->config->get_value<bool>("ignore_metadata", false);
+  d->UI.actionIgnoreMetadata->setChecked(ignore_metadata);
+
+  bool variable_lens =
+    d->project->config->get_value<bool>("variable_lens", false);
+  d->UI.actionVariableLens->setChecked(variable_lens);
+
+  d->UI.menuComputeOptions->blockSignals(oldSignalState);
+
   // Get the video and mask sources
   if (d->project->config->has_value("video_reader:type"))
   {
@@ -1791,7 +1834,7 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->project->landmarksPath);
   }
 
-    // Cameras and depth maps are loaded after video importer is done
+  // Cameras and depth maps are loaded after video importer is done
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
@@ -1839,7 +1882,6 @@ void MainWindow::loadProject(QString const& path)
   {
     this->loadGroundControlPoints(d->project->groundControlPath);
   }
-
 }
 
 //-----------------------------------------------------------------------------
@@ -2263,7 +2305,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
   auto entry_info_list = qdir.entryInfoList();
   const QString cam_extension = "krtd";
 
-  for (auto &ent : entry_info_list)
+  for (auto& ent : entry_info_list)
   {
     if (ent.isFile() && ent.suffix() == cam_extension)
     {
@@ -2280,8 +2322,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = qtString(d->getFrameName(cd.id) + "."
-                                   + stdString(cam_extension));
+        auto cameraName = qtString(d->getFrameName(cd.id) + "." + stdString(cam_extension));
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
@@ -2370,7 +2411,7 @@ void MainWindow::saveDepthImage(QString const& path)
   }
 
   d->project->config->set_value("output_depth_dir", kvPath(
-    d->project->getContingentRelativePath(d->project->depthPath)));
+                                                      d->project->getContingentRelativePath(d->project->depthPath)));
 
   d->project->config->set_value("ROI", d->roiToString());
   vtkNew<vtkXMLImageDataWriter> writerI;
@@ -2485,8 +2526,8 @@ void MainWindow::saveVolume()
 
   auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", name + QString("_volume.vts"),
-    "Mesh file (*.vts);;"
+    this, "Export Volume", name + QString("_volume.mha"),
+    "MetaImage (*.mha);;"
     "All Files (*)");
 
   if (!path.isEmpty())
@@ -2510,6 +2551,7 @@ void MainWindow::saveFusedMesh()
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
     "PLY File (*.ply);;"
+    "OBJ File (*.obj);;"
     "LAS File (*.las);;"
     "VTK Polydata (*.vtp);;"
     "All Files (*)");
@@ -2526,7 +2568,7 @@ void MainWindow::saveFusedMesh()
   {
     auto const msg =
       QString("An error occurred while exporting the mesh to \"%1\". "
-        "The output file may not have been written correctly.");
+              "The output file may not have been written correctly.");
     QMessageBox::critical(this, "Export error", msg.arg(path));
   }
 }
@@ -2628,12 +2670,23 @@ void MainWindow::executeTool(QObject* object)
       d->project->config->set_value("ROI", d->roiToString());
     }
 
+    bool ignore_metadata =
+      d->freestandingConfig->get_value<bool>(
+        "ignore_metadata", false);
+
+    kv::sfm_constraints_sptr constraints = d->sfmConstraints;
+    if (ignore_metadata)
+    {
+      constraints = std::make_shared<kv::sfm_constraints>(*constraints);
+      constraints->set_metadata(nullptr);
+    }
+
     d->setActiveTool(tool);
     tool->setActiveFrame(d->activeCameraIndex);
     tool->setTracks(d->tracks);
     tool->setCameras(d->cameraMap());
     tool->setLandmarks(d->landmarks);
-    tool->setSfmConstraints(d->sfmConstraints);
+    tool->setSfmConstraints(constraints);
     tool->setVideoPath(stdString(d->videoPath));
     tool->setMaskPath(stdString(d->maskPath));
     tool->setConfig(d->project->config);
@@ -2659,8 +2712,8 @@ void MainWindow::executeTool(QObject* object)
 //-----------------------------------------------------------------------------
 void MainWindow::reportToolError(QString const& msg)
 {
-    QMessageBox::critical(this, "Error in Tool",
-                          "Tool execution failed: " + msg);
+  QMessageBox::critical(this, "Error in Tool",
+                        "Tool execution failed: " + msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -2687,6 +2740,22 @@ void MainWindow::acceptToolFinalResults()
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::acceptToolSaveResults(std::shared_ptr<ToolData> data)
+{
+  QTE_D();
+
+  if (d->activeTool)
+  {
+    this->acceptToolResults(data, true);
+    this->saveToolResults();
+
+    // update the depth look-up for the active tool
+    // to include any newly saved depth data
+    d->activeTool->setDepthLookup(d->depthLookup());
+  }
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::acceptToolResults(
   std::shared_ptr<ToolData> data, bool isFinal)
 {
@@ -2704,6 +2773,18 @@ void MainWindow::acceptToolResults(
 
   if (d->activeTool)
   {
+    // Update tool progress
+    d->updateProgress(d->activeTool,
+                      d->activeTool->description(),
+                      d->activeTool->progress());
+
+    if (data->isProgressOnly() &&
+        data->activeFrame == d->activeCameraIndex)
+    {
+      // nothing else to update
+      return;
+    }
+
     auto const outputs = d->activeTool->outputs();
 
     d->toolUpdateCameras = NULL;
@@ -2745,10 +2826,6 @@ void MainWindow::acceptToolResults(
     {
       d->toolUpdateVolume = data->volume;
     }
-    // Update tool progress
-    d->updateProgress(d->activeTool,
-                      d->activeTool->description(),
-                      d->activeTool->progress());
   }
 
   if (isFinal)
@@ -2854,7 +2931,7 @@ void MainWindow::updateToolResults()
     //SET THE TRACK FLAGS HERE
     if (d->tracks)
     {
-      for (auto const& change: d->toolUpdateTrackChanges->m_changes)
+      for (auto const& change : d->toolUpdateTrackChanges->m_changes)
       {
         auto tk = d->tracks->get_track(change.track_id_);
         if (tk)
@@ -2879,6 +2956,7 @@ void MainWindow::updateToolResults()
     d->activeDepth = d->toolUpdateDepth;
     d->activeDepthFrame = d->toolUpdateActiveFrame;
     d->currentDepthFrame = d->toolUpdateActiveFrame;
+    d->resetActiveDepthMap(d->toolUpdateActiveFrame);
 
     // In batch depth, each update is a full depth map from a different ref
     // frame that must be saved
@@ -2897,15 +2975,38 @@ void MainWindow::updateToolResults()
   }
   if (d->toolUpdateActiveFrame >= 0)
   {
-    d->UI.camera->setValue(d->toolUpdateActiveFrame);
-    this->setActiveCamera(d->toolUpdateActiveFrame);
+    if (d->toolUpdateActiveFrame != d->activeCameraIndex)
+    {
+      d->UI.camera->setValue(d->toolUpdateActiveFrame);
+      this->setActiveCamera(d->toolUpdateActiveFrame);
+    }
     d->toolUpdateActiveFrame = -1;
   }
+}
 
-  if (!d->frames.isEmpty())
+//-----------------------------------------------------------------------------
+void MainWindow::setIgnoreMetadata(bool state)
+{
+  setComputeOption("ignore_metadata", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setVariableLens(bool state)
+{
+  setComputeOption("variable_lens", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setComputeOption(std::string const& name, bool state)
+{
+  QTE_D();
+
+  if (d->project)
   {
-    d->setActiveCamera(d->activeCameraIndex);
+    d->project->config->set_value(name, state ? "true" : "false");
+    d->project->write();
   }
+  d->freestandingConfig->set_value(name, state ? "true" : "false");
 }
 
 //-----------------------------------------------------------------------------
@@ -2981,6 +3082,199 @@ void MainWindow::showUserManual()
       this, "Not found",
       "The user manual could not be located. Please check your installation.");
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::applySimilarityTransform()
+{
+  QTE_D();
+
+  std::vector<kwiver::vital::ground_control_point_sptr> gcps;
+  auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
+  for (auto gcp : gcp_map)
+  {
+    if (gcp.second->is_geo_loc_user_provided())
+    {
+      gcps.push_back(gcp.second);
+    }
+  }
+
+  // TODO: enforce by disabling button if there is not enough points
+  if (gcps.size() < 3)
+  {
+    QMessageBox::information(
+      this, "",
+      "Must have at least three user defined ground control points to"
+      " apply similarity transform.");
+    return;
+  }
+
+  auto lgcs = d->sfmConstraints->get_local_geo_cs();
+  if (lgcs.origin().is_empty())
+  {
+    // If we don't have a lgcs, make one from the GPCs
+    double min_elev = std::numeric_limits<double>::infinity();
+    kwiver::vital::vector_3d mean_loc(0.0, 0.0, 0.0);
+    auto local_crs = gcps[0]->geo_loc().crs();
+    for (auto gcp : gcps)
+    {
+      if (gcp->elevation() < min_elev)
+      {
+        min_elev = gcp->elevation();
+      }
+      mean_loc += gcp->geo_loc().location(local_crs);
+    }
+    mean_loc /= gcps.size();
+    mean_loc[2] = min_elev;
+    lgcs.set_origin(kwiver::vital::geo_point(mean_loc, local_crs));
+    d->sfmConstraints->set_local_geo_cs(lgcs);
+    if (d->project->geoOriginFile.isEmpty())
+    {
+      Project default_project(d->project->workingDir.path());
+      d->project->geoOriginFile = default_project.geoOriginFile;
+    }
+    if (!d->project->geoOriginFile.isEmpty())
+    {
+      saveGeoOrigin(d->project->geoOriginFile);
+    }
+  }
+
+  auto local_crs = lgcs.origin().crs();
+  std::vector<kwiver::vital::vector_3d> from_pts, to_pts;
+  for (auto gcp : gcps)
+  {
+    from_pts.push_back(gcp->loc());
+    auto to_pt = gcp->geo_loc().location(local_crs) - lgcs.origin().location();
+    to_pts.push_back(to_pt);
+  }
+
+  // Merge project config with default config file
+  auto const config = readConfig("gui_st_estimator.conf");
+
+  // Check configuration
+  if (!config)
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "No configuration data was found for similarity estimator. "
+      "Please check your installation.");
+    return;
+  }
+
+  config->merge_config(d->project->config);
+  if (!kv::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
+  {
+    QMessageBox::critical(
+      this, "Configuration error",
+      "An error was found in the similarity estimator configuration.");
+    return;
+  }
+
+  // Create the similarity transform from the ground control points
+  kv::algo::estimate_similarity_transform_sptr st_estimator;
+  kv::algo::estimate_similarity_transform::set_nested_algo_configuration(
+    "st_estimator", config, st_estimator);
+
+  // initialize identity transform
+  kwiver::vital::similarity_d sim_transform;
+
+  sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
+
+  // Transform landmarks
+  d->landmarks = kwiver::arrows::core::transform(d->landmarks, sim_transform);
+
+  // Transform cameras
+  auto camera_map = d->cameraMap();
+  camera_map = kwiver::arrows::core::transform(camera_map, sim_transform);
+  d->updateCameras(camera_map);
+
+  // Transform GCP's
+  for (auto gcp : gcp_map)
+  {
+    auto gcp_loc = gcp.second->loc();
+    gcp.second->set_loc(sim_transform * gcp_loc);
+  }
+  d->groundControlPointsHelper->updateViewsFromGCPs();
+
+  // Transform ROI
+  kwiver::vital::vector_3d minPt;
+  kwiver::vital::vector_3d maxPt;
+  d->roi->GetXMin(minPt.data());
+  d->roi->GetXMax(maxPt.data());
+  std::vector<kwiver::vital::vector_3d> boundPts = {minPt, maxPt};
+  vtkBoundingBox bbox;
+
+  for (int i = 0; i < 2; ++i)
+  {
+    for (int j = 0; j < 2; ++j)
+    {
+      for (int k = 0; k < 2; ++k)
+      {
+        kwiver::vital::vector_3d currPt(boundPts[i][0],
+                                        boundPts[j][1],
+                                        boundPts[k][2]);
+        kwiver::vital::vector_3d newPt = sim_transform * currPt;
+        bbox.AddPoint(newPt.data());
+      }
+    }
+  }
+  bbox.GetMinPoint(minPt.data());
+  bbox.GetMaxPoint(maxPt.data());
+  d->roi->SetXMin(minPt.data());
+  d->roi->SetXMax(maxPt.data());
+  d->UI.worldView->setROI(d->roi.GetPointer(), true);
+
+  // Scale all the depth maps
+  for (auto const& f : d->frames)
+  {
+    if (f.depthMapPath.size() > 0)
+    {
+      vtkNew<vtkXMLImageDataReader> imageReader;
+      imageReader->SetFileName(qPrintable(f.depthMapPath));
+      imageReader->Update();
+      vtkSmartPointer<vtkImageData> depthImg = imageReader->GetOutput();
+
+      vtkSmartPointer<vtkDoubleArray> depthData = vtkDoubleArray::FastDownCast(
+        depthImg->GetPointData()->GetAbstractArray("Depths"));
+      // skip invalid depth maps
+      if (!depthData)
+      {
+        continue;
+      }
+      auto numValues = depthData->GetNumberOfValues();
+      for (vtkIdType i = 0; i < numValues; ++i)
+      {
+        depthData->SetValue(i, sim_transform.scale() * depthData->GetValue(i));
+      }
+
+      // Replace active depth map if needed
+      if (f.id == d->currentDepthFrame)
+      {
+        d->activeDepth = depthImg;
+        d->resetActiveDepthMap(f.id);
+      }
+
+      vtkNew<vtkXMLImageDataWriter> imageWriter;
+      imageWriter->SetFileName(qPrintable(f.depthMapPath));
+      imageWriter->AddInputDataObject(depthImg.Get());
+      imageWriter->SetDataModeToBinary();
+      imageWriter->Write();
+    }
+  }
+
+  // Invalidate the fusion volume
+  d->UI.worldView->resetVolume();
+
+  // Recenter the geo-coordinates
+  auto offset = d->centerLandmarks();
+  d->shiftGeoOrigin(offset);
+
+  // Save updated data
+  saveCameras(d->project->cameraPath);
+  saveLandmarks(d->project->landmarksPath);
+  saveGroundControlPoints(d->project->groundControlPath);
+  d->project->config->set_value("ROI", d->roiToString());
+  d->project->write();
 }
 
 //-----------------------------------------------------------------------------

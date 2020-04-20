@@ -40,6 +40,7 @@
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
 #include "PointOptions.h"
+#include "RulerOptions.h"
 #include "RulerWidget.h"
 #include "VolumeOptions.h"
 #include "vtkMaptkCamera.h"
@@ -69,7 +70,10 @@
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
 #include <vtkMatrix4x4.h>
+#include <vtkMetaImageWriter.h>
+#include <vtkMetaImageReader.h>
 #include <vtkNew.h>
+#include <vtkOBJWriter.h>
 #include <vtkPLYWriter.h>
 #include <vtkPlaneSource.h>
 #include <vtkPointData.h>
@@ -87,8 +91,6 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
-#include <vtkXMLStructuredGridReader.h>
-#include <vtkXMLStructuredGridWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
 #include <vtkScalarsToColors.h>
@@ -192,7 +194,7 @@ public:
   vtkNew<vtkActor> depthMapActor;
 
   vtkNew<vtkActor> volumeActor;
-  vtkSmartPointer<vtkStructuredGrid> volume;
+  vtkSmartPointer<vtkImageData> volume;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -505,11 +507,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   this->addAction(d->UI.actionShowVolume);
   this->addAction(d->UI.actionPlaceEditGCP);
 
-  auto const rulerMenu = new QMenu(this);
-  rulerMenu->addAction(d->UI.actionResetRuler);
-  d->UI.actionResetRuler->setDisabled(true);
-  d->setPopup(d->UI.actionShowRuler, rulerMenu);
-
   connect(d->UI.actionViewReset, &QAction::triggered,
           this, &WorldView::resetView);
   connect(d->UI.actionViewResetLandmarks, &QAction::triggered,
@@ -561,12 +558,6 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->rulerWidget->setInteractor(d->UI.renderWidget->GetInteractor());
   connect(d->UI.actionShowRuler, &QAction::toggled,
           this, &WorldView::rulerEnabled);
-  connect(d->rulerWidget, &RulerWidget::rulerPlaced,
-          d->UI.actionResetRuler, &QAction::setEnabled);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, &WorldView::rulerReset);
-  connect(d->UI.actionResetRuler, &QAction::triggered,
-          this, [=](){d->UI.actionShowRuler->setChecked(false);});
 
   vtkNew<vtkMaptkInteractorStyle> iren;
   d->renderWindow->GetInteractor()->SetInteractorStyle(iren);
@@ -660,6 +651,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
 
   d->cubeAxesActor->SetCamera(d->renderer->GetActiveCamera());
   d->cubeAxesActor->SetVisibility(false);
+  d->cubeAxesActor->PickableOff();
 
   d->renderer->AddActor(d->cubeAxesActor);
 
@@ -807,8 +799,8 @@ void WorldView::updateThresholdRanges()
     }
 
     auto const pd = imageData->GetPointData();
-    auto const bcArray = pd->GetArray(DepthMapArrays::BestCostValues);
-    auto const urArray = pd->GetArray(DepthMapArrays::UniquenessRatios);
+    auto const bcArray = pd->GetArray(DepthMapArrays::Weight);
+    auto const urArray = pd->GetArray(DepthMapArrays::Uncertainty);
 
     if (bcArray && urArray)
     {
@@ -855,18 +847,28 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 //-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString const& path)
 {
+  QFileInfo check_file(path);
+  if (!check_file.exists() || !check_file.isFile())
+  {
+    return;
+  }
   // Create the vtk pipeline
   // Read volume
-  vtkNew<vtkXMLStructuredGridReader> readerV;
-  readerV->SetFileName(qPrintable(path));
+  vtkNew<vtkMetaImageReader> reader;
+  reader->SetFileName(qPrintable(path));
+  reader->Update();
 
-  vtkSmartPointer<vtkStructuredGrid> volume = readerV->GetOutput();
-  this->setVolume(volume);
+  vtkSmartPointer<vtkImageData> volume = vtkImageData::SafeDownCast(reader->GetOutput());
+  if (volume->GetPointData()->GetNumberOfArrays() > 0)
+  {
+    volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+    this->setVolume(volume);
+  }
 }
 
 //-----------------------------------------------------------------------------
 //TODO: add camera and video for coloring
-void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
+void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
 {
   QTE_D();
 
@@ -874,13 +876,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
 
   d->volume = volume;
 
-  // Transform cell data to point data for contour filter
-  vtkNew<vtkCellDataToPointData> transformCellToPointData;
-  transformCellToPointData->SetInputData(volume);
-  transformCellToPointData->PassCellDataOn();
 
   // Apply contour
-  d->contourFilter->SetInputConnection(transformCellToPointData->GetOutputPort());
+  d->contourFilter->SetInputData(volume);
   d->contourFilter->SetNumberOfContours(1);
   d->contourFilter->SetValue(0, 0.0);
   // Declare which table will be use for the contour
@@ -914,6 +912,19 @@ void WorldView::setVolume(vtkSmartPointer<vtkStructuredGrid> volume)
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor.Get());
   emit contourChanged();
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::resetVolume()
+{
+  QTE_D();
+
+  d->volume = nullptr;
+
+  d->renderer->RemoveActor(d->volumeActor.Get());
+
+  this->fusedMeshEnabled(false);
+  d->volumeOptions->setEnabled(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1388,15 +1399,15 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 {
   QTE_D();
 
-  double bestCostValueMin = d->depthMapOptions->bestCostValueMinimum();
-  double bestCostValueMax = d->depthMapOptions->bestCostValueMaximum();
-  double uniquenessRatioMin = d->depthMapOptions->uniquenessRatioMinimum();
-  double uniquenessRatioMax = d->depthMapOptions->uniquenessRatioMaximum();
+  double weightMin = d->depthMapOptions->weightMinimum();
+  double weightMax = d->depthMapOptions->weightMaximum();
+  double uncertaintyMin = d->depthMapOptions->uncertaintyMinimum();
+  double uncertaintyMax = d->depthMapOptions->uncertaintyMaximum();
 
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::BestCostValues, bestCostValueMin, bestCostValueMax);
+    DepthMapArrays::Weight, weightMin, weightMax);
   d->inputDepthGeometryFilter->SetConstraint(
-    DepthMapArrays::UniquenessRatios, uniquenessRatioMin, uniquenessRatioMax);
+    DepthMapArrays::Uncertainty, uncertaintyMin, uncertaintyMax);
   d->inputDepthGeometryFilter->SetThresholdCells(filterState);
 
   emit depthMapThresholdsChanged();
@@ -1480,14 +1491,14 @@ void WorldView::saveVolume(const QString &path)
   //NOTE: For now, the volume is set in the configuration parameters.
   //      It may be generated directly from the GUI in the future.
 
-  vtkNew<vtkXMLStructuredGridWriter> writer;
+  vtkNew<vtkMetaImageWriter> mIWriter;
+  mIWriter->SetFileName(qPrintable(path));
+  mIWriter->SetInputData(d->volume);
+  mIWriter->SetCompression(true);
+  mIWriter->Write();
 
-  writer->SetFileName(qPrintable(path));
-  writer->AddInputDataObject(d->volume);
-  writer->SetDataModeToBinary();
-  writer->Write();
-
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+  auto logger = kwiver::vital::get_logger("telesculptor.worldview");
+  LOG_INFO(logger, "Saved : " << qPrintable(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -1508,6 +1519,14 @@ void WorldView::saveFusedMesh(const QString &path,
       writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
+    writer->AddInputDataObject(mesh);
+    writer->Write();
+  }
+  else if (ext == "obj")
+  {
+    vtkNew<vtkOBJWriter> writer;
+    writer->SetFileName(qPrintable(path));
+    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     writer->AddInputDataObject(mesh);
     writer->Write();
   }
@@ -1656,7 +1675,17 @@ void WorldView::setROI(vtkBox* box, bool init)
   QTE_D();
   d->roi = box;
   d->initroi = init;
+  if (d->boxWidget)
+  {
+    vtkBoxRepresentation* rep =
+      vtkBoxRepresentation::SafeDownCast(d->boxWidget->GetRepresentation());
+    if (rep)
+    {
+      rep->PlaceWidget(d->roi->GetBounds());
+    }
+  }
   d->updateScale(this);
+  this->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -1691,4 +1720,13 @@ RulerWidget* WorldView::rulerWidget() const
   QTE_D();
 
   return d->rulerWidget;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setRulerOptions(RulerOptions* r)
+{
+  QTE_D();
+  d->setPopup(d->UI.actionShowRuler, r);
+  connect(r, &RulerOptions::resetRuler,
+          this, [=]() { d->UI.actionShowRuler->setChecked(false); });
 }

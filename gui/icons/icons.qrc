@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons/16x16">
+    <file alias="apply">16x16/apply.png</file>
+    <file alias="apply@2x">16x16@2/apply.png</file>
     <file alias="camera">16x16/camera.png</file>
     <file alias="camera@2x">16x16@2/camera.png</file>
     <file alias="cancel">16x16/cancel.png</file>
@@ -52,6 +54,8 @@
     <file alias="volume@2x">16x16@2/volume.png</file>
   </qresource>
   <qresource prefix="icons/22x22">
+    <file alias="apply">22x22/apply.png</file>
+    <file alias="apply@2x">22x22@2/apply.png</file>
     <file alias="camera">22x22/camera.png</file>
     <file alias="camera@2x">22x22@2/camera.png</file>
     <file alias="cancel">22x22/cancel.png</file>

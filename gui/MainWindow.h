@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
+ * Copyright 2016-2019 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,8 @@ public:
   WorldView* worldView();
   CameraView* cameraView();
   kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
+
+  void applySimilarityTransform();
 
 public slots:
   void newProject();
@@ -124,6 +126,7 @@ protected slots:
   void reportToolError(QString const&);
   void acceptToolInterimResults(std::shared_ptr<ToolData> data);
   void acceptToolFinalResults();
+  void acceptToolSaveResults(std::shared_ptr<ToolData> data);
   void updateToolResults();
   void addFrame(int);
   void updateFrames(
@@ -131,8 +134,12 @@ protected slots:
   void updateVideoImportProgress(QString const&, int);
   void enableAntiAliasing(bool enable);
 
+  void setIgnoreMetadata(bool);
+  void setVariableLens(bool);
+
 private:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);
+  void setComputeOption(std::string const& name, bool state);
 
   QTE_DECLARE_PRIVATE_RPTR(MainWindow)
   QTE_DECLARE_PRIVATE(MainWindow)
