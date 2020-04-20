@@ -53,6 +53,7 @@
 #include <vital/algo/triangulate_landmarks.h>
 #include <vital/algo/video_input.h>
 #include <vital/exceptions.h>
+#include <vital/io/camera_from_metadata.h>
 #include <vital/io/eigen_io.h>
 #include <vital/io/landmark_map_io.h>
 #include <vital/io/metadata_io.h>
@@ -378,9 +379,9 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
                                                    kwiver::vital::rotation_d());
 
     // create initial cameras from metadata
-    input_cameras = kwiver::vital::initialize_cameras_with_metadata(md_map, base_camera,
-                                                                    local_cs,
-                                                                    ins_rot_offset);
+    input_cameras = kwiver::vital::initialize_cameras_with_metadata(
+      md_map, base_camera, local_cs, true, ins_rot_offset);
+
     return !input_cameras.empty();
   }
   else if (config->get_value<std::string>("input_krtd_files", "") != "")

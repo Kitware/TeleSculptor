@@ -43,7 +43,7 @@ control points, dense point clouds, or surface meshes.
 
 Landmarks are displayed as points, while cameras are displayed as frustums of
 semi-arbitrary length, with the active camera highlighted (see
-`Camera Options`_). The "camera path", which is a line connecting the camera
+`Camera Options`_). The "camera path", which is a polyline connecting the camera
 centers, can also be displayed. Ground control points are displayed as "jacks";
 three short lines meeting at right angles in 3D.  Double clicking in the world
 view re-centers the view of the scene around the closest scene point.
@@ -54,7 +54,8 @@ for the active camera projected to that plane. These projections result in a
 stabilized view of the video if the scene is largely planar and that plane has
 been aligned with :f:`z = 0`. Products from video with geospatial metadata are
 automatically translated to the :f:`z = 0` plane. For data without geospatial
-metadata, there is a tool available to reorient the data for this purpose.
+metadata, the Estimate Cameras/Landmarks tool attempts to fit a plane to the
+landmarks as it estimates them to reorient the landmarks to :f:`z = 0`.
 
 The world view also supports visualization of the depth image for the current
 frame as either a dense RGB point cloud or a surface mesh. It also can render a
@@ -131,11 +132,14 @@ Tool Bar
   Toggles placing or editing of the ruler measurement tool. Initially |--| when
   the ruler has not yet been placed, or after it has been removed using
   :action:`- Reset Measurement Tool` |--| a ruler can be placed by clicking two
-  points in the view. The depth of the points is calculated based on landmarks
-  in the immediate vicinity of the point being placed, or the ground plane if
-  no nearby landmarks are found. Once placed, the ruler's points may be moved
-  freely. Placement of the ruler may be canceled by pressing the **Esc** key
-  before placing the second point.
+  points in the view. The depth of the points is calculated based on landmarks,
+  depth map points, or the surface mesh location under the mouse cursor.
+  Turn off visibility of objects to avoid selecting them.  The ground plane is
+  selected if no nearby geometry is found. Once placed, the ruler's points may
+  be moved freely. Holding down the **z** key constrains the ruler to vertical
+  measurements. Holding down the **x** or **y** key constraints the ruler to a
+  horizontal plane. Placement of the ruler may be canceled by pressing the
+  **Esc** key before placing the second point.
 
 :icon:`blank` Reset Measurement Tool
   Removes the currently placed ruler. This action is available via the
@@ -188,8 +192,8 @@ be rendered either as a 3D point cloud (one point per pixel) or a dense
 triangular mesh (one vertex per pixel). In either case, the rendered depth data
 is colored by the RGB color values of the corresponding video frame. A filter
 option is also available to remove depth points based on thresholds on various
-attributes. Currently these attributes are the Uniqueness Ratio and Best Cost
-Value. Images of these attributes as well as the depth map itself are also
+attributes. Currently these attributes are the Weight and Uncertainty.
+Images of these attributes as well as the depth map itself are also
 shown in the Depth Map View and the filter options selected here apply to that
 view as well. See `Depth Map View`_.
 
@@ -394,6 +398,13 @@ Tool Bar
   Copies the geodetic location of the selected point to the clipboard. Several
   options of ordering and whether or not to include the elevation are provided.
 
+:icon:`apply` Apply Constraints to Geo-register
+  Estimates a 3D similarity transformation to best align the ground control
+  point (GCP) locations with the specified geodetic locations.  At least three
+  "user registered" GCPs are required.  That is, at least three points must
+  have manually specified latitude, longitude, and altitude.  The estimated
+  transform is applied to all data (cameras, landmarks, depth maps, etc.).
+
 :icon:`reset` Revert Changes
   Reverts user changes to the active ground control point's geodetic location,
   such that the point is no longer "user registered". This has no effect on
@@ -512,6 +523,11 @@ File Menu
 Compute Menu
 ------------
 
+:icon:`blank` Run End-to-End
+  Runs the entire processing pipeline from end-to-end.  This tools runs
+  Track Features then Estimate Cameras/Landmarks then Batch Compute Depth
+  Maps then Fuse Depth Maps.
+
 :icon:`blank` Track Features
   Run feature tracking on the loaded video starting from the current frame.
   Features and descriptors are detected and each frame and cached into a file
@@ -593,6 +609,22 @@ Compute Menu |->| Advanced
   frame. This requires a valid camera on the current frame as well as cameras
   on other frames for triangulation. It computes the solution within the active
   ROI and shows an incremental visualization of how the solution evolves.
+
+Compute Menu |->| Options
+-------------------------
+
+:icon:`blank` Ignore Metadata
+  Ignore the metadata fields (e.g. from KLV) that are attached to the imagery
+  if this option is set, metadata will not be used in camera estimation or
+  in geolocation.  The main reason to use this option is when the metadata
+  is known to be invalid.
+
+
+:icon:`blank` Variable lens
+  This option allows estimation of camera models in which the lens model
+  (e.g. focal length) can change over time.  If this option is off all cameras
+  will share the same lens model.  If the lens does not change between frames
+  it is best to use a single model.
 
 View Menu
 ---------

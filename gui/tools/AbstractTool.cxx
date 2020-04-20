@@ -148,7 +148,7 @@ void ToolData::copyDepth(depth_sptr const& newDepth)
 }
 
 //-----------------------------------------------------------------------------
-void  ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
+void ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
 {
   if (newDepthLookup)
   {
@@ -159,6 +159,16 @@ void  ToolData::copyDepthLookup(depth_lookup_sptr const& newDepthLookup)
   else
   {
     this->cameras = camera_map_sptr();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void ToolData::copyFusion(fusion_sptr const& newVolume)
+{
+  this->volume = vtkSmartPointer<vtkImageData>::New();
+  if (newVolume)
+  {
+    this->volume->DeepCopy(newVolume);
   }
 }
 
@@ -192,14 +202,14 @@ unsigned int AbstractTool::activeFrame() const
 }
 
 //-----------------------------------------------------------------------------
-std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > AbstractTool::depthLookup() const
+std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> AbstractTool::depthLookup() const
 {
   QTE_D();
   return d->data->depthLookup;
 }
 
 //-----------------------------------------------------------------------------
-vtkBox *AbstractTool::ROI() const
+vtkBox* AbstractTool::ROI() const
 {
   QTE_D();
   return d->data->roi.Get();
@@ -233,9 +243,29 @@ AbstractTool::sfm_constraints_sptr AbstractTool::sfmConstraints() const
   return d->data->constraints;
 }
 
+//-----------------------------------------------------------------------------
+AbstractTool::feature_track_set_changes_sptr AbstractTool::track_changes() const
+{
+  QTE_D();
+  return d->data->track_changes;
+}
 
 //-----------------------------------------------------------------------------
-void AbstractTool::cancel()
+AbstractTool::depth_sptr AbstractTool::depth() const
+{
+  QTE_D();
+  return d->data->active_depth;
+}
+
+//-----------------------------------------------------------------------------
+AbstractTool::fusion_sptr AbstractTool::volume() const
+{
+  QTE_D();
+  return d->data->volume;
+}
+
+//-----------------------------------------------------------------------------
+  void AbstractTool::cancel()
 {
   QTE_D();
   d->cancelRequested = true;
@@ -298,14 +328,14 @@ void AbstractTool::setSfmConstraints(sfm_constraints_sptr const& newConstraints)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setROI(vtkBox *newROI)
+void AbstractTool::setROI(vtkBox* newROI)
 {
   QTE_D();
   d->data->roi->SetBounds(newROI->GetBounds());
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > const& newDepthLookup)
+void AbstractTool::setDepthLookup(std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>> const& newDepthLookup)
 {
   QTE_D();
   d->data->copyDepthLookup(newDepthLookup);
@@ -333,6 +363,13 @@ void AbstractTool::setConfig(config_block_sptr& config)
 }
 
 //-----------------------------------------------------------------------------
+void AbstractTool::setToolData(std::shared_ptr<ToolData> data)
+{
+  QTE_D();
+  d->data = data;
+}
+
+//-----------------------------------------------------------------------------
 bool AbstractTool::execute(QWidget* window)
 {
   QTE_D();
@@ -343,6 +380,13 @@ bool AbstractTool::execute(QWidget* window)
   d->cancelRequested = false;
   d->start();
   return true;
+}
+
+//-----------------------------------------------------------------------------
+void AbstractTool::wait()
+{
+  QTE_D();
+  d->wait();
 }
 
 //-----------------------------------------------------------------------------
@@ -441,7 +485,7 @@ void AbstractTool::updateProgress(int value, int maximum)
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::updateFusion(vtkSmartPointer<vtkStructuredGrid> newVolume)
+void AbstractTool::updateFusion(vtkSmartPointer<vtkImageData> newVolume)
 {
   QTE_D();
   d->data->volume = newVolume;

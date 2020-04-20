@@ -49,6 +49,7 @@ class InitCamerasLandmarksToolPrivate
 {
 public:
   initialize_cameras_landmarks_sptr algorithm;
+  unsigned int num_frames;
 };
 
 QTE_IMPLEMENT_D_FUNC(InitCamerasLandmarksTool)
@@ -109,6 +110,15 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
     return false;
   }
 
+  bool variable_lens =
+    config->get_value<bool>("variable_lens", false);
+  if (config->has_value("variable_lens"))
+  {
+    bool variable_lens = config->get_value<bool>("variable_lens");
+    config->set_value("initializer:keyframe:force_common_intrinsics",
+                      !variable_lens);
+  }
+
   // Create algorithm from configuration
   initialize_cameras_landmarks::set_nested_algo_configuration(
     BLOCK, config, d->algorithm);
@@ -143,6 +153,7 @@ void InitCamerasLandmarksTool::run()
     using kwiver::vital::frame_id_t;
     using kwiver::vital::camera_map;
     std::set<frame_id_t> frame_ids = tp->all_frame_ids();
+    d->num_frames = frame_ids.size();
     camera_map::map_camera_t all_cams = cp->cameras();
 
     for (auto const& id : frame_ids)
@@ -175,6 +186,11 @@ void InitCamerasLandmarksTool::run()
     lp = std::make_shared<kwiver::vital::simple_landmark_map>(all_lms);
   }
 
+  this->setDescription("Initializing Cameras and Landmarks");
+  this->updateProgress(0, 100);
+  auto data = std::make_shared<ToolData>();
+  emit updated(data);
+
   d->algorithm->initialize(cp, lp, tp, sp);
 
   this->updateCameras(cp);
@@ -187,16 +203,25 @@ bool InitCamerasLandmarksTool::callback_handler(camera_map_sptr cameras,
                                                 landmark_map_sptr landmarks,
                                                 feature_track_set_changes_sptr track_changes)
 {
-  this->updateProgress(0);
-  this->setDescription("Keyframe-centric structure from motion");
-  // make a copy of the tool data
-  auto data = std::make_shared<ToolData>();
-  data->copyCameras(cameras);
-  data->copyLandmarks(landmarks);
-  data->copyTrackChanges(track_changes);
-  data->description = description().toStdString();
-  data->progress = progress();
-  data->activeFrame = cameras->cameras().rbegin()->first;
-  emit updated(data);
+  QTE_D();
+  if (cameras || landmarks || track_changes)
+  {
+    unsigned int percent_complete = cameras->size() * 100 / d->num_frames;
+    // Create overall status message
+    std::stringstream ss;
+    ss << "Initialized " << cameras->size() << " of " << d->num_frames << " cameras";
+    this->setDescription(QString::fromStdString(ss.str()));
+    this->updateProgress(percent_complete);
+
+    // make a copy of the tool data
+    auto data = std::make_shared<ToolData>();
+    data->copyCameras(cameras);
+    data->copyLandmarks(landmarks);
+    data->copyTrackChanges(track_changes);
+    data->description = description().toStdString();
+    data->progress = progress();
+    data->activeFrame = cameras->cameras().rbegin()->first;
+    emit updated(data);
+  }
   return !this->isCanceled();
 }

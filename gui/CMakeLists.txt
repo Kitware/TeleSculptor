@@ -18,6 +18,7 @@ find_package(VTK REQUIRED
   COMPONENTS
   vtkFiltersSources
   vtkGUISupportQt
+  vtkIOGeometry
   vtkIOImage
   vtkIOPLY
   vtkIOXML
@@ -84,6 +85,7 @@ set(gui_ui
   ImageOptions.ui
   LoggerView.ui
   PointOptions.ui
+  RulerOptions.ui
   VolumeOptions.ui
 )
 
@@ -120,12 +122,14 @@ set(gui_sources
   PointOptions.cxx
   Project.cxx
   RulerHelper.cxx
+  RulerOptions.cxx
   RulerWidget.cxx
   Utils.cxx
   VideoImport.cxx
   VolumeOptions.cxx
   WorldView.cxx
   main.cxx
+  vtkMaptkAxesActor.cxx
   vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkDistanceRepresentation2D.cxx
@@ -149,6 +153,7 @@ set(gui_sources
   tools/InitCamerasLandmarksTool.cxx
   tools/MeshColoration.cxx
   tools/NeckerReversalTool.cxx
+  tools/RunAllTool.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
   tools/TrackFeaturesSprokitTool.cxx

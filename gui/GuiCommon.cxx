@@ -46,15 +46,11 @@
 //-----------------------------------------------------------------------------
 std::string
 frameName(kwiver::vital::frame_id_t frame,
-          kwiver::vital::metadata_map::map_metadata_t const& mdm)
+          kwiver::vital::metadata_map const& mdm)
 {
   using kwiver::vital::basename_from_metadata;
-  auto md_itr = mdm.find(frame);
-  if (md_itr != mdm.end())
-  {
-    return frameName(frame, md_itr->second);
-  }
-  return basename_from_metadata(nullptr, frame);
+  auto mdv = mdm.get_vector(frame);
+  return frameName(frame, mdv);
 }
 
 

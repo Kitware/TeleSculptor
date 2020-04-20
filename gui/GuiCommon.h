@@ -44,7 +44,7 @@
 // Generates frame name basename in a standard format
 // This version uses a map of all metadata
 std::string frameName(kwiver::vital::frame_id_t frame,
-                      kwiver::vital::metadata_map::map_metadata_t const& mdm);
+                      kwiver::vital::metadata_map const& mdm);
 
 
 // Generates frame name basename in a standard format

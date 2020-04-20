@@ -60,7 +60,7 @@ public:
   vtkBooleanMacro(ComputeDistance, vtkTypeBool);
 
 protected:
-  vtkMaptkDistanceRepresentation2D() = default;
+  vtkMaptkDistanceRepresentation2D();
   ~vtkMaptkDistanceRepresentation2D() = default;
 
   vtkTypeBool ComputeDistance = true;
