@@ -14,13 +14,11 @@ set(maptk_public_headers
   )
 
 set(maptk_private_headers
-  colorize.h
   "${CMAKE_CURRENT_BINARY_DIR}/version.h"
   "${CMAKE_CURRENT_BINARY_DIR}/maptk_config.h"
   )
 
 set(maptk_sources
-  colorize.cxx
   geo_reference_points_io.cxx
   ground_control_point.cxx
   write_pdal.cxx

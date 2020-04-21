@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2017-2018 by Kitware, Inc.
+ * Copyright 2017-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 #include "TrackFeaturesTool.h"
 #include "GuiCommon.h"
 
-#include <maptk/colorize.h>
+#include <arrows/core/colorize.h>
 #include <maptk/version.h>
 
 #include <vital/algo/image_io.h>
@@ -369,7 +369,7 @@ void TrackFeaturesTool::run()
     tracks = d->feature_tracker->track(tracks, frame, image, mask);
     if (tracks)
     {
-      tracks = kwiver::maptk::extract_feature_colors(tracks, *image, frame);
+      tracks = kwiver::arrows::core::extract_feature_colors(tracks, *image, frame);
     }
 
     // make a copy of the tool data

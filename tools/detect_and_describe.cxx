@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2017 by Kitware, Inc.
+ * Copyright 2013-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 
-#include <maptk/colorize.h>
+#include <arrows/core/colorize.h>
 
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
@@ -547,7 +547,7 @@ static int maptk_main(int argc, char const* argv[])
 
     if (curr_feat)
     {
-      curr_feat = kwiver::maptk::extract_feature_colors(*curr_feat, *converted_image);
+      curr_feat = kwiver::arrows::core::extract_feature_colors(*curr_feat, *converted_image);
     }
 
     // extract descriptors on the current frame

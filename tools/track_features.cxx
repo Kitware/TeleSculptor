@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2013-2017 by Kitware, Inc.
+ * Copyright 2013-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 #include <string>
 #include <vector>
 
-#include <maptk/colorize.h>
+#include <arrows/core/colorize.h>
 
 #include <vital/config/config_block.h>
 #include <vital/config/config_block_io.h>
@@ -454,7 +454,7 @@ static int maptk_main(int argc, char const* argv[])
                                     converted_image, converted_mask);
     if (tracks)
     {
-      tracks = kwiver::maptk::extract_feature_colors(tracks, *image, ts.get_frame());
+      tracks = kwiver::arrows::core::extract_feature_colors(tracks, *image, ts.get_frame());
     }
 
     // Compute ref homography for current frame with current track set + write to file

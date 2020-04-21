@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2014-2019 by Kitware, Inc.
+ * Copyright 2014-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@
 #include <arrows/core/necker_reverse.h>
 #include <arrows/core/transform.h>
 
-#include <maptk/colorize.h>
+#include <arrows/core/colorize.h>
 #include <maptk/geo_reference_points_io.h>
 #include <vital/types/local_geo_cs.h>
 #include <maptk/version.h>
@@ -825,7 +825,7 @@ static int maptk_main(int argc, char const* argv[])
   //
   // Compute landmark colors
   //
-  lm_map = kwiver::maptk::compute_landmark_colors(*lm_map, *tracks);
+  lm_map = kwiver::arrows::core::compute_landmark_colors(*lm_map, *tracks);
 
   //
   // Write the output PLY file
