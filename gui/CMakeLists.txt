@@ -341,6 +341,10 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
+  install(DIRECTORY "${KWIVER_DIR}/share/kwiver/${KWIVER_VERSION}/config"
+          DESTINATION share/kwiver/${KWIVER_VERSION}
+          COMPONENT Runtime )
+
   install(DIRECTORY "${fletch_ROOT}/share/proj"
           DESTINATION share COMPONENT Runtime)
 

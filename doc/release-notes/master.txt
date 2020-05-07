@@ -8,6 +8,13 @@ and fixes over the previous v1.0.0 release.
 Updates since v1.0.0
 --------------------
 
+Configuration
+
+ * Default configuration files for algorithms have been moved into KWIVER.
+   TeleSculptor GUI-specific configuration files remain here.  TeleSculptor
+   will now search for configuration files in both TeleSculptor and KWIVER
+   configuration directories.
+
 TeleSculptor Application
 
  * Updated the code to work with API changes to kwiver::vital::geo_point.
