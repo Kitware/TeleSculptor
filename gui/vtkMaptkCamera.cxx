@@ -80,6 +80,7 @@ void BuildCamera(vtkMaptkCamera* out, kwiver::vital::camera_perspective_sptr con
 vtkMaptkCamera::vtkMaptkCamera()
 {
   this->ImageDimensions[0] = this->ImageDimensions[1] = -1;
+  this->AspectRatio = 1;
 }
 
 //-----------------------------------------------------------------------------

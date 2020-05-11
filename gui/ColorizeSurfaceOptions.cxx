@@ -51,7 +51,8 @@
 class ColorizeSurfaceOptionsPrivate
 {
 public:
-  ColorizeSurfaceOptionsPrivate() {}
+  ColorizeSurfaceOptionsPrivate(): volumeActor(nullptr), currentFrame(-1)
+  {}
 
   Ui::ColorizeSurfaceOptions UI;
   qtUiState uiState;

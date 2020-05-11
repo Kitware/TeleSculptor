@@ -252,7 +252,7 @@ vtkMaptkFeatureTrackRepresentation::vtkMaptkFeatureTrackRepresentation()
 
   this->TrailsWithoutDescActor = vtkSmartPointer<vtkActor>::New();
   this->TrailsWithoutDescActor->SetMapper(trailsWithoutDescMapper.GetPointer());
-
+  this->TrailStyle = Historic;
 }
 
 //-----------------------------------------------------------------------------
