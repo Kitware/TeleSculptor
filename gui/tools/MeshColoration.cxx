@@ -150,7 +150,7 @@ bool MeshColoration::ProcessColoration(int frame)
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
   // Contains rgb values
-  vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkUnsignedCharArray::New();
+  vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkSmartPointer<vtkUnsignedCharArray>::New();
   meanValues->SetNumberOfComponents(3);
   meanValues->SetNumberOfTuples(nbMeshPoint);
   meanValues->FillComponent(0, 0);
@@ -158,7 +158,7 @@ bool MeshColoration::ProcessColoration(int frame)
   meanValues->FillComponent(2, 0);
   meanValues->SetName("MeanColoration");
 
-  vtkSmartPointer<vtkUnsignedCharArray> medianValues = vtkUnsignedCharArray::New();
+  vtkSmartPointer<vtkUnsignedCharArray> medianValues = vtkSmartPointer<vtkUnsignedCharArray>::New();
   medianValues->SetNumberOfComponents(3);
   medianValues->SetNumberOfTuples(nbMeshPoint);
   medianValues->FillComponent(0, 0);
@@ -166,7 +166,7 @@ bool MeshColoration::ProcessColoration(int frame)
   medianValues->FillComponent(2, 0);
   medianValues->SetName("MedianColoration");
 
-  vtkSmartPointer<vtkIntArray> projectedDMValue = vtkIntArray::New();
+  vtkSmartPointer<vtkIntArray> projectedDMValue = vtkSmartPointer<vtkIntArray>::New();
   projectedDMValue->SetNumberOfComponents(1);
   projectedDMValue->SetNumberOfTuples(nbMeshPoint);
   projectedDMValue->FillComponent(0, 0);
