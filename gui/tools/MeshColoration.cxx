@@ -40,11 +40,13 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
+#include "vtkXMLPolyDataWriter.h"
 
 // Other includes
 #include <algorithm>
 #include <numeric>
 #include <sstream>
+#include <iomanip>
 
 typedef kwiversys::SystemTools  ST;
 
@@ -149,6 +151,32 @@ bool MeshColoration::ProcessColoration(int frame)
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
+  vtkNew<vtkPolyData> allFramesMesh;
+  std::vector<vtkSmartPointer<vtkUnsignedCharArray>> perFrameColor (numFrames);
+  vtkNew<vtkIntArray> cameraIndex;
+  cameraIndex->SetNumberOfComponents(1);
+  cameraIndex->SetNumberOfTuples(numFrames);
+  cameraIndex->SetName("camera_index");
+  allFramesMesh->GetFieldData()->AddArray(cameraIndex);
+  std::cout << "numFrames: " << numFrames << " numMeshPoints: " << nbMeshPoint << std::endl;
+  allFramesMesh->CopyStructure(this->OutputMesh);
+  int i = 0;
+  for (auto it = perFrameColor.begin(); it != perFrameColor.end(); ++it)
+  {
+    (*it) = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    (*it)->SetNumberOfComponents(4); // RGBA, we use A=0 for invalid pixels and A=255 otherwise
+    (*it)->SetNumberOfTuples(nbMeshPoint);
+    unsigned char* p = (*it)->GetPointer(0);
+    std::fill(p, p + nbMeshPoint*4, 0);
+    std::ostringstream ostr;
+    kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
+    cameraIndex->SetValue(i, frame);
+    ostr << "frame_" << std::setfill('0') << std::setw(4) << frame;
+    (*it)->SetName(ostr.str().c_str());
+    allFramesMesh->GetPointData()->AddArray(*it);
+    ++i;
+  }
+
   // Contains rgb values
   vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkSmartPointer<vtkUnsignedCharArray>::New();
   meanValues->SetNumberOfComponents(3);
@@ -191,7 +219,7 @@ bool MeshColoration::ProcessColoration(int frame)
 
     for (int idData = 0; idData < numFrames; idData++)
     {
-      kwiver::vital::camera_perspective_sptr camera = this->DataList[idData].second;
+      kwiver::vital::camera_perspective_sptr camera = this->DataList[idData].Camera_ptr;
       // Check if the 3D point is in front of the camera
       if (camera->depth(position) <= 0.0)
       {
@@ -207,7 +235,7 @@ bool MeshColoration::ProcessColoration(int frame)
 
       // project 3D point to pixel coordinates
       auto pixelPosition = camera->project(position);
-      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].first;
+      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].Image;
       if (pixelPosition[0] < 0.0 ||
           pixelPosition[1] < 0.0 ||
           pixelPosition[0] >= colorImage.width() ||
@@ -223,6 +251,8 @@ bool MeshColoration::ProcessColoration(int frame)
         list0.push_back(rgb.r);
         list1.push_back(rgb.g);
         list2.push_back(rgb.b);
+        unsigned char rgba[] = {rgb.r, rgb.g, rgb.b, 255};
+        perFrameColor[idData]->SetTypedTuple(id, rgba);
       }
       catch (std::out_of_range)
       {
@@ -255,6 +285,10 @@ bool MeshColoration::ProcessColoration(int frame)
   this->OutputMesh->GetPointData()->AddArray(medianValues);
   this->OutputMesh->GetPointData()->AddArray(projectedDMValue);
 
+  vtkNew<vtkXMLPolyDataWriter> writer;
+  writer->SetFileName("allFrames.vtp");
+  writer->SetInputDataObject(allFramesMesh);
+  writer->Write();
   return true;
 }
 
@@ -270,7 +304,7 @@ void MeshColoration::initializeDataList(int frameId)
     unsigned int counter = 0;
     for (auto const& cam_itr : cam_map)
     {
-      if ((counter++) % Sampling != 0)
+      if ((counter++) % this->Sampling != 0)
       {
         continue;
       }
@@ -282,7 +316,7 @@ void MeshColoration::initializeDataList(int frameId)
         {
           kwiver::vital::image_of<uint8_t>
             image(this->videoReader->frame_image()->get_image());
-          this->DataList.push_back(ColorationData(image, cam_ptr));
+          this->DataList.push_back(ColorationData(image, cam_ptr, cam_itr.first));
         }
         catch (kwiver::vital::image_type_mismatch_exception)
         {
@@ -304,7 +338,7 @@ void MeshColoration::initializeDataList(int frameId)
         {
           kwiver::vital::image_of<uint8_t>
             image(this->videoReader->frame_image()->get_image());
-          this->DataList.push_back(ColorationData(image, cam_ptr));
+          this->DataList.push_back(ColorationData(image, cam_ptr, frameId));
         }
         catch (kwiver::vital::image_type_mismatch_exception)
         {

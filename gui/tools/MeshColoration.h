@@ -71,8 +71,17 @@ protected:
   // Attributes
   vtkPolyData* OutputMesh;
   int Sampling;
-  typedef std::pair<kwiver::vital::image_of<uint8_t>,
-                    kwiver::vital::camera_perspective_sptr> ColorationData;
+  struct ColorationData
+  {
+    ColorationData(kwiver::vital::image_of<uint8_t> image,
+                   kwiver::vital::camera_perspective_sptr camera_ptr,
+                   kwiver::vital::frame_id_t frame) :
+      Image(image), Camera_ptr(camera_ptr), Frame(frame)
+    {}
+    kwiver::vital::image_of<uint8_t> Image;
+    kwiver::vital::camera_perspective_sptr Camera_ptr;
+    kwiver::vital::frame_id_t Frame;
+  };
   std::vector<ColorationData> DataList;
 
   std::string videoPath;
