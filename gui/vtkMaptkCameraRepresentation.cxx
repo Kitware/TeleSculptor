@@ -1,5 +1,5 @@
 /*ckwg +29
- * Copyright 2016-2019 by Kitware, Inc.
+ * Copyright 2016-2020 by Kitware, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,7 +195,6 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->ActiveActor->SetMapper(activeCameraMapper.GetPointer());
   this->ActiveActor->GetProperty()->SetRepresentationToWireframe();
   this->ActiveActor->GetProperty()->SetLighting(false);
-  this->ActiveActor->GetProperty()->SetLineWidth(2.0);
   this->ActiveActor->PickableOff();
 
   this->Internal->NonActiveAppendPolyData->AddInputData(
@@ -208,7 +207,6 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveActor = vtkActor::New();
   this->NonActiveActor->SetMapper(nonActiveMapper.GetPointer());
   this->NonActiveActor->GetProperty()->SetRepresentationToWireframe();
-  this->NonActiveActor->GetProperty()->SetLineWidth(2.0);
   this->NonActiveActor->PickableOff();
 
   // Set up path actor and data
