@@ -122,3 +122,7 @@ TeleSculptor Application
    the same value.  This occurred when selecting to visualize Uncertainty of
    depth maps which is currently unused and all zeros.  Likewise with Weights
    of depth maps when no mask is used.
+
+ * Fixed a rendering issue in which cameras were invisible on some platforms.
+   This bug was caused by setting the line width to 2.  Reverting this change
+   fixed the issue.
