@@ -122,3 +122,9 @@ TeleSculptor Application
    the same value.  This occurred when selecting to visualize Uncertainty of
    depth maps which is currently unused and all zeros.  Likewise with Weights
    of depth maps when no mask is used.
+
+Packaging
+
+ * The packaging for Linux has been corrected so that setting LD_LIBRARY_PATH
+   is no longer needed to run executables after unpacking.  Libraries in the
+   package now have RPATH set relative to $ORIGIN.
