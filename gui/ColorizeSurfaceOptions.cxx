@@ -126,6 +126,14 @@ void ColorizeSurfaceOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
+int ColorizeSurfaceOptions::getFrameSampling() const
+{
+  QTE_D();
+
+  return d->UI.spinBoxFrameSampling->value();
+}
+
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setCurrentFrame(int frame)
 {
   QTE_D();
@@ -151,8 +159,8 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setVideoInfo(
-  kwiver::vital::config_block_sptr config, std::string const& path)
+void ColorizeSurfaceOptions::setVideoConfig(std::string const& path,
+                                            kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
@@ -161,11 +169,35 @@ void ColorizeSurfaceOptions::setVideoInfo(
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getVideoConfig() const
+{
+  QTE_D();
+
+  return d->videoConfig;
+}
+
+//-----------------------------------------------------------------------------
+std::string ColorizeSurfaceOptions::getVideoPath() const
+{
+  QTE_D();
+
+  return d->videoPath;
+}
+
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
 
   d->cameras = cameras;
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::camera_map_sptr ColorizeSurfaceOptions::getCameras() const
+{
+  QTE_D();
+
+  return d->cameras;
 }
 
 //-----------------------------------------------------------------------------
@@ -224,18 +256,18 @@ void ColorizeSurfaceOptions::colorize()
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
     MeshColoration* coloration = new MeshColoration(
-      volume, d->videoConfig, d->videoPath, d->cameras);
+      d->videoConfig, d->videoPath, d->cameras);
 
     coloration->SetInput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
 
     if(d->UI.radioButtonCurrentFrame->isChecked())
     {
-      coloration->ProcessColoration(d->currentFrame);
+      coloration->ProcessColoration(volume, d->currentFrame);
     }
     else
     {
-      coloration->ProcessColoration();
+      coloration->ProcessColoration(volume);
     }
 
     std::string name;

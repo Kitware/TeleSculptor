@@ -106,6 +106,7 @@ public slots:
   void saveVolume();
   void enableSaveFusedMesh(bool);
   void saveFusedMesh();
+  void saveFusedMeshFrameColors();
 
   void enableSaveDepthPoints(bool);
 

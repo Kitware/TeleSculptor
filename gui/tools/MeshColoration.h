@@ -47,8 +47,7 @@ class MeshColoration
 {
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh,
-                 kwiver::vital::config_block_sptr& config,
+  MeshColoration(kwiver::vital::config_block_sptr& config,
                  std::string const& videoPath,
                  kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
@@ -63,12 +62,13 @@ public:
   // GETTER
   vtkPolyData* GetOutput();
 
-  // Functions
-  bool ProcessColoration(int frame = -1);
+  // Adds mean and median colors to 'mesh' if averageColor or
+  // adds an array of colors for each camera (frame) otherwise.
+  bool ProcessColoration(vtkPolyData* mesh, int frame = -1, bool averageColor = true);
   void initializeDataList(int frameId);
 
 protected:
-  // Attributes
+  // average color mesh
   vtkPolyData* OutputMesh;
   int Sampling;
   struct ColorationData

@@ -56,12 +56,14 @@ public:
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
+  int getFrameSampling() const;
 
   void setCameras(kwiver::vital::camera_map_sptr cameras);
-
+  kwiver::vital::camera_map_sptr getCameras() const;
   void setVideoConfig(std::string const& videoPath,
                       kwiver::vital::config_block_sptr config);
-
+  kwiver::vital::config_block_sptr getVideoConfig() const;
+  std::string getVideoPath() const;
   void colorize();
 
   void setCurrentFrame(int);

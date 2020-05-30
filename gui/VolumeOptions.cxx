@@ -137,6 +137,14 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
+int VolumeOptions::getFrameSampling() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getFrameSampling();
+}
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
@@ -145,12 +153,36 @@ void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
+kwiver::vital::camera_map_sptr VolumeOptions::getCameras() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getCameras();
+}
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::setVideoConfig(std::string const& videoPath,
                                    kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setVideoInfo(config, videoPath);
+  d->colorizeSurfaceOptions->setVideoConfig(videoPath, config);
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr VolumeOptions::getVideoConfig() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getVideoConfig();
+}
+
+//-----------------------------------------------------------------------------
+std::string VolumeOptions::getVideoPath() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getVideoPath();
 }
 
 //-----------------------------------------------------------------------------

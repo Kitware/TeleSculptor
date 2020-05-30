@@ -54,13 +54,16 @@ public:
   void addColorDisplay(std::string name);
 
   void initFrameSampling(int nbFrames);
+  int getFrameSampling() const;
 
   void setCurrentFrame(int frame);
 
   void setActor(vtkActor* actor);
-  void setVideoInfo(kwiver::vital::config_block_sptr config,
-                    std::string const& path);
+  void setVideoConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getVideoConfig() const;
+  std::string getVideoPath() const;
   void setCameras(kwiver::vital::camera_map_sptr cameras);
+  kwiver::vital::camera_map_sptr getCameras() const;
 
   void enableMenu(bool);
 

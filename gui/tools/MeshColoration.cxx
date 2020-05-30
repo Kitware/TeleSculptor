@@ -80,19 +80,15 @@ static void ComputeMedian(std::vector<T> vector, double& median)
 
 MeshColoration::MeshColoration()
 {
-  this->OutputMesh = 0;
+  this->OutputMesh = nullptr;
   this->Sampling = 1;
 }
 
-MeshColoration::MeshColoration(vtkPolyData* mesh,
-                               kwiver::vital::config_block_sptr& config,
+MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& config,
                                std::string const& videoPath,
                                kwiver::vital::camera_map_sptr& cameras)
   : MeshColoration()
 {
-  //this->OutputMesh = vtkPolyData::New();
-  //this->OutputMesh->DeepCopy(mesh);
-
   this->videoPath = videoPath;
   kwiver::vital::algo::video_input::set_nested_algo_configuration(
     BLOCK_VR, config, this->videoReader);
@@ -101,7 +97,7 @@ MeshColoration::MeshColoration(vtkPolyData* mesh,
 
 MeshColoration::~MeshColoration()
 {
-  if (this->OutputMesh != 0)
+  if (this->OutputMesh != nullptr)
   {
     this->OutputMesh->Delete();
   }
@@ -131,7 +127,7 @@ vtkPolyData* MeshColoration::GetOutput()
   return this->OutputMesh;
 }
 
-bool MeshColoration::ProcessColoration(int frame)
+bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool averageColor)
 {
   initializeDataList(frame);
 
@@ -151,65 +147,73 @@ bool MeshColoration::ProcessColoration(int frame)
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
-  vtkNew<vtkPolyData> allFramesMesh;
-  std::vector<vtkSmartPointer<vtkUnsignedCharArray>> perFrameColor (numFrames);
-  vtkNew<vtkIntArray> cameraIndex;
-  cameraIndex->SetNumberOfComponents(1);
-  cameraIndex->SetNumberOfTuples(numFrames);
-  cameraIndex->SetName("camera_index");
-  allFramesMesh->GetFieldData()->AddArray(cameraIndex);
-  std::cout << "numFrames: " << numFrames << " numMeshPoints: " << nbMeshPoint << std::endl;
-  allFramesMesh->CopyStructure(this->OutputMesh);
-  int i = 0;
-  for (auto it = perFrameColor.begin(); it != perFrameColor.end(); ++it)
-  {
-    (*it) = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    (*it)->SetNumberOfComponents(4); // RGBA, we use A=0 for invalid pixels and A=255 otherwise
-    (*it)->SetNumberOfTuples(nbMeshPoint);
-    unsigned char* p = (*it)->GetPointer(0);
-    std::fill(p, p + nbMeshPoint*4, 0);
-    std::ostringstream ostr;
-    kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
-    cameraIndex->SetValue(i, frame);
-    ostr << "frame_" << std::setfill('0') << std::setw(4) << frame;
-    (*it)->SetName(ostr.str().c_str());
-    allFramesMesh->GetPointData()->AddArray(*it);
-    ++i;
-  }
-
-  // Contains rgb values
-  vtkSmartPointer<vtkUnsignedCharArray> meanValues = vtkSmartPointer<vtkUnsignedCharArray>::New();
-  meanValues->SetNumberOfComponents(3);
-  meanValues->SetNumberOfTuples(nbMeshPoint);
-  meanValues->FillComponent(0, 0);
-  meanValues->FillComponent(1, 0);
-  meanValues->FillComponent(2, 0);
-  meanValues->SetName("MeanColoration");
-
-  vtkSmartPointer<vtkUnsignedCharArray> medianValues = vtkSmartPointer<vtkUnsignedCharArray>::New();
-  medianValues->SetNumberOfComponents(3);
-  medianValues->SetNumberOfTuples(nbMeshPoint);
-  medianValues->FillComponent(0, 0);
-  medianValues->FillComponent(1, 0);
-  medianValues->FillComponent(2, 0);
-  medianValues->SetName("MedianColoration");
-
-  vtkSmartPointer<vtkIntArray> projectedDMValue = vtkSmartPointer<vtkIntArray>::New();
-  projectedDMValue->SetNumberOfComponents(1);
-  projectedDMValue->SetNumberOfTuples(nbMeshPoint);
-  projectedDMValue->FillComponent(0, 0);
-  projectedDMValue->SetName("NbProjectedDepthMap");
-
+  // per frame colors
+  std::vector<vtkSmartPointer<vtkUnsignedCharArray>> perFrameColor;
+  // average colors
+  vtkNew<vtkUnsignedCharArray> meanValues;
+  vtkNew<vtkUnsignedCharArray> medianValues;
+  vtkNew<vtkIntArray> projectedDMValue;
   // Store each rgb value for each depth map
   std::vector<double> list0;
   std::vector<double> list1;
   std::vector<double> list2;
 
+  if (averageColor)
+  {
+    // Contains rgb values
+    meanValues->SetNumberOfComponents(3);
+    meanValues->SetNumberOfTuples(nbMeshPoint);
+    meanValues->FillComponent(0, 0);
+    meanValues->FillComponent(1, 0);
+    meanValues->FillComponent(2, 0);
+    meanValues->SetName("MeanColoration");
+
+    medianValues->SetNumberOfComponents(3);
+    medianValues->SetNumberOfTuples(nbMeshPoint);
+    medianValues->FillComponent(0, 0);
+    medianValues->FillComponent(1, 0);
+    medianValues->FillComponent(2, 0);
+    medianValues->SetName("MedianColoration");
+
+    projectedDMValue->SetNumberOfComponents(1);
+    projectedDMValue->SetNumberOfTuples(nbMeshPoint);
+    projectedDMValue->FillComponent(0, 0);
+    projectedDMValue->SetName("NbProjectedDepthMap");
+  }
+  else
+  {
+    perFrameColor.resize(numFrames);
+    vtkNew<vtkIntArray> cameraIndex;
+    cameraIndex->SetNumberOfComponents(1);
+    cameraIndex->SetNumberOfTuples(numFrames);
+    cameraIndex->SetName("camera_index");
+    result->GetFieldData()->AddArray(cameraIndex);
+    std::cout << "numFrames: " << numFrames << " numMeshPoints: " << nbMeshPoint << std::endl;
+    int i = 0;
+    for (auto it = perFrameColor.begin(); it != perFrameColor.end(); ++it)
+    {
+      (*it) = vtkSmartPointer<vtkUnsignedCharArray>::New();
+      (*it)->SetNumberOfComponents(4); // RGBA, we use A=0 for invalid pixels and A=255 otherwise
+      (*it)->SetNumberOfTuples(nbMeshPoint);
+      unsigned char* p = (*it)->GetPointer(0);
+      std::fill(p, p + nbMeshPoint*4, 0);
+      std::ostringstream ostr;
+      kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
+      cameraIndex->SetValue(i, frame);
+      ostr << "frame_" << std::setfill('0') << std::setw(4) << frame;
+      (*it)->SetName(ostr.str().c_str());
+      result->GetPointData()->AddArray(*it);
+      ++i;
+    }
+  }
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
-    list0.reserve(numFrames);
-    list1.reserve(numFrames);
-    list2.reserve(numFrames);
+    if (averageColor)
+    {
+      list0.reserve(numFrames);
+      list1.reserve(numFrames);
+      list2.reserve(numFrames);
+    }
 
     // Get mesh position from id
     kwiver::vital::vector_3d position;
@@ -248,11 +252,17 @@ bool MeshColoration::ProcessColoration(int frame)
         unsigned i = static_cast<unsigned>(pixelPosition[0]);
         unsigned j = static_cast<unsigned>(pixelPosition[1]);
         kwiver::vital::rgb_color rgb = colorImage.at(i, j);
-        list0.push_back(rgb.r);
-        list1.push_back(rgb.g);
-        list2.push_back(rgb.b);
-        unsigned char rgba[] = {rgb.r, rgb.g, rgb.b, 255};
-        perFrameColor[idData]->SetTypedTuple(id, rgba);
+        if (averageColor)
+        {
+          list0.push_back(rgb.r);
+          list1.push_back(rgb.g);
+          list2.push_back(rgb.b);
+        }
+        else
+        {
+          unsigned char rgba[] = {rgb.r, rgb.g, rgb.b, 255};
+          perFrameColor[idData]->SetTypedTuple(id, rgba);
+        }
       }
       catch (std::out_of_range)
       {
@@ -260,35 +270,36 @@ bool MeshColoration::ProcessColoration(int frame)
       }
     }
 
-    // If we get elements
-    if (list0.size() != 0)
+    if (averageColor)
     {
-      double sum0 = std::accumulate(list0.begin(), list0.end(), 0);
-      double sum1 = std::accumulate(list1.begin(), list1.end(), 0);
-      double sum2 = std::accumulate(list2.begin(), list2.end(), 0);
-      double nbVal = (double)list0.size();
-      meanValues->SetTuple3(id, sum0 / (double)nbVal, sum1 / (double)nbVal, sum2 / (double)nbVal);
-      double median0, median1, median2;
-      ComputeMedian<double>(list0, median0);
-      ComputeMedian<double>(list1, median1);
-      ComputeMedian<double>(list2, median2);
-      medianValues->SetTuple3(id, median0, median1, median2);
-      projectedDMValue->SetTuple1(id, list0.size());
-    }
+      // If we get elements
+      if (list0.size() != 0)
+      {
+        double sum0 = std::accumulate(list0.begin(), list0.end(), 0);
+        double sum1 = std::accumulate(list1.begin(), list1.end(), 0);
+        double sum2 = std::accumulate(list2.begin(), list2.end(), 0);
+        double nbVal = (double)list0.size();
+        meanValues->SetTuple3(id, sum0 / (double)nbVal, sum1 / (double)nbVal, sum2 / (double)nbVal);
+        double median0, median1, median2;
+        ComputeMedian<double>(list0, median0);
+        ComputeMedian<double>(list1, median1);
+        ComputeMedian<double>(list2, median2);
+        medianValues->SetTuple3(id, median0, median1, median2);
+        projectedDMValue->SetTuple1(id, list0.size());
+      }
 
-    list0.clear();
-    list1.clear();
-    list2.clear();
+      list0.clear();
+      list1.clear();
+      list2.clear();
+    }
   }
 
-  this->OutputMesh->GetPointData()->AddArray(meanValues);
-  this->OutputMesh->GetPointData()->AddArray(medianValues);
-  this->OutputMesh->GetPointData()->AddArray(projectedDMValue);
-
-  vtkNew<vtkXMLPolyDataWriter> writer;
-  writer->SetFileName("allFrames.vtp");
-  writer->SetInputDataObject(allFramesMesh);
-  writer->Write();
+  if (averageColor)
+  {
+    this->OutputMesh->GetPointData()->AddArray(meanValues);
+    this->OutputMesh->GetPointData()->AddArray(medianValues);
+    this->OutputMesh->GetPointData()->AddArray(projectedDMValue);
+  }
   return true;
 }
 

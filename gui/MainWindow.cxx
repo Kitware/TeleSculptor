@@ -1530,6 +1530,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::saveVolume);
   connect(d->UI.actionExportFusedMesh, &QAction::triggered,
           this, &MainWindow::saveFusedMesh);
+  connect(d->UI.actionExportFusedMeshFrameColors, &QAction::triggered,
+          this, &MainWindow::saveFusedMeshFrameColors);
   connect(d->UI.actionExportDepthPoints, &QAction::triggered,
           this, QOverload<>::of(&MainWindow::saveDepthPoints));
   connect(d->UI.actionExportTracks, &QAction::triggered,
@@ -2593,6 +2595,7 @@ void MainWindow::enableSaveFusedMesh(bool state)
 
   d->UI.actionExportVolume->setEnabled(state);
   d->UI.actionExportFusedMesh->setEnabled(state);
+  d->UI.actionExportFusedMeshFrameColors->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -2638,6 +2641,33 @@ void MainWindow::saveFusedMesh()
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
       d->UI.worldView->saveFusedMesh(path, lgcs);
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting the mesh to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveFusedMeshFrameColors()
+{
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Fused Mesh Frame Colors", name + QString("_fused_mesh_frame_colors.vtp"),
+    "VTK Polydata (*.vtp);;"
+    "All Files (*)");
+
+  try
+  {
+    if (!path.isEmpty())
+    {
+      d->UI.worldView->saveFusedMeshFrameColors(path);
     }
   }
   catch (...)

@@ -39,6 +39,7 @@
 #include "FieldInformation.h"
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
+#include "tools/MeshColoration.h"
 #include "PointOptions.h"
 #include "RulerOptions.h"
 #include "RulerWidget.h"
@@ -1562,6 +1563,32 @@ void WorldView::saveFusedMesh(const QString &path,
     writer->AddInputDataObject(d->contourFilter->GetOutput());
     writer->Write();
   }
+
+  std::cout << "Saved : " << qPrintable(path) << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveFusedMeshFrameColors(const QString &path)
+{
+  QTE_D();
+
+  vtkPolyData* mesh = d->contourFilter->GetOutput();
+  std::string videoPath = d->volumeOptions->getVideoPath();
+  kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
+  kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
+  std::unique_ptr<MeshColoration> coloration(
+    new MeshColoration(videoConfig, videoPath, cameras));
+  coloration->SetInput(mesh);
+  coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
+  vtkNew<vtkPolyData> meshFrameColors;
+  meshFrameColors->CopyStructure(mesh);
+  coloration->ProcessColoration(meshFrameColors, -1, false /*averageColor*/);
+
+  vtkNew<vtkXMLPolyDataWriter> writer;
+  writer->SetFileName(qPrintable(path));
+  writer->SetDataModeToBinary();
+  writer->AddInputDataObject(meshFrameColors);
+  writer->Write();
 
   std::cout << "Saved : " << qPrintable(path) << std::endl;
 }
