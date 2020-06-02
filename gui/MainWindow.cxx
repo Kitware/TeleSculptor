@@ -2880,6 +2880,8 @@ void MainWindow::acceptToolResults(
         d->shiftGeoOrigin(offset);
       }
     }
+    // Set the frame sampling rate for coloring based on number of cameras
+    d->UI.worldView->initFrameSampling(static_cast<int>(data->cameras->size()));
   }
   else if (updateNeeded)
   {
