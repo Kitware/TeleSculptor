@@ -287,16 +287,21 @@ void TrackFeaturesTool::run()
     d->mask_reader->open(this->data()->maskPath);
   }
 
-  if (!md_map)
-  {
-    md_map = d->video_reader->metadata_map();
-  }
-
   std::vector<kwiver::vital::frame_id_t> valid_frames;
-  if (md_map)
+  if (md_map && md_map->size() > 0)
   {
     auto fs = md_map->frames();
     valid_frames = std::vector<kwiver::vital::frame_id_t>(fs.begin(), fs.end());
+  }
+  else
+  {
+    auto const num_frames = static_cast<kwiver::vital::frame_id_t>(
+                              d->video_reader->num_frames());
+    valid_frames.reserve(num_frames);
+    for (kwiver::vital::frame_id_t f = 1; f <= num_frames; ++f)
+    {
+      valid_frames.push_back(f);
+    }
   }
 
   std::vector<kwiver::vital::frame_id_t> camera_frames;

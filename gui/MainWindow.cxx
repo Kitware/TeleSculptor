@@ -680,7 +680,11 @@ void MainWindowPrivate::addFrame(
 void MainWindowPrivate::updateFrames(
   std::shared_ptr<kv::metadata_map::map_metadata_t> mdMap)
 {
-  this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
+  if (mdMap)
+  {
+    this->videoMetadataMap = std::make_shared<kv::simple_metadata_map>(*mdMap);
+    this->UI.metadata->updateMetadata(mdMap);
+  }
 
   bool ignore_metadata =
     this->freestandingConfig->get_value<bool>(
@@ -690,8 +694,6 @@ void MainWindowPrivate::updateFrames(
   {
     sfmConstraints->set_metadata(videoMetadataMap);
   }
-
-  this->UI.metadata->updateMetadata(mdMap);
 
   if (this->cameraMap()->size() == 0)
   {

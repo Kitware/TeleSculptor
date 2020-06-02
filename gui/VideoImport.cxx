@@ -106,6 +106,8 @@ void VideoImport::run()
 {
   QTE_D();
 
+  d->canceled = false;
+
   if (!video_input::check_nested_algo_configuration(
     BLOCK_VR, d->config))
   {
@@ -132,7 +134,7 @@ void VideoImport::run()
     return;
   }
 
-  auto num_frames = d->video_reader->num_frames();
+  auto num_frames = static_cast<int>(d->video_reader->num_frames());
 
   QString description = QString("&Loading video from %1 (Frame %2)")
     .arg(QFileInfo{qtString(d->videoPath)}.fileName());
@@ -148,6 +150,12 @@ void VideoImport::run()
 
     QString desc = description.arg(frame);
     emit this->progressChanged(desc, frame * 100 / num_frames);
+  }
+
+  if (d->canceled)
+  {
+    // invalidate the metadata map
+    metadataMap = nullptr;
   }
 
   emit this->progressChanged(QString("Loading video complete"), 100);
