@@ -1209,15 +1209,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      if (!this->videoMetadataMap)
-      {
-        this->UI.metadata->updateMetadata(kv::metadata_vector{});
-      }
-      else
-      {
-        auto const& mdv = this->videoMetadataMap->get_vector(frame.id);
-        this->UI.metadata->updateMetadata(mdv);
-      }
+      this->UI.metadata->updateMetadata(videoSource->frame_metadata());
     }
   }
   else
