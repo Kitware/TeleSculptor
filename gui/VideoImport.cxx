@@ -136,7 +136,8 @@ void VideoImport::run()
 
   auto num_frames = static_cast<int>(d->video_reader->num_frames());
 
-  QString description = QString("&Loading video from %1 (Frame %2)")
+  QString description = QString("&Scanning metadata in %1 (Frame %2). "
+                                "Cancel to ignore metadata.")
     .arg(QFileInfo{qtString(d->videoPath)}.fileName());
   while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
