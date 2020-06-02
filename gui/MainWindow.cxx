@@ -310,6 +310,8 @@ public:
   void loadImage(FrameData frame);
   void loadEmptyImage(vtkMaptkCamera* camera);
 
+  int loadCameras();
+
   void loadDepthMap(QString const& imagePath);
 
   void setActiveTool(AbstractTool* tool);
@@ -692,37 +694,7 @@ void MainWindowPrivate::updateFrames(
 
   this->UI.metadata->updateMetadata(mdMap);
 
-  int num_cams_loaded_from_krtd = 0;
-
-  if (this->project &&
-      this->project->config->has_value("output_krtd_dir") &&
-      QDir(this->project->cameraPath).exists())
-  {
-    qWarning() << "Loading project cameras with frames.count = "
-               << this->frames.count();
-    for (auto const& frame : this->frames)
-    {
-      auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
-
-      try
-      {
-        auto const& camera = kv::read_krtd_file(
-          kvPath(frameName), kvPath(this->project->cameraPath));
-
-        // Add camera to scene
-        if (this->updateCamera(frame.id, camera))
-        {
-          ++num_cams_loaded_from_krtd;
-        }
-      }
-      catch (...)
-      {
-        qWarning() << "failed to read camera file " << frameName
-                   << " from " << this->project->cameraPath;
-      }
-    }
-    this->UI.worldView->setCameras(this->cameraMap());
-  }
+  int num_cams_loaded_from_krtd = loadCameras();
 
   if (num_cams_loaded_from_krtd == 0)
   {
@@ -1114,6 +1086,44 @@ void MainWindowPrivate::updateCameraView()
   this->groundControlPointsHelper->updateCameraViewPoints();
   this->rulerHelper->updateCameraViewRuler();
   this->UI.cameraView->render();
+}
+
+//-----------------------------------------------------------------------------
+int MainWindowPrivate::loadCameras()
+{
+  int num_cams_loaded_from_krtd = 0;
+  if (this->project &&
+      this->project->config->has_value("output_krtd_dir") &&
+      QDir(this->project->cameraPath).exists())
+  {
+    qWarning() << "Loading project cameras with frames.count = "
+      << this->frames.count();
+    for (auto const& frame : this->frames)
+    {
+      auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
+      if (QFileInfo::exists(QDir(this->project->cameraPath).filePath(frameName)))
+      {
+        try
+        {
+          auto const& camera = kv::read_krtd_file(
+            kvPath(frameName), kvPath(this->project->cameraPath));
+
+          // Add camera to scene
+          if (this->updateCamera(frame.id, camera))
+          {
+            ++num_cams_loaded_from_krtd;
+          }
+        }
+        catch (...)
+        {
+          qWarning() << "failed to read camera file " << frameName
+                     << " from " << this->project->cameraPath;
+        }
+      }
+    }
+    this->UI.worldView->setCameras(this->cameraMap());
+  }
+  return num_cams_loaded_from_krtd;
 }
 
 //-----------------------------------------------------------------------------
