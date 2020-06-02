@@ -2,7 +2,7 @@ TeleSculptor v1.1.0 Release Notes
 =================================
 
 This is a minor release of TeleSculptor that provides both new functionality
-and fixes over the previous v1.0.0 release. 
+and fixes over the previous v1.0.0 release.
 
 
 Updates since v1.0.0
@@ -104,6 +104,10 @@ TeleSculptor Application
  * Added a special "Run End-to-End" tool to the compute menu that runs a
    pipeline of all main tools in order to start from a video and end with
    a fused 3D surface mesh without any user interaction.
+
+ * Improved video loading to not require an entire scan of the video upon each
+   open.  The scan is still needed to collect metadata, but this can now be
+   canceled if metadata is not required.
 
 
 Fixes since v1.0.0
