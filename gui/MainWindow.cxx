@@ -406,8 +406,6 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 //-----------------------------------------------------------------------------
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 {
-  QObject::connect(&videoImporter, &VideoImport::updated,
-                   mainWindow, &MainWindow::addFrame);
   QObject::connect(&videoImporter, &VideoImport::progressChanged,
                    mainWindow, &MainWindow::updateVideoImportProgress);
   QObject::connect(&videoImporter, &VideoImport::completed,
@@ -588,9 +586,6 @@ void MainWindowPrivate::addVideoSource(
   kv::algo::video_input::set_nested_algo_configuration(
     "video_reader", config, this->videoSource);
 
-  auto lgcs = sfmConstraints->get_local_geo_cs();
-  videoImporter.setData(config, stdString(videoPath), lgcs);
-
   try
   {
     if (this->videoSource)
@@ -603,7 +598,11 @@ void MainWindowPrivate::addVideoSource(
       tool->setEnabled(false);
     }
 
-    videoImporter.start();
+    const auto num_frames = static_cast<int>(this->videoSource->num_frames());
+    for (int f = 1; f <= num_frames; ++f)
+    {
+      this->addFrame(nullptr, f);
+    }
   }
   catch (kv::file_not_found_exception const& e)
   {
@@ -694,9 +693,7 @@ void MainWindowPrivate::updateFrames(
 
   this->UI.metadata->updateMetadata(mdMap);
 
-  int num_cams_loaded_from_krtd = loadCameras();
-
-  if (num_cams_loaded_from_krtd == 0)
+  if (this->cameraMap()->size() == 0)
   {
 #define GET_K_CONFIG(type, name) \
   this->freestandingConfig->get_value<type>(bc + #name, K_def.name())
@@ -775,26 +772,13 @@ void MainWindowPrivate::updateFrames(
     this->updateCameras(std::make_shared<kv::simple_camera_map>(camMap));
   }
 
-  //find depth map paths
-  if (this->project &&
-      this->project->config->has_value("output_depth_dir"))
-  {
-    foreach (auto& frame, this->frames)
-    {
-      auto depthName = qtString(this->getFrameName(frame.id)) + ".vti";
-      auto depthMapPath = QDir{this->project->depthPath}.filePath(depthName);
-      QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile())
-      {
-        frame.depthMapPath = depthMapPath;
-      }
-    }
-  }
-
   this->UI.worldView->queueResetView();
 
-  this->UI.worldView->initFrameSampling(this->frames.size());
-
+  // Disconnect cancel action
+  QObject::disconnect(this->UI.actionCancelComputation, nullptr,
+                      &this->videoImporter, nullptr);
+  this->UI.actionCancelComputation->setEnabled(false);
+  // Enable all other tools
   if (this->project)
   {
     for (auto const& tool : this->tools)
@@ -1131,9 +1115,16 @@ std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 {
   if (videoMetadataMap)
   {
-    return frameName(frameId, *this->videoMetadataMap);
+    auto mdv = videoMetadataMap->get_vector(frameId);
+    if (!mdv.empty())
+    {
+      return frameName(frameId, mdv);
+    }
   }
-  return frameName(frameId, kwiver::vital::simple_metadata_map());
+  auto dummy_md = std::make_shared<kwiver::vital::metadata>();
+  dummy_md->add(NEW_METADATA_ITEM(kwiver::vital::VITAL_META_VIDEO_URI,
+                                  stdString(this->videoPath)));
+  return frameName(frameId, dummy_md);
 }
 
 //-----------------------------------------------------------------------------
@@ -1844,7 +1835,40 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->project->landmarksPath);
   }
 
-  // Cameras and depth maps are loaded after video importer is done
+  // Load the cameras from disk
+  int num_cameras = d->loadCameras();
+  d->UI.worldView->initFrameSampling(num_cameras);
+
+  if (num_cameras == 0)
+  {
+    QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
+                     &d->videoImporter, &VideoImport::cancel);
+    QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
+                     d->project.data(), &Project::write);
+    QObject::connect(d->UI.actionQuit, &QAction::triggered,
+                     &d->videoImporter, &VideoImport::cancel);
+    d->UI.actionCancelComputation->setEnabled(true);
+    auto lgcs = d->sfmConstraints->get_local_geo_cs();
+    d->videoImporter.setData(d->project->config,
+                             stdString(d->project->videoPath), lgcs);
+    d->videoImporter.start();
+  }
+
+  // Find depth map paths
+  if (d->project &&
+      d->project->config->has_value("output_depth_dir"))
+  {
+    for (auto& frame : d->frames)
+    {
+      auto depthName = qtString(d->getFrameName(frame.id)) + ".vti";
+      auto depthMapPath = QDir{ d->project->depthPath }.filePath(depthName);
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
+    }
+  }
 
 #ifdef VTKWEBGLEXPORTER
   d->UI.actionWebGLScene->setEnabled(true);
@@ -1878,11 +1902,14 @@ void MainWindow::loadProject(QString const& path)
     d->loadroi(d->project->ROI);
   }
 
-  d->UI.worldView->queueResetView();
-
-  foreach (auto const& tool, d->tools)
+  // If cameras were loaded activate the tools
+  // otherwise wait for the VideoImporter to do it.
+  if (num_cameras > 0)
   {
-    tool->setEnabled(true);
+    foreach(auto const& tool, d->tools)
+    {
+      tool->setEnabled(true);
+    }
   }
 
   d->setActiveCamera(d->activeCameraIndex);
@@ -1892,6 +1919,8 @@ void MainWindow::loadProject(QString const& path)
   {
     this->loadGroundControlPoints(d->project->groundControlPath);
   }
+
+  d->UI.worldView->queueResetView();
 }
 
 //-----------------------------------------------------------------------------
@@ -1970,23 +1999,18 @@ void MainWindow::loadVideo(QString const& path)
       e.what());
   }
 
-  if (d->project)
-  {
-    saveCameras(d->project->cameraPath);
-    d->project->config->set_value(
-      "output_krtd_dir",
-      kvPath(d->project->getContingentRelativePath(d->project->cameraPath)));
 
-    if (!d->sfmConstraints->get_local_geo_cs().origin().is_empty() &&
-        !d->project->geoOriginFile.isEmpty())
-    {
-      saveGeoOrigin(d->project->geoOriginFile);
-    }
+  QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
+    &d->videoImporter, &VideoImport::cancel);
+  QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
+    d->project.data(), &Project::write);
+  QObject::connect(d->UI.actionQuit, &QAction::triggered,
+    &d->videoImporter, &VideoImport::cancel);
+  d->UI.actionCancelComputation->setEnabled(true);
 
-    d->project->write();
-  }
-
-  d->UI.worldView->queueResetView();
+  auto lgcs = d->sfmConstraints->get_local_geo_cs();
+  d->videoImporter.setData(config, stdString(path), lgcs);
+  d->videoImporter.start();
 }
 
 //-----------------------------------------------------------------------------

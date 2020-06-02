@@ -120,9 +120,19 @@ void VideoImport::run()
   kwiver::vital::timestamp currentTimestamp;
   d->video_reader->open(d->videoPath);
 
-  // TODO: remwork algorithms to use map_metadata_t from metadata_map.h
   auto metadataMap =
     std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
+
+  // If no metadata stream, exit early
+  if (! d->video_reader->get_implementation_capabilities()
+         .has_capability(kwiver::vital::algo::video_input::HAS_METADATA))
+  {
+    emit this->completed(metadataMap);
+    d->video_reader->close();
+    return;
+  }
+
+  auto num_frames = d->video_reader->num_frames();
 
   QString description = QString("&Loading video from %1 (Frame %2)")
     .arg(QFileInfo{qtString(d->videoPath)}.fileName());
@@ -137,8 +147,7 @@ void VideoImport::run()
     }
 
     QString desc = description.arg(frame);
-    emit this->progressChanged(desc, 0.0);
-    emit this->updated(frame);
+    emit this->progressChanged(desc, frame * 100 / num_frames);
   }
 
   emit this->progressChanged(QString("Loading video complete"), 100);
