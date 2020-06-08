@@ -80,8 +80,12 @@ static void ComputeMedian(std::vector<T> vector, double& median)
 
 MeshColoration::MeshColoration()
 {
-  this->OutputMesh = nullptr;
+  this->Input = nullptr;
+  this->Output = nullptr;
   this->Sampling = 1;
+  this->Frame = -1;
+  this->AverageColor = true;
+  this->Error = false;
 }
 
 MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& config,
@@ -97,21 +101,30 @@ MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& config,
 
 MeshColoration::~MeshColoration()
 {
-  if (this->OutputMesh != nullptr)
-  {
-    this->OutputMesh->Delete();
-  }
   this->DataList.clear();
 }
 
 void MeshColoration::SetInput(vtkPolyData* mesh)
 {
-  if (this->OutputMesh != 0)
-  {
-    this->OutputMesh->Delete();
-  }
-  this->OutputMesh = mesh;
+  this->Input = mesh;
 }
+
+vtkPolyData* MeshColoration::GetInput()
+{
+  return this->Input;
+}
+
+void MeshColoration::SetOutput(vtkPolyData* mesh)
+{
+  this->Output = mesh;
+}
+
+vtkPolyData* MeshColoration::GetOutput()
+{
+  return this->Output;
+}
+
+
 
 void MeshColoration::SetFrameSampling(int sample)
 {
@@ -122,28 +135,26 @@ void MeshColoration::SetFrameSampling(int sample)
   this->Sampling = sample;
 }
 
-vtkPolyData* MeshColoration::GetOutput()
-{
-  return this->OutputMesh;
-}
 
-bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool averageColor)
+void MeshColoration::run()
 {
-  initializeDataList(frame);
+  std::cout << "MeshColoration::begin" << std::endl;
+  initializeDataList(this->Frame);
 
   int numFrames = static_cast<int>(this->DataList.size());
 
-  if (this->OutputMesh == 0 || numFrames == 0 )
+  if (this->Input == 0 || numFrames == 0 )
   {
     std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
-    return false;
+    emit resultReady(nullptr);
+
   }
 
-  vtkPoints* meshPointList = this->OutputMesh->GetPoints();
+  vtkPoints* meshPointList = this->Input->GetPoints();
   if (meshPointList == 0)
   {
     std::cerr << "invalid mesh points" <<std::endl;
-    return false;
+    emit resultReady(nullptr);
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
@@ -158,7 +169,7 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
   std::vector<double> list1;
   std::vector<double> list2;
 
-  if (averageColor)
+  if (this->AverageColor)
   {
     // Contains rgb values
     meanValues->SetNumberOfComponents(3);
@@ -187,7 +198,7 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
     cameraIndex->SetNumberOfComponents(1);
     cameraIndex->SetNumberOfTuples(numFrames);
     cameraIndex->SetName("camera_index");
-    result->GetFieldData()->AddArray(cameraIndex);
+    this->Output->GetFieldData()->AddArray(cameraIndex);
     std::cout << "numFrames: " << numFrames << " numMeshPoints: " << nbMeshPoint << std::endl;
     int i = 0;
     for (auto it = perFrameColor.begin(); it != perFrameColor.end(); ++it)
@@ -202,13 +213,13 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
       cameraIndex->SetValue(i, frame);
       ostr << "frame_" << std::setfill('0') << std::setw(4) << frame;
       (*it)->SetName(ostr.str().c_str());
-      result->GetPointData()->AddArray(*it);
+      this->Output->GetPointData()->AddArray(*it);
       ++i;
     }
   }
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
-    if (averageColor)
+    if (this->AverageColor)
     {
       list0.reserve(numFrames);
       list1.reserve(numFrames);
@@ -219,7 +230,7 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
     kwiver::vital::vector_3d position;
     meshPointList->GetPoint(id, position.data());
     kwiver::vital::vector_3d pointNormal;
-    OutputMesh->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormal.data());
+    Input->GetPointData()->GetArray("Normals")->GetTuple(id, pointNormal.data());
 
     for (int idData = 0; idData < numFrames; idData++)
     {
@@ -252,7 +263,7 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
         unsigned i = static_cast<unsigned>(pixelPosition[0]);
         unsigned j = static_cast<unsigned>(pixelPosition[1]);
         kwiver::vital::rgb_color rgb = colorImage.at(i, j);
-        if (averageColor)
+        if (this->AverageColor)
         {
           list0.push_back(rgb.r);
           list1.push_back(rgb.g);
@@ -270,7 +281,7 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
       }
     }
 
-    if (averageColor)
+    if (this->AverageColor)
     {
       // If we get elements
       if (list0.size() != 0)
@@ -294,13 +305,14 @@ bool MeshColoration::ProcessColoration(vtkPolyData* result, int frame, bool aver
     }
   }
 
-  if (averageColor)
+  if (this->AverageColor)
   {
-    this->OutputMesh->GetPointData()->AddArray(meanValues);
-    this->OutputMesh->GetPointData()->AddArray(medianValues);
-    this->OutputMesh->GetPointData()->AddArray(projectedDMValue);
+    this->Input->GetPointData()->AddArray(meanValues);
+    this->Input->GetPointData()->AddArray(medianValues);
+    this->Input->GetPointData()->AddArray(projectedDMValue);
   }
-  return true;
+  emit resultReady(this);
+  std::cout << "MeshColoration::end" << std::endl;
 }
 
 void MeshColoration::initializeDataList(int frameId)

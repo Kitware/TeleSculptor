@@ -1558,7 +1558,7 @@ void WorldView::saveFusedMesh(const QString &path,
   else
   {
     vtkNew<vtkXMLPolyDataWriter> writer;
-    writer->SetFileName(qPrintable(path));
+    writer->SetFileName(qPrintable(qPrintable(path)));
     writer->SetDataModeToBinary();
     writer->AddInputDataObject(d->contourFilter->GetOutput());
     writer->Write();
@@ -1576,21 +1576,38 @@ void WorldView::saveFusedMeshFrameColors(const QString &path)
   std::string videoPath = d->volumeOptions->getVideoPath();
   kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
   kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
-  std::unique_ptr<MeshColoration> coloration(
-    new MeshColoration(videoConfig, videoPath, cameras));
+  MeshColoration* coloration =
+    new MeshColoration(videoConfig, videoPath, cameras);
+  coloration->setProperty("path", path);
   coloration->SetInput(mesh);
   coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
   vtkNew<vtkPolyData> meshFrameColors;
   meshFrameColors->CopyStructure(mesh);
-  coloration->ProcessColoration(meshFrameColors, -1, false /*averageColor*/);
+  coloration->SetOutput(meshFrameColors);
+  coloration->SetFrame(-1);
+  coloration->SetAverageColor(false);
+  connect(coloration, &MeshColoration::resultReady,
+          this, &WorldView::meshColorationHandleResult);
+  connect(coloration, &MeshColoration::finished,
+          coloration, &MeshColoration::deleteLater);
+  coloration->start();
+}
 
-  vtkNew<vtkXMLPolyDataWriter> writer;
-  writer->SetFileName(qPrintable(path));
-  writer->SetDataModeToBinary();
-  writer->AddInputDataObject(meshFrameColors);
-  writer->Write();
 
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+void WorldView::meshColorationHandleResult(MeshColoration* coloration)
+{
+  QTE_D();
+  if (coloration)
+  {
+    QString path = coloration->property("path").toString();
+    vtkNew<vtkXMLPolyDataWriter> writer;
+    writer->SetFileName(qPrintable(path));
+    writer->SetDataModeToBinary();
+    writer->AddInputDataObject(coloration->GetOutput());
+    writer->Write();
+
+    std::cout << "Saved : " << qPrintable(path) << std::endl;
+  }
 }
 
 //-----------------------------------------------------------------------------

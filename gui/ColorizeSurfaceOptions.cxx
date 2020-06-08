@@ -255,20 +255,36 @@ void ColorizeSurfaceOptions::colorize()
 
     vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                     ->GetInput());
-    MeshColoration* coloration = new MeshColoration(
-      d->videoConfig, d->videoPath, d->cameras);
+    MeshColoration* coloration =
+      new MeshColoration(d->videoConfig, d->videoPath, d->cameras);
 
     coloration->SetInput(volume);
+    coloration->SetOutput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
+    coloration->SetFrame((d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1);
+    coloration->SetAverageColor(true);
+    connect(coloration, &MeshColoration::resultReady,
+            this, &ColorizeSurfaceOptions::meshColorationHandleResult);
+    connect(coloration, &MeshColoration::finished,
+            coloration, &MeshColoration::deleteLater);
+    coloration->start();
+    std::cout << "MeshColoration::run" << std::endl;
+    return;
+  }
 
-    if(d->UI.radioButtonCurrentFrame->isChecked())
-    {
-      coloration->ProcessColoration(volume, d->currentFrame);
-    }
-    else
-    {
-      coloration->ProcessColoration(volume);
-    }
+  d->UI.comboBoxColorDisplay->setEnabled(true);
+
+  emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* coloration)
+{
+  std::cout << "ColorizeSurfaceOptions::meshColorationHandleResult" << std::endl;
+  QTE_D();
+  if (coloration)
+  {
+    vtkPolyData* volume = coloration->GetOutput();
 
     std::string name;
     int nbArray = volume->GetPointData()->GetNumberOfArrays();
@@ -281,13 +297,15 @@ void ColorizeSurfaceOptions::colorize()
 
     volume->GetPointData()->SetActiveScalars("MeanColoration");
     d->UI.comboBoxColorDisplay->setCurrentIndex(
-          d->UI.comboBoxColorDisplay->findText("MeanColoration"));
+      d->UI.comboBoxColorDisplay->findText("MeanColoration"));
   }
-
   d->UI.comboBoxColorDisplay->setEnabled(true);
 
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+
 }
+
+
 
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)

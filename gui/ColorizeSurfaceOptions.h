@@ -41,6 +41,7 @@
 class vtkActor;
 
 class ColorizeSurfaceOptionsPrivate;
+class MeshColoration;
 
 class ColorizeSurfaceOptions : public QWidget
 {
@@ -74,6 +75,7 @@ public slots:
 
   void changeColorDisplay();
   void colorize();
+  void meshColorationHandleResult(MeshColoration* coloration);
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();

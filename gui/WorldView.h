@@ -46,6 +46,7 @@ class vtkMaptkImageDataGeometryFilter;
 class vtkObject;
 class vtkPolyData;
 class vtkStructuredGrid;
+class MeshColoration;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
@@ -139,6 +140,7 @@ public slots:
   void saveFusedMesh(QString const& path,
                      kwiver::vital::local_geo_cs const & lgcs);
   void saveFusedMeshFrameColors(QString const& path);
+  void meshColorationHandleResult(MeshColoration* coloration);
 
   void invalidateGeometry();
 

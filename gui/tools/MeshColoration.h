@@ -43,8 +43,13 @@ class vtkPolyData;
 #include <string>
 #include <vector>
 
-class MeshColoration
+// Qt classes
+#include <QThread>
+
+class MeshColoration : public QThread
 {
+  Q_OBJECT;
+
 public:
   MeshColoration();
   MeshColoration(kwiver::vital::config_block_sptr& config,
@@ -55,22 +60,37 @@ public:
   MeshColoration(MeshColoration const&) = delete;
   MeshColoration& operator=(MeshColoration const&) = delete;
 
-  // SETTER
+  // Input mesh.
   void SetInput(vtkPolyData* mesh);
-  void SetFrameSampling(int sample);
-
-  // GETTER
+  vtkPolyData* GetInput();
+  // Output mesh
+  void SetOutput(vtkPolyData* mesh);
   vtkPolyData* GetOutput();
+  void SetFrameSampling(int sample);
+  void SetFrame(int frame)
+  { this->Frame = frame;}
+  void SetAverageColor(bool averageColor)
+  { this->AverageColor = averageColor;}
 
-  // Adds mean and median colors to 'mesh' if averageColor or
+  // Adds mean and median colors to 'Output' if averageColor or
   // adds an array of colors for each camera (frame) otherwise.
-  bool ProcessColoration(vtkPolyData* mesh, int frame = -1, bool averageColor = true);
+  void run() override;
+
+signals:
+  void resultReady(MeshColoration* coloration);
+
+protected:
   void initializeDataList(int frameId);
 
 protected:
-  // average color mesh
-  vtkPolyData* OutputMesh;
+  // input mesh
+  vtkPolyData* Input;
+  vtkPolyData* Output;
   int Sampling;
+  int Frame;
+  bool AverageColor;
+  bool Error;
+
   struct ColorationData
   {
     ColorationData(kwiver::vital::image_of<uint8_t> image,
