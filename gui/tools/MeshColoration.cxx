@@ -138,7 +138,6 @@ void MeshColoration::SetFrameSampling(int sample)
 
 void MeshColoration::run()
 {
-  std::cout << "MeshColoration::begin" << std::endl;
   initializeDataList(this->Frame);
 
   int numFrames = static_cast<int>(this->DataList.size());
@@ -312,7 +311,6 @@ void MeshColoration::run()
     this->Input->GetPointData()->AddArray(projectedDMValue);
   }
   emit resultReady(this);
-  std::cout << "MeshColoration::end" << std::endl;
 }
 
 void MeshColoration::initializeDataList(int frameId)

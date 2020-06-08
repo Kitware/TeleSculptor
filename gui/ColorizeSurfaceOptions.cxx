@@ -268,7 +268,6 @@ void ColorizeSurfaceOptions::colorize()
     connect(coloration, &MeshColoration::finished,
             coloration, &MeshColoration::deleteLater);
     coloration->start();
-    std::cout << "MeshColoration::run" << std::endl;
     return;
   }
 
@@ -280,7 +279,6 @@ void ColorizeSurfaceOptions::colorize()
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* coloration)
 {
-  std::cout << "ColorizeSurfaceOptions::meshColorationHandleResult" << std::endl;
   QTE_D();
   if (coloration)
   {
