@@ -281,7 +281,10 @@ void MetadataView::updateMetadata(kv::metadata_vector const& mdVec)
 {
   QTE_D();
 
-  for (auto const k : d->itemIds())
+  auto traits = kv::metadata_traits{};
+
+  auto const keys = d->itemIds();
+  for (auto const k : keys)
   {
     d->clearItemValue(k);
   }
@@ -296,6 +299,11 @@ void MetadataView::updateMetadata(kv::metadata_vector const& mdVec)
 
       if (mdi)
       {
+        if (!keys.contains(k))
+        {
+          auto const tag = static_cast<kv::vital_metadata_tag>(k);
+          d->addItem(k, qtString(traits.tag_to_name(tag)));
+        }
         d->setItemValue(k, qtString(mdi->as_string()));
       }
     }

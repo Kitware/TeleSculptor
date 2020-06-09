@@ -1144,10 +1144,18 @@ void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::loadImage(FrameData frame)
 {
-  // TODO: check if seek vs next_frame is needed
   if (frame.id != this->currentVideoTimestamp.get_frame())
   {
-    if (!this->videoSource ||
+    // step through next frames if the requested frame is just a few ahead
+    if (this->videoSource &&
+        this->currentVideoTimestamp.get_frame() < frame.id &&
+        this->currentVideoTimestamp.get_frame() + 10 > frame.id)
+    {
+      while (this->videoSource->next_frame(this->currentVideoTimestamp) &&
+             this->currentVideoTimestamp.get_frame() < frame.id);
+    }
+    // otherwise seek to the requested frame
+    else if (!this->videoSource ||
         !videoSource->seek_frame(this->currentVideoTimestamp, frame.id))
     {
       this->loadEmptyImage(frame.camera);
@@ -1201,15 +1209,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
       this->UI.worldView->setImageData(imageData, size);
 
       // Update metadata view
-      if (!this->videoMetadataMap)
-      {
-        this->UI.metadata->updateMetadata(kv::metadata_vector{});
-      }
-      else
-      {
-        auto const& mdv = this->videoMetadataMap->get_vector(frame.id);
-        this->UI.metadata->updateMetadata(mdv);
-      }
+      this->UI.metadata->updateMetadata(videoSource->frame_metadata());
     }
   }
   else

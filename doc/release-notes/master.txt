@@ -126,3 +126,11 @@ TeleSculptor Application
  * Fixed a rendering issue in which cameras were invisible on some platforms.
    This bug was caused by setting the line width to 2.  Reverting this change
    fixed the issue.
+
+ * Improved video playback speed by avoiding excessive seeking.
+
+Packaging
+
+ * The packaging for Linux has been corrected so that setting LD_LIBRARY_PATH
+   is no longer needed to run executables after unpacking.  Libraries in the
+   package now have RPATH set relative to $ORIGIN.
