@@ -118,6 +118,7 @@
      </property>
      <addaction name="actionIgnoreMetadata"/>
      <addaction name="actionVariableLens"/>
+     <addaction name="actionFixGeoOrigin"/>
     </widget>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
@@ -597,6 +598,17 @@
    </property>
    <property name="toolTip">
     <string>Allow estimation of variable camera lens across the video</string>
+   </property>
+  </action>
+  <action name="actionFixGeoOrigin">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fix Geo-Origin</string>
+   </property>
+   <property name="toolTip">
+    <string>Keep the origin of the local geospatial coordinates fixed.</string>
    </property>
   </action>
  </widget>
