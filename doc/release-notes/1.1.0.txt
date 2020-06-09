@@ -2,7 +2,15 @@ TeleSculptor v1.1.0 Release Notes
 =================================
 
 This is a minor release of TeleSculptor that provides both new functionality
-and fixes over the previous v1.0.0 release.
+and fixes over the previous v1.0.0 release.  The most prominant features of
+this new release are improved robustness in struture from motion, an option
+to use ground control points to georegister a solution, a logger panel to
+show log messages from the algorithms, improved spatial distribution of
+tracked features, improved video loading, and a "Run End-to-End" compute
+option.  Many more improvements have also been made, and these are documented
+in detail below.
+
+TeleSculptor v1.1.0 builds against KWIVER v1.5.0 and Fletch v1.4.0.
 
 
 Updates since v1.0.0
@@ -48,7 +56,7 @@ TeleSculptor Application
 
  * TeleSculptor now loads all video frames and metadata by default instead
    of sampling every 10th frame as in the past.  This is feasible because
-   the feature tracking now downsamples frames to a reasonable amount instead.
+   the feature tracking now down samples frames to a reasonable amount instead.
 
  * Added support for bundle adjustment callbacks that do not update the GUI
    state.  This allows the initializer tool to support early termination
@@ -154,8 +162,8 @@ TeleSculptor Application
  * Fixed a bug in which GCPs imported from a file after a camera was loaded
    were imported twice.
 
- * Fixed an issues with location precision of landmarks in the Camera View that
-   occured when some points project very far from the image.  These points are
+ * Fixed an issue with location precision of landmarks in the Camera View that
+   occurred when some points project very far from the image.  These points are
    now filtered out.
 
 Packaging
