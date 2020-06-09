@@ -106,6 +106,8 @@ void VideoImport::run()
 {
   QTE_D();
 
+  d->canceled = false;
+
   if (!video_input::check_nested_algo_configuration(
     BLOCK_VR, d->config))
   {
@@ -120,11 +122,22 @@ void VideoImport::run()
   kwiver::vital::timestamp currentTimestamp;
   d->video_reader->open(d->videoPath);
 
-  // TODO: remwork algorithms to use map_metadata_t from metadata_map.h
   auto metadataMap =
     std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
 
-  QString description = QString("&Loading video from %1 (Frame %2)")
+  // If no metadata stream, exit early
+  if (! d->video_reader->get_implementation_capabilities()
+         .has_capability(kwiver::vital::algo::video_input::HAS_METADATA))
+  {
+    emit this->completed(metadataMap);
+    d->video_reader->close();
+    return;
+  }
+
+  auto num_frames = static_cast<int>(d->video_reader->num_frames());
+
+  QString description = QString("&Scanning metadata in %1 (Frame %2). "
+                                "Cancel to ignore metadata.")
     .arg(QFileInfo{qtString(d->videoPath)}.fileName());
   while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
   {
@@ -137,8 +150,13 @@ void VideoImport::run()
     }
 
     QString desc = description.arg(frame);
-    emit this->progressChanged(desc, 0.0);
-    emit this->updated(frame);
+    emit this->progressChanged(desc, frame * 100 / num_frames);
+  }
+
+  if (d->canceled)
+  {
+    // invalidate the metadata map
+    metadataMap = nullptr;
   }
 
   emit this->progressChanged(QString("Loading video complete"), 100);
