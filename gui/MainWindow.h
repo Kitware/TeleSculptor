@@ -136,6 +136,7 @@ protected slots:
 
   void setIgnoreMetadata(bool);
   void setVariableLens(bool);
+  void setFixGeoOrigin(bool);
 
 private:
   void acceptToolResults(std::shared_ptr<ToolData> data, bool isFinal);

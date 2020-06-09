@@ -1509,6 +1509,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::setIgnoreMetadata);
   connect(d->UI.actionVariableLens, &QAction::toggled,
           this, &MainWindow::setVariableLens);
+  connect(d->UI.actionFixGeoOrigin, &QAction::toggled,
+          this, &MainWindow::setFixGeoOrigin);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1811,6 +1813,10 @@ void MainWindow::loadProject(QString const& path)
   bool variable_lens =
     d->project->config->get_value<bool>("variable_lens", false);
   d->UI.actionVariableLens->setChecked(variable_lens);
+
+  bool fix_geo_origin =
+    d->project->config->get_value<bool>("fix_geo_origin", false);
+  d->UI.actionFixGeoOrigin->setChecked(fix_geo_origin);
 
   d->UI.menuComputeOptions->blockSignals(oldSignalState);
 
@@ -3035,6 +3041,12 @@ void MainWindow::setVariableLens(bool state)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::setFixGeoOrigin(bool state)
+{
+  setComputeOption("fix_geo_origin", state);
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::setComputeOption(std::string const& name, bool state)
 {
   QTE_D();
@@ -3303,9 +3315,14 @@ void MainWindow::applySimilarityTransform()
   // Invalidate the fusion volume
   d->UI.worldView->resetVolume();
 
-  // Recenter the geo-coordinates
-  auto offset = d->centerLandmarks();
-  d->shiftGeoOrigin(offset);
+  bool fix_geo_origin =
+    d->freestandingConfig->get_value<bool>("fix_geo_origin", false);
+  if (!fix_geo_origin)
+  {
+    // Recenter the geo-coordinates
+    auto offset = d->centerLandmarks();
+    d->shiftGeoOrigin(offset);
+  }
 
   // Save updated data
   saveCameras(d->project->cameraPath);

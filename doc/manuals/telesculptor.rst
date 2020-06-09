@@ -619,12 +619,18 @@ Compute Menu |->| Options
   in geolocation.  The main reason to use this option is when the metadata
   is known to be invalid.
 
-
-:icon:`blank` Variable lens
+:icon:`blank` Variable Lens
   This option allows estimation of camera models in which the lens model
   (e.g. focal length) can change over time.  If this option is off all cameras
   will share the same lens model.  If the lens does not change between frames
   it is best to use a single model.
+
+:icon:`blank` Fix Geo-Origin
+  If checked, this option will prevent TeleSculptor from resetting the
+  geospatial origin to a point centered on the data.  Normally TeleSculptor
+  automatically chooses an origin, but there are use cases where it is helpful
+  to specify an origin and keep it fixed, such as comparing results across
+  different data of the same location.
 
 View Menu
 ---------

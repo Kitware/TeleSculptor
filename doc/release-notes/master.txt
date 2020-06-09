@@ -58,6 +58,9 @@ TeleSculptor Application
    algorithms to ignore the KLV metadata.  This is useful if the metadata is
    known to be incorrect.
 
+ * Added a new option to keep the origin of the geospatial coordinate system
+   fixed, rather than re-estimate it when the data changes.
+
  * Added an option to write out the fused mesh as OBJ. Currently this option
    supports only the mesh and does not write color per vertex.
 
