@@ -39,6 +39,7 @@
 
 // VTK Class
 class vtkPolyData;
+#include <vtkSmartPointer.h>
 
 #include <string>
 #include <vector>
@@ -61,11 +62,11 @@ public:
   MeshColoration& operator=(MeshColoration const&) = delete;
 
   // Input mesh.
-  void SetInput(vtkPolyData* mesh);
-  vtkPolyData* GetInput();
+  void SetInput(vtkSmartPointer<vtkPolyData> input);
+  vtkSmartPointer<vtkPolyData> GetInput();
   // Output mesh
-  void SetOutput(vtkPolyData* mesh);
-  vtkPolyData* GetOutput();
+  void SetOutput(vtkSmartPointer<vtkPolyData> mesh);
+  vtkSmartPointer<vtkPolyData> GetOutput();
   void SetFrameSampling(int sample);
   void SetFrame(int frame)
   { this->Frame = frame;}
@@ -84,8 +85,8 @@ protected:
 
 protected:
   // input mesh
-  vtkPolyData* Input;
-  vtkPolyData* Output;
+  vtkSmartPointer<vtkPolyData> Input;
+  vtkSmartPointer<vtkPolyData> Output;
   int Sampling;
   int Frame;
   bool AverageColor;

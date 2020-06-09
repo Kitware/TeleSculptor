@@ -1581,7 +1581,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path)
   coloration->setProperty("path", path);
   coloration->SetInput(mesh);
   coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
-  vtkNew<vtkPolyData> meshFrameColors;
+  vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
   meshFrameColors->CopyStructure(mesh);
   coloration->SetOutput(meshFrameColors);
   coloration->SetFrame(-1);
@@ -1596,7 +1596,6 @@ void WorldView::saveFusedMeshFrameColors(const QString &path)
 
 void WorldView::meshColorationHandleResult(MeshColoration* coloration)
 {
-  QTE_D();
   if (coloration)
   {
     QString path = coloration->property("path").toString();

@@ -104,22 +104,22 @@ MeshColoration::~MeshColoration()
   this->DataList.clear();
 }
 
-void MeshColoration::SetInput(vtkPolyData* mesh)
+void MeshColoration::SetInput(vtkSmartPointer<vtkPolyData> mesh)
 {
   this->Input = mesh;
 }
 
-vtkPolyData* MeshColoration::GetInput()
+vtkSmartPointer<vtkPolyData> MeshColoration::GetInput()
 {
   return this->Input;
 }
 
-void MeshColoration::SetOutput(vtkPolyData* mesh)
+void MeshColoration::SetOutput(vtkSmartPointer<vtkPolyData> mesh)
 {
   this->Output = mesh;
 }
 
-vtkPolyData* MeshColoration::GetOutput()
+vtkSmartPointer<vtkPolyData> MeshColoration::GetOutput()
 {
   return this->Output;
 }
