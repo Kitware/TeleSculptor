@@ -133,6 +133,7 @@ static int maptk_main(int argc, char const* argv[])
   arg.Initialize( argc, argv );
 
   arg.AddArgument( "--help",           argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "-h",               argT::NO_ARGUMENT, &opt_help, "Display usage information" );
   arg.AddArgument( "--input-tracks",   argT::SPACE_ARGUMENT, &opt_in_tracks, "Input track file." );
   arg.AddArgument( "--output-matrix",  argT::SPACE_ARGUMENT, &opt_out_matrix, "Output match matrix file" );
   arg.AddArgument( "--output-frames",  argT::SPACE_ARGUMENT, &opt_out_frames, "Output frame number file" );
