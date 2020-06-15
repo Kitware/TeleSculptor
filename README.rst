@@ -21,7 +21,8 @@ Windows included at the bottom of the
 `latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
 page.
 Instructions on how to use the TeleSculptor GUI can be found in
-the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
+the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_. A computer with at
+least 16GB of RAM is recommended for processing most datasets.
 
 More advanced users who wish to build the project from source should proceed to the
 `Building TeleSculptor`_ section.
