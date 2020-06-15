@@ -108,37 +108,65 @@ minimum required version of CMake is 3.9.5, but newer versions are recommended.
 
 Building
 --------
-
 The build is directed by CMake to ensure it can be built on various platforms.
 The code is built by a CMake 'superbuild', meaning as part of the build,
 CMake will download and build any dependent libraries needed by TeleSculptor.
 The build is also out of source, meaning the code base is to be separate from
 the build files.  This means you will need two folders, one for the source code
 and one for the build files.
-Here is the quickest way to build via a cmd/bash shell
+Here is the quickest way to build via a cmd/bash shell.
+
+Before building on Linux systems you must install the following packages:
 
 .. code-block :: bash
 
-  # On Linux systems, Install the following packages before building
-  $ sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
-  $ sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+  sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
+  sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+
+
+Set up the folder structure and obtain the source files. This can be done with
+git or by downloading the files  and extracting them. Then setup the folder(s)
+to build the binary files.
+
+.. code-block :: bash
 
   mkdir telesculptor
-  ## For this example, we assume source is in a 'src' folder under telesculptor/
+  cd telesculptor
+
+  ## Place the code in a directory called src
+  # Using git, clone into a new directory called src
+  git clone https://github.com/Kitware/TeleSculptor.git src
+  # Or unzip into a new directory called src
+  unzip <file name>.zip src
+
+  ## Create the folder where we will build the binaries
   mkdir builds
   cd builds
-  # Feel free to make subfolders here, for example: debug and release
-  # Generate a makefile/msvc solution to perform the superbuild
-  # Provide CMake the source directory at the end (relative or absolute)
+  # Instead of just one builds folder you can to make subfolders here for
+  # different builds, for example: builds/debug and builds/release.
+  # Each folder would then be build following the steps below but with different
+  # configuration options
 
-  # Run CMake
+Generate the makefile/msvc solution to perform the superbuild using cmake
+
+.. code-block :: bash
+
+  # From the build directory provide cmake the path to the source directory,
+  # which can be relative or relative or absolute.
+  # Specify configurable options by prefacing them with the -D flag
   cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
-  # Using the CMake GUI you can set the source and build directories accordingly
-  # and press the "Configure"  and “Generate” buttons
-  # Alternatively, the ccmake tool allows for interactive selection of
-  # CMake options.
+  # Alternatively, you can use the ccmake command line tool allows for
+  # interactive selection of CMake options. This can be installed with
+  # 'sudo apt-get install cmake-curses-gui'
+  ccmake ../src
+  # As a final option, you can use the the CMake GUI you can set the source and
+  # build directories accordingly and press the "Configure"  and “Generate”
+  # buttons
 
-  # Build the install target/project
+Build the installer target/project
+
+.. code-block :: bash
+
   # On Linux/OSX/MinGW
   make
   # Once the Superbuild is complete, the telesculptor makefile will be placed in
