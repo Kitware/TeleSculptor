@@ -19,7 +19,7 @@ into a consistent surface mesh which can be colored from the source imagery.
 TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
 Windows included at the bottom of the
 `latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
-page.
+page by following the instructions in the Installation_ section.
 Instructions on how to use the TeleSculptor GUI can be found in
 the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_. A computer with at
 least 16GB of RAM is recommended for processing most datasets.
@@ -179,6 +179,27 @@ Build the installer target/project
   # When the build is complete you may close this solution.
   # To edit TeleSculptor code, open the
   # build/external/telesculptor-build/TeleSculptor.sln
+
+This will produce an installer file which can install TeleSculptor in the same
+way as the downloadable installer, as detailed in the next section.
+
+Installation
+------------
+Once you have an installer downloaded or built, you need to run it to install
+TeleSculptor on your machine. You can install it with the default options by
+opening a bash/cmd shell and typing the following. With the default options the
+binaries will be installed in as subdirectory of the current directory
+
+.. code-block :: bash
+
+  ./<installer name>.sh
+
+Alternatively, you can see the installation options with the `--help` flag.
+
+.. code-block :: bash
+
+  ./<installer name>.sh  --help
+
 
 CMake Options
 -------------
