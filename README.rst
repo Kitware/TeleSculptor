@@ -3,7 +3,7 @@
    :alt: TeleSculptor
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-TeleSculptor
+Quickstart
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TeleSculptor is a cross-platform desktop application for photogrammetry.
@@ -15,6 +15,20 @@ TeleSculptor uses Structure-from-Motion techniques to estimate camera parameters
 as well as a sparse set of 3D landmarks.  It uses Multiview Stereo techniques
 to estimate dense depth maps on key frame and then fuses those depth maps
 into a consistent surface mesh which can be colored from the source imagery.
+
+TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
+Windows included at the bottom of the
+`latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
+page.
+Instructions on how to use the TeleSculptor GUI can be found in
+the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
+
+More advanced users who wish to build the project from source should proceed to the
+`Building TeleSculptor`_ section.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Background
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TeleSculptor provides a graphical user interface with Qt_, 3D visualization
 with VTK_, and photogrammetry algorithms with KWIVER_. This project was
