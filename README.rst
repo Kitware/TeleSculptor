@@ -148,7 +148,8 @@ to build the binary files.
   # Each folder would then be build following the steps below but with different
   # configuration options
 
-Generate the makefile/msvc solution to perform the superbuild using cmake
+Generate the makefile/msvc solution to perform the superbuild using cmake.
+A description of the configuration options can be found in `CMake Options`_.
 
 .. code-block :: bash
 
