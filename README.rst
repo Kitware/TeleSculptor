@@ -3,7 +3,7 @@
    :alt: TeleSculptor
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Quickstart
+TeleSculptor Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TeleSculptor is a cross-platform desktop application for photogrammetry.
@@ -126,7 +126,7 @@ Before building on Linux systems you must install the following packages:
 
 
 Set up the folder structure and obtain the source files. This can be done with
-git or by downloading the files  and extracting them. Then setup the folder(s)
+git or by downloading the files and extracting them. Then setup the folder(s)
 to build the binary files.
 
 .. code-block :: bash
@@ -154,7 +154,7 @@ A description of the configuration options can be found in `CMake Options`_.
 .. code-block :: bash
 
   # From the build directory provide cmake the path to the source directory,
-  # which can be relative or relative or absolute.
+  # which can be relative or absolute.
   # Specify configurable options by prefacing them with the -D flag
   cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
   # Alternatively, you can use the ccmake command line tool allows for
