@@ -61,6 +61,11 @@ running on example videos from the `VIRAT Video Dataset`_,
 `CLIF 2007 Dataset`_, and other public data sets.  More information about this
 example data can be found in the `examples <examples>`_ directory.
 
+While the initial software implementation relies on batch post-processing
+of aerial video, our intent is to move to an online video stream processing
+framework and optimize the algorithm to run in real-time.
+
+
 .. image:: /doc/screenshot/telesculptor_screenshot_macos.png
    :alt: MacOS Screenshot
 .. image:: /doc/screenshot/telesculptor_screenshot_windows.png
@@ -68,15 +73,6 @@ example data can be found in the `examples <examples>`_ directory.
 .. image:: /doc/screenshot/telesculptor_screenshot_linux.png
    :alt: Linux Screenshot
 
-
-While the initial software implementation relies on batch post-processing
-of aerial video, our intent is to move to an online video stream processing
-framework and optimize the algorithm to run in real-time.
-
-The remainder of this document is aimed at developers who wish to build the
-project from source or run command line tools.  For end users looking for
-instruction on running the GUI application please read the
-`User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
 
 Installation
 ============
@@ -96,6 +92,12 @@ TeleSculptor application into the Applications folder.
 **Linux:** open a bash/cmd shell and run the self extracting installer script
 (sh). You can view additional installation options using
 ``./TeleSculptor-<version>-Linux-x86_64.sh --help``
+
+The remainder of this document is aimed at developers who wish to build the
+project from source or run command line tools.  For end users looking for
+instruction on running the GUI application please read the
+`User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
+
 
 Building TeleSculptor
 =====================
