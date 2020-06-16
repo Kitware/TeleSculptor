@@ -167,6 +167,7 @@ static int maptk_main(int argc, char const* argv[])
   arg.Initialize( argc, argv );
 
   arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "-h",            argT::NO_ARGUMENT, &opt_help, "Display usage information" );
 
   arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config,
                    "Optional custom configuration file for the tool. Defaults are set such "
