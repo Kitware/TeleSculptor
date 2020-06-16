@@ -411,6 +411,7 @@ static int maptk_main(int argc, char const* argv[])
   typedef kwiversys::CommandLineArguments argT;
 
   arg.AddArgument( "--help",        argT::NO_ARGUMENT, &opt_help, "Display usage information" );
+  arg.AddArgument( "-h",            argT::NO_ARGUMENT, &opt_help, "Display usage information" );
   arg.AddArgument( "--config",      argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
   arg.AddArgument( "-c",            argT::SPACE_ARGUMENT, &opt_config, "Configuration file for tool" );
   arg.AddArgument( "--output-config", argT::SPACE_ARGUMENT, &opt_out_config,
