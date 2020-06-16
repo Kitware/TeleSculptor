@@ -124,7 +124,8 @@ Before building on Linux systems you must install the following packages:
   sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
   sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
 
-To build with Python and to build the help menu documentation you will also need
+On Linux, to optionally build with Python and help menu documentation you will
+also need to install the following:
 
 .. code-block :: bash
 
@@ -150,7 +151,7 @@ to build the binary files.
   cd builds
   # Instead of just one builds folder you can to make subfolders here for
   # different builds, for example: builds/debug and builds/release.
-  # Each folder would then be build following the steps below but with different
+  # Each folder would then be built following the steps below but with different
   # configuration options
 
 Generate the makefile/msvc solution to perform the superbuild using cmake.
@@ -162,12 +163,12 @@ A description of the configuration options can be found in `CMake Options`_.
   # which can be relative or absolute.
   # Specify configurable options by prefacing them with the -D flag
   cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
-  # Alternatively, you can use the ccmake command line tool allows for
-  # interactive selection of CMake options. This can be installed with
+  # Alternatively, you can use the 'ccmake' command line tool allows for
+  # interactively selecting CMake options. This can be installed with
   # 'sudo apt-get install cmake-curses-gui'
   ccmake ../src
   # As a final option, you can use the the CMake GUI you can set the source and
-  # build directories accordingly and press the "Configure"  and “Generate”
+  # build directories accordingly and then press the "Configure" and “Generate”
   # buttons
 
 Build the installer target/project
@@ -186,10 +187,9 @@ Build the installer target/project
   # To edit TeleSculptor code, open the
   # build/external/telesculptor-build/TeleSculptor.sln
 
-To install TeleSculptor on you machine, follow the instructions above in `Installation`_.
-The build process creates the same type of installer as what is downloadable form the
-the `latest release`_
-section.
+You have now built a TeleSculptor installer similar to what is provided in the
+`latest release`_ section. To install TeleSculptor on you machine, follow the
+instructions above in `Installation`_.
 
 CMake Options
 -------------
@@ -321,6 +321,7 @@ MAP-Tk Tools
 MAP-Tk command line tools are placed in the ``bin`` directory of the build
 or install path.  These tools are described below.  Note that these tools are
 in the process of being migrated to KWIVER and will leave this repository soon.
+Continued support is not guaranteed and behavior may diverge from documentation.
 
 
 Summary of MAP-Tk Tools
