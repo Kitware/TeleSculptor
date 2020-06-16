@@ -18,8 +18,7 @@ into a consistent surface mesh which can be colored from the source imagery.
 
 TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
 Windows included at the bottom of the
-`latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
-page by following the instructions in the Installation_ section.
+`latest release`_ page by following the instructions in the Installation_ section.
 Instructions on how to use the TeleSculptor GUI can be found in
 the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_. A computer with at
 least 16GB of RAM is recommended for processing most datasets.
@@ -101,7 +100,7 @@ Overview of Directories
 Installation
 ============
 If you have downloaded an installer from the
-`latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
+`latest release`_
 you can simply install TeleSculptor according to the instructions for your
 operating system described below. If you are building TeleSculptor from source
 you should proceed to `Building TeleSculptor`_ to create the installer before
@@ -206,7 +205,7 @@ Build the installer target/project
 
 To install TeleSculptor on you machine, follow the instructions above in `Installation`_.
 The build process creates the same type of installer as what is downloadable form the
-the `latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
+the `latest release`_
 section.
 
 CMake Options
@@ -445,6 +444,7 @@ public release via 88ABW-2015-2555.
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _VTK: https://vtk.org/
+.. _latest release: https://github.com/Kitware/TeleSculptor/releases/latest
 
 .. Appendix II: Text Substitutions
 .. ===============================
