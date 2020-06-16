@@ -3,7 +3,7 @@
    :alt: TeleSculptor
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-TeleSculptor
+TeleSculptor Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TeleSculptor is a cross-platform desktop application for photogrammetry.
@@ -15,6 +15,20 @@ TeleSculptor uses Structure-from-Motion techniques to estimate camera parameters
 as well as a sparse set of 3D landmarks.  It uses Multiview Stereo techniques
 to estimate dense depth maps on key frame and then fuses those depth maps
 into a consistent surface mesh which can be colored from the source imagery.
+
+TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
+Windows included at the bottom of the
+`latest release`_ page by following the instructions in the Installation_ section.
+Instructions on how to use the TeleSculptor GUI can be found in
+the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_. A computer with at
+least 16GB of RAM is recommended for processing most datasets.
+
+More advanced users who wish to build the project from source should proceed to the
+`Building TeleSculptor`_ section.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Background
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TeleSculptor provides a graphical user interface with Qt_, 3D visualization
 with VTK_, and photogrammetry algorithms with KWIVER_. This project was
@@ -47,6 +61,11 @@ running on example videos from the `VIRAT Video Dataset`_,
 `CLIF 2007 Dataset`_, and other public data sets.  More information about this
 example data can be found in the `examples <examples>`_ directory.
 
+While the initial software implementation relies on batch post-processing
+of aerial video, our intent is to move to an online video stream processing
+framework and optimize the algorithm to run in real-time.
+
+
 .. image:: /doc/screenshot/telesculptor_screenshot_macos.png
    :alt: MacOS Screenshot
 .. image:: /doc/screenshot/telesculptor_screenshot_windows.png
@@ -55,33 +74,29 @@ example data can be found in the `examples <examples>`_ directory.
    :alt: Linux Screenshot
 
 
-While the initial software implementation relies on batch post-processing
-of aerial video, our intent is to move to an online video stream processing
-framework and optimize the algorithm to run in real-time.
+Installation
+============
+If you have downloaded an installer from the
+`latest release`_
+you can simply install TeleSculptor according to the instructions for your
+operating system described below. If you are building TeleSculptor from source
+you should proceed to `Building TeleSculptor`_ to create the installer before
+completing the installation.
+
+**Windows:** run the installer executable (exe) and follow the prompts in the
+installer dialog. Administrative permission is required.
+
+**Mac:** open the disk image (dmg), accept the license terms, then drag the
+TeleSculptor application into the Applications folder.
+
+**Linux:** open a bash/cmd shell and run the self extracting installer script
+(sh). You can view additional installation options using
+``./TeleSculptor-<version>-Linux-x86_64.sh --help``
 
 The remainder of this document is aimed at developers who wish to build the
 project from source or run command line tools.  For end users looking for
 instruction on running the GUI application please read the
 `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
-
-Overview of Directories
-=======================
-
-======================= ========================================================
-``CMake``               contains CMake helper scripts
-``config``              contains reusable default algorithm configuration files
-``doc``                 contains release notes, manuals, and other documentation
-``examples``            contains example tool configuration for public datasets
-``gui``                 contains the visualization GUI source code and headers
-``gui/icons``           contains the visualization GUI icon resources
-``maptk``               contains the maptk library source and headers
-``packaging``           contains support files for CPack packaging
-``scripts``             contains Python helper scripts
-``plugins/blender``     contains Python plug-ins for Blender
-``plugins/sketchup``    contains Ruby plug-ins for SketchUp
-``tests``               contains testing framework and tests for each module
-``tools``               contains source for command line utilities
-======================= ========================================================
 
 
 Building TeleSculptor
@@ -94,37 +109,72 @@ minimum required version of CMake is 3.9.5, but newer versions are recommended.
 
 Building
 --------
-
 The build is directed by CMake to ensure it can be built on various platforms.
 The code is built by a CMake 'superbuild', meaning as part of the build,
 CMake will download and build any dependent libraries needed by TeleSculptor.
 The build is also out of source, meaning the code base is to be separate from
 the build files.  This means you will need two folders, one for the source code
 and one for the build files.
-Here is the quickest way to build via a cmd/bash shell
+Here is the quickest way to build via a cmd/bash shell.
+
+Before building on Linux systems you must install the following packages:
 
 .. code-block :: bash
 
-  # On Linux systems, Install the following packages before building
-  $ sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
-  $ sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+  sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
+  sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+
+On Linux, to optionally build with Python and help menu documentation you will
+also need to install the following:
+
+.. code-block :: bash
+
+  sudo apt-get install python3-dev python3-docutils
+
+Set up the folder structure and obtain the source files. This can be done with
+git or by downloading the files and extracting them. Then setup the folder(s)
+to build the binary files.
+
+.. code-block :: bash
 
   mkdir telesculptor
-  ## For this example, we assume source is in a 'src' folder under telesculptor/
+  cd telesculptor
+
+  ## Place the code in a directory called src
+  # Using git, clone into a new directory called src
+  git clone https://github.com/Kitware/TeleSculptor.git src
+  # Or unzip into a new directory called src
+  unzip <file name>.zip src
+
+  ## Create the folder where we will build the binaries
   mkdir builds
   cd builds
-  # Feel free to make subfolders here, for example: debug and release
-  # Generate a makefile/msvc solution to perform the superbuild
-  # Provide CMake the source directory at the end (relative or absolute)
+  # Instead of just one builds folder you can to make subfolders here for
+  # different builds, for example: builds/debug and builds/release.
+  # Each folder would then be built following the steps below but with different
+  # configuration options
 
-  # Run CMake
+Generate the makefile/msvc solution to perform the superbuild using cmake.
+A description of the configuration options can be found in `CMake Options`_.
+
+.. code-block :: bash
+
+  # From the build directory provide cmake the path to the source directory,
+  # which can be relative or absolute.
+  # Specify configurable options by prefacing them with the -D flag
   cmake -DCMAKE_BUILD_TYPE:STRING=Release ../src
-  # Using the CMake GUI you can set the source and build directories accordingly
-  # and press the "Configure"  and “Generate” buttons
-  # Alternatively, the ccmake tool allows for interactive selection of
-  # CMake options.
+  # Alternatively, you can use the 'ccmake' command line tool allows for
+  # interactively selecting CMake options. This can be installed with
+  # 'sudo apt-get install cmake-curses-gui'
+  ccmake ../src
+  # As a final option, you can use the the CMake GUI you can set the source and
+  # build directories accordingly and then press the "Configure" and “Generate”
+  # buttons
 
-  # Build the install target/project
+Build the installer target/project
+
+.. code-block :: bash
+
   # On Linux/OSX/MinGW
   make
   # Once the Superbuild is complete, the telesculptor makefile will be placed in
@@ -136,6 +186,10 @@ Here is the quickest way to build via a cmd/bash shell
   # When the build is complete you may close this solution.
   # To edit TeleSculptor code, open the
   # build/external/telesculptor-build/TeleSculptor.sln
+
+You have now built a TeleSculptor installer similar to what is provided in the
+`latest release`_ section. To install TeleSculptor on you machine, follow the
+instructions above in `Installation`_.
 
 CMake Options
 -------------
@@ -242,6 +296,24 @@ The required KWIVER flags can be found in this file : `<CMake/telesculptor-exter
 
 The required Fletch flags can be found in this file : `<CMake/telesculptor-external-fletch.cmake>`_
 
+Overview of Directories
+=======================
+
+======================= ========================================================
+``CMake``               contains CMake helper scripts
+``config``              contains reusable default algorithm configuration files
+``doc``                 contains release notes, manuals, and other documentation
+``examples``            contains example tool configuration for public datasets
+``gui``                 contains the visualization GUI source code and headers
+``gui/icons``           contains the visualization GUI icon resources
+``maptk``               contains the maptk library source and headers
+``packaging``           contains support files for CPack packaging
+``scripts``             contains Python helper scripts
+``plugins/blender``     contains Python plug-ins for Blender
+``plugins/sketchup``    contains Ruby plug-ins for SketchUp
+``tests``               contains testing framework and tests for each module
+``tools``               contains source for command line utilities
+======================= ========================================================
 
 MAP-Tk Tools
 ============
@@ -249,6 +321,7 @@ MAP-Tk Tools
 MAP-Tk command line tools are placed in the ``bin`` directory of the build
 or install path.  These tools are described below.  Note that these tools are
 in the process of being migrated to KWIVER and will leave this repository soon.
+Continued support is not guaranteed and behavior may diverge from documentation.
 
 
 Summary of MAP-Tk Tools
@@ -373,6 +446,7 @@ public release via 88ABW-2015-2555.
 .. _Travis CI: https://travis-ci.org/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _VTK: https://vtk.org/
+.. _latest release: https://github.com/Kitware/TeleSculptor/releases/latest
 
 .. Appendix II: Text Substitutions
 .. ===============================
