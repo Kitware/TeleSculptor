@@ -204,8 +204,10 @@ Build the installer target/project
   # To edit TeleSculptor code, open the
   # build/external/telesculptor-build/TeleSculptor.sln
 
-This will produce an installer file which can install TeleSculptor in the same
-way as the downloadable installer, as detailed in the next section.
+To install TeleSculptor on you machine, follow the instructions above in `Installation`_.
+The build process creates the same type of installer as what is downloadable form the
+the `latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
+section.
 
 CMake Options
 -------------
