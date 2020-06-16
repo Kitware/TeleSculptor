@@ -78,25 +78,6 @@ project from source or run command line tools.  For end users looking for
 instruction on running the GUI application please read the
 `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
 
-Overview of Directories
-=======================
-
-======================= ========================================================
-``CMake``               contains CMake helper scripts
-``config``              contains reusable default algorithm configuration files
-``doc``                 contains release notes, manuals, and other documentation
-``examples``            contains example tool configuration for public datasets
-``gui``                 contains the visualization GUI source code and headers
-``gui/icons``           contains the visualization GUI icon resources
-``maptk``               contains the maptk library source and headers
-``packaging``           contains support files for CPack packaging
-``scripts``             contains Python helper scripts
-``plugins/blender``     contains Python plug-ins for Blender
-``plugins/sketchup``    contains Ruby plug-ins for SketchUp
-``tests``               contains testing framework and tests for each module
-``tools``               contains source for command line utilities
-======================= ========================================================
-
 Installation
 ============
 If you have downloaded an installer from the
@@ -313,6 +294,24 @@ The required KWIVER flags can be found in this file : `<CMake/telesculptor-exter
 
 The required Fletch flags can be found in this file : `<CMake/telesculptor-external-fletch.cmake>`_
 
+Overview of Directories
+=======================
+
+======================= ========================================================
+``CMake``               contains CMake helper scripts
+``config``              contains reusable default algorithm configuration files
+``doc``                 contains release notes, manuals, and other documentation
+``examples``            contains example tool configuration for public datasets
+``gui``                 contains the visualization GUI source code and headers
+``gui/icons``           contains the visualization GUI icon resources
+``maptk``               contains the maptk library source and headers
+``packaging``           contains support files for CPack packaging
+``scripts``             contains Python helper scripts
+``plugins/blender``     contains Python plug-ins for Blender
+``plugins/sketchup``    contains Ruby plug-ins for SketchUp
+``tests``               contains testing framework and tests for each module
+``tools``               contains source for command line utilities
+======================= ========================================================
 
 MAP-Tk Tools
 ============
