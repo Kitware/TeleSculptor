@@ -98,6 +98,24 @@ Overview of Directories
 ``tools``               contains source for command line utilities
 ======================= ========================================================
 
+Installation
+============
+If you have downloaded an installer from the
+`latest release <https://github.com/Kitware/TeleSculptor/releases/latest>`_
+you can simply install TeleSculptor according to the instructions for your
+operating system described below. If you are building TeleSculptor from source
+you should proceed to `Building TeleSculptor`_ to create the installer before
+completing the installation.
+
+**Windows:** run the installer executable (exe) and follow the prompts in the
+installer dialog. Administrative permission is required.
+
+**Mac:** open the disk image (dmg), accept the license terms, then drag the
+TeleSculptor application into the Applications folder.
+
+**Linux:** open a bash/cmd shell and run the self extracting installer script
+(sh). You can view additional installation options using
+``./TeleSculptor-<version>-Linux-x86_64.sh --help``
 
 Building TeleSculptor
 =====================
@@ -188,24 +206,6 @@ Build the installer target/project
 
 This will produce an installer file which can install TeleSculptor in the same
 way as the downloadable installer, as detailed in the next section.
-
-Installation
-------------
-Once you have an installer downloaded or built, you need to run it to install
-TeleSculptor on your machine. You can install it with the default options by
-opening a bash/cmd shell and typing the following. With the default options the
-binaries will be installed in as subdirectory of the current directory
-
-.. code-block :: bash
-
-  ./<installer name>.sh
-
-Alternatively, you can see the installation options with the `--help` flag.
-
-.. code-block :: bash
-
-  ./<installer name>.sh  --help
-
 
 CMake Options
 -------------
