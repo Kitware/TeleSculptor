@@ -20,7 +20,7 @@ TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
 Windows included at the bottom of the
 `latest release`_ page by following the instructions in the Installation_ section.
 Instructions on how to use the TeleSculptor GUI can be found in
-the `User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_. A computer with at
+the `User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_. A computer with at
 least 16GB of RAM is recommended for processing most datasets.
 
 More advanced users who wish to build the project from source should proceed to the
@@ -96,7 +96,7 @@ TeleSculptor application into the Applications folder.
 The remainder of this document is aimed at developers who wish to build the
 project from source or run command line tools.  For end users looking for
 instruction on running the GUI application please read the
-`User Guide <doc/TeleSculptor-v1.0-User-Guide.pdf>`_.
+`User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
 
 
 Building TeleSculptor
