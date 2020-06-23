@@ -303,7 +303,7 @@ Overview of Directories
 ``CMake``               contains CMake helper scripts
 ``config``              contains reusable default algorithm configuration files
 ``doc``                 contains release notes, manuals, and other documentation
-``examples``            contains example tool configuration for public datasets
+``examples``            contains pointers to example public datasets to use
 ``gui``                 contains the visualization GUI source code and headers
 ``gui/icons``           contains the visualization GUI icon resources
 ``maptk``               contains the maptk library source and headers
