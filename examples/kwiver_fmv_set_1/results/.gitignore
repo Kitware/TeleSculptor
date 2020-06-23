@@ -1,5 +1,0 @@
-# This directory is a placeholder for results produced by running the examples.
-# Git should ignore everything in this directory
-*
-# Except this file
-!.gitignore
