@@ -50,7 +50,7 @@ if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
-SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo)
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
 
 get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL
     PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -105,6 +105,9 @@ add_subdirectory(config)
 
 # this is where the plugins to 3rd party software live
 add_subdirectory(plugins)
+
+# this is where configuration for example data sets lives
+add_subdirectory(examples)
 
 ###
 # GUI

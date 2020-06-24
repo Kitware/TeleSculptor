@@ -59,7 +59,7 @@ configurable to support research into to algorithms and new problem domains.
 The screenshots below show TeleSculptor
 running on example videos from the `VIRAT Video Dataset`_,
 `CLIF 2007 Dataset`_, and other public data sets.  More information about this
-example data can be found in the `examples <doc/EXAMPLES.rst>`_ file.
+example data can be found in the `examples <examples>`_ directory.
 
 While the initial software implementation relies on batch post-processing
 of aerial video, our intent is to move to an online video stream processing
@@ -303,6 +303,7 @@ Overview of Directories
 ``CMake``               contains CMake helper scripts
 ``config``              contains reusable default algorithm configuration files
 ``doc``                 contains release notes, manuals, and other documentation
+``examples``            contains pointers to example public datasets to use
 ``gui``                 contains the visualization GUI source code and headers
 ``gui/icons``           contains the visualization GUI icon resources
 ``maptk``               contains the maptk library source and headers
