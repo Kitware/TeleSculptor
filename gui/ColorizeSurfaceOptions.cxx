@@ -261,6 +261,7 @@ void ColorizeSurfaceOptions::colorize()
     coloration->SetInput(volume);
     coloration->SetOutput(volume);
     coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
+    coloration->SetOcclusionThreshold(d->UI.doubleSpinBoxOcclusionThreshold->value());
     coloration->SetFrame((d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1);
     coloration->SetAverageColor(true);
     connect(coloration, &MeshColoration::resultReady,

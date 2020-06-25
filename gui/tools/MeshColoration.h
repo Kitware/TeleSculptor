@@ -38,7 +38,10 @@
 #include <vital/types/camera_perspective.h>
 
 // VTK Class
+class vtkFloatArray;
 class vtkPolyData;
+class vtkRenderWindow;
+
 #include <vtkSmartPointer.h>
 
 #include <string>
@@ -72,6 +75,10 @@ public:
   { this->Frame = frame;}
   void SetAverageColor(bool averageColor)
   { this->AverageColor = averageColor;}
+  void SetOcclusionThreshold(float threshold)
+  {
+    this->OcclusionThreshold = threshold;
+  }
 
   // Adds mean and median colors to 'Output' if averageColor or
   // adds an array of colors for each camera (frame) otherwise.
@@ -82,6 +89,11 @@ signals:
 
 protected:
   void initializeDataList(int frameId);
+  vtkSmartPointer<vtkRenderWindow> CreateDepthBufferPipeline();
+  vtkSmartPointer<vtkFloatArray> RenderDepthBuffer(
+    vtkSmartPointer<vtkRenderWindow> renWin,
+    kwiver::vital::camera_perspective_sptr camera_ptr, int width, int height, double range[2]);
+
 
 protected:
   // input mesh
@@ -91,6 +103,7 @@ protected:
   int Frame;
   bool AverageColor;
   bool Error;
+  float OcclusionThreshold;
 
   struct ColorationData
   {
