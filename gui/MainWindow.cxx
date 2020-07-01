@@ -2668,6 +2668,9 @@ void MainWindow::saveFusedMeshFrameColors()
     if (!path.isEmpty())
     {
       d->UI.worldView->saveFusedMeshFrameColors(path);
+      // to save file without occlusion
+      // QFileInfo fi(path);
+      // d->UI.worldView->saveFusedMeshFrameColors(fi.path() + "/_" + fi.fileName(), false/*occlusion*/);
     }
   }
   catch (...)

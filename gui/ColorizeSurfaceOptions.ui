@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>221</width>
+    <width>274</width>
     <height>179</height>
    </rect>
   </property>
@@ -63,21 +63,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Color display</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QComboBox" name="comboBoxColorDisplay">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
+   <item row="3" column="0" colspan="2">
     <widget class="QPushButton" name="buttonCompute">
      <property name="enabled">
       <bool>false</bool>
@@ -87,27 +73,33 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_3">
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Occlusion threshold</string>
+      <string>Color display</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QDoubleSpinBox" name="doubleSpinBoxOcclusionThreshold">
-     <property name="toolTip">
-      <string>Points at higher depth difference are considered occluded</string>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="comboBoxColorDisplay">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
-     <property name="decimals">
-      <number>1</number>
-     </property>
-     <property name="minimum">
-      <double>-1.000000000000000</double>
-     </property>
-     <property name="value">
-      <double>1.000000000000000</double>
-     </property>
+     <item>
+      <property name="text">
+       <string>MeanColoration</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>MedianColoration</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>NbProjectedDepthMap</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

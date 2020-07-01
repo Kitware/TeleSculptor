@@ -101,15 +101,16 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
           this, &VolumeOptions::showColorizeSurfaceMenu);
 
-  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
-          this, &VolumeOptions::colorOptionsEnabled);
-
   connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
           this, &VolumeOptions::updateColorizeSurfaceMenu);
 
   connect(d->UI.doubleSpinBoxSurfaceThreshold,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
           qobject_cast<WorldView*>(parent), &WorldView::computeContour);
+  connect(d->UI.doubleSpinBoxOcclusionThreshold,
+          QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          this, &VolumeOptions::updateOcclusionThreshold);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -143,6 +144,15 @@ int VolumeOptions::getFrameSampling() const
 
   return d->colorizeSurfaceOptions->getFrameSampling();
 }
+
+//-----------------------------------------------------------------------------
+double VolumeOptions::getOcclusionThreshold() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getOcclusionThreshold();
+}
+
 
 //-----------------------------------------------------------------------------
 void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
@@ -216,9 +226,13 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
   QTE_D();
 
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
+  d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(state);
   d->colorizeSurfaceOptions->enableMenu(state);
+  if (state)
+  {
+    this->colorize();
+  }
   d->volumeActor->GetMapper()->SetScalarVisibility(state);
-
   emit modified();
 }
 
@@ -230,4 +244,12 @@ void VolumeOptions::updateColorizeSurfaceMenu(QString const& text)
   d->UI.toolButtonColorizeSurfaceMenu->setText(text);
 
   emit modified();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::updateOcclusionThreshold(double occlusionThreshold)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setOcclusionThreshold(occlusionThreshold);
 }

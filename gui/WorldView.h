@@ -139,7 +139,7 @@ public slots:
   void saveVolume(QString const& path);
   void saveFusedMesh(QString const& path,
                      kwiver::vital::local_geo_cs const & lgcs);
-  void saveFusedMeshFrameColors(QString const& path);
+  void saveFusedMeshFrameColors(QString const& path, bool occlusion = true);
   void meshColorationHandleResult(MeshColoration* coloration);
 
   void invalidateGeometry();

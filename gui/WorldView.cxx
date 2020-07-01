@@ -1568,10 +1568,10 @@ void WorldView::saveFusedMesh(const QString &path,
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveFusedMeshFrameColors(const QString &path)
+void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
 {
   QTE_D();
-
+  QEventLoop loop;
   vtkPolyData* mesh = d->contourFilter->GetOutput();
   std::string videoPath = d->volumeOptions->getVideoPath();
   kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
@@ -1581,6 +1581,8 @@ void WorldView::saveFusedMeshFrameColors(const QString &path)
   coloration->setProperty("path", path);
   coloration->SetInput(mesh);
   coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
+  double occlusionThreshold = occlusion ? d->volumeOptions->getOcclusionThreshold() : 1000;
+  coloration->SetOcclusionThreshold(occlusionThreshold);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
   meshFrameColors->CopyStructure(mesh);
   coloration->SetOutput(meshFrameColors);
@@ -1588,9 +1590,11 @@ void WorldView::saveFusedMeshFrameColors(const QString &path)
   coloration->SetAverageColor(false);
   connect(coloration, &MeshColoration::resultReady,
           this, &WorldView::meshColorationHandleResult);
+  connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
   connect(coloration, &MeshColoration::finished,
           coloration, &MeshColoration::deleteLater);
   coloration->start();
+  loop.exec();
 }
 
 

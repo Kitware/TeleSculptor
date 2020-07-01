@@ -58,6 +58,14 @@ public:
   int getFrameSampling() const;
 
   void setCurrentFrame(int frame);
+  void setOcclusionThreshold(double occlusionThreshold)
+  {
+    this->OcclusionThreshold = occlusionThreshold;
+  }
+  double getOcclusionThreshold()
+  {
+    return this->OcclusionThreshold;
+  }
 
   void setActor(vtkActor* actor);
   void setVideoConfig(std::string const& path, kwiver::vital::config_block_sptr config);
@@ -79,6 +87,11 @@ public slots:
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();
+
+protected:
+  double OcclusionThreshold;
+  bool InsideColorize;
+  int LastColorizedFrame;
 
 private:
 

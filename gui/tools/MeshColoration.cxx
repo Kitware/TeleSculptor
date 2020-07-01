@@ -62,8 +62,6 @@
 
 typedef kwiversys::SystemTools  ST;
 
-// #define DEBUG_DEPTH
-
 namespace
 {
 static char const* const BLOCK_VR = "video_reader";
@@ -155,13 +153,14 @@ void MeshColoration::SetFrameSampling(int sample)
 
 void MeshColoration::run()
 {
+  LOG_INFO(main_logger, "Initialize camera and image list: frame " << this->Frame);
   initializeDataList(this->Frame);
 
   int numFrames = static_cast<int>(this->DataList.size());
 
   if (this->Input == 0 || numFrames == 0 )
   {
-    std::cerr << "Error when input has been set or during reading vti/krtd file path" << std::endl;
+    LOG_ERROR(main_logger, "Error when input has been set");
     emit resultReady(nullptr);
 
   }
@@ -169,16 +168,13 @@ void MeshColoration::run()
   vtkPoints* meshPointList = this->Input->GetPoints();
   if (meshPointList == 0)
   {
-    std::cerr << "invalid mesh points" <<std::endl;
+    LOG_ERROR(main_logger, "invalid mesh points");
     emit resultReady(nullptr);
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
   // per frame colors
   std::vector<vtkSmartPointer<vtkUnsignedCharArray>> perFrameColor;
-#ifdef DEBUG_DEPTH
-  std::vector<vtkSmartPointer<vtkFloatArray>> perFrameDepth;
-#endif
   // average colors
   vtkNew<vtkUnsignedCharArray> meanValues;
   vtkNew<vtkUnsignedCharArray> medianValues;
@@ -200,15 +196,12 @@ void MeshColoration::run()
   std::vector<DepthBuffer> depthBuffer(numFrames);
   int i = 0;
 
-  LOG_INFO(main_logger, "Creating depth buffers ...");
+  LOG_INFO(main_logger, "Creating depth buffers: " << numFrames << " ...");
   auto renWin = CreateDepthBufferPipeline();
   for (auto it = depthBuffer.begin(); it != depthBuffer.end(); ++it)
   {
     kwiver::vital::camera_perspective_sptr camera = this->DataList[i].Camera_ptr;
     kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[i].Image;
-    kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
-    std::ostringstream ostr;
-    ostr << "z_" << std::setw(3) << std::setfill('0') << frame;
     int width = colorImage.width();
     int height = colorImage.height();
     DepthBuffer db;
@@ -262,24 +255,6 @@ void MeshColoration::run()
       this->Output->GetPointData()->AddArray(*it);
       ++i;
     }
-#ifdef DEBUG_DEPTH
-    perFrameDepth.resize(numFrames);
-    i = 0;
-    for (auto it = perFrameDepth.begin(); it != perFrameDepth.end(); ++it)
-    {
-      *it = vtkSmartPointer<vtkFloatArray>::New();
-      (*it)->SetNumberOfComponents(2);
-      (*it)->SetNumberOfTuples(nbMeshPoint);
-      float* p = (*it)->GetPointer(0);
-      std::fill(p, p + nbMeshPoint, 0.0);
-      std::ostringstream ostr;
-      kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
-      ostr << "framef_" << std::setfill('0') << std::setw(4) << frame;
-      (*it)->SetName(ostr.str().c_str());
-      this->Output->GetPointData()->AddArray(*it);
-      ++i;
-    }
-#endif
   }
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
@@ -352,15 +327,6 @@ void MeshColoration::run()
             perFrameColor[idData]->SetTypedTuple(id, rgba);
           }
         }
-
-#ifdef DEBUG_DEPTH
-        if (! this->AverageColor)
-        {
-          float t[2] = {depthBufferValue, static_cast<float>(depth)};
-          perFrameDepth[idData]->SetTypedTuple(id, t);
-        }
-#endif
-
       }
       catch (std::out_of_range)
       {
@@ -391,37 +357,13 @@ void MeshColoration::run()
       list2.clear();
     }
   }
-
-#ifdef DEBUG_DEPTH
-  i = 0;
-  for (auto it = depthBuffer.begin(); it != depthBuffer.end(); ++it)
-  {
-    kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[i].Image;
-    kwiver::vital::frame_id_t frame = this->DataList[i].Frame;
-    std::ostringstream ostr;
-    ostr << "z_" << std::setw(3) << std::setfill('0') << frame;
-    int width = colorImage.width();
-    int height = colorImage.height();
-    vtkNew<vtkImageData> image;
-    image->SetDimensions(width, height, 1);
-    image->GetPointData()->AddArray(it->Buffer);
-    vtkNew<vtkXMLImageDataWriter> writer;
-    writer->SetInputDataObject(image);
-    ostr << ".vti";
-    writer->SetFileName(ostr.str().c_str());
-    writer->Write();
-    ++i;
-  }
-#endif
-
-
   if (this->AverageColor)
   {
     this->Input->GetPointData()->AddArray(meanValues);
     this->Input->GetPointData()->AddArray(medianValues);
     this->Input->GetPointData()->AddArray(projectedDMValue);
   }
-  LOG_INFO(main_logger, "Done");
+  LOG_INFO(main_logger, "Done: frame " << this->Frame);
   emit resultReady(this);
 }
 
@@ -529,13 +471,16 @@ vtkSmartPointer<vtkFloatArray> MeshColoration::RenderDepthBuffer(
       depthRange[1] = depth;
     }
   }
+  // we only render points in front of the camera
+  if (depthRange[0] < 0)
+  {
+    depthRange[0] = 0;
+  }
   vtkNew<vtkMaptkCamera> cam;
   int imageDimensions[2] = {width, height};
   cam->SetCamera(camera_ptr);
   cam->SetImageDimensions(imageDimensions);
   cam->Update();
-  std::cout << "depthMin: " << depthRange[0] << " depthMax: " << depthRange[1]
-            << std::endl;
   cam->SetClippingRange(depthRange[0], depthRange[1]);
   vtkRenderer* ren = renWin->GetRenderers()->GetFirstRenderer();
   vtkCamera* camera = ren->GetActiveCamera();

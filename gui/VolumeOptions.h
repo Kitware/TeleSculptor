@@ -57,6 +57,7 @@ public:
 
   void initFrameSampling(int nbFrames);
   int getFrameSampling() const;
+  double getOcclusionThreshold() const;
 
   void setCameras(kwiver::vital::camera_map_sptr cameras);
   kwiver::vital::camera_map_sptr getCameras() const;
@@ -78,6 +79,7 @@ signals:
 public slots:
   void showColorizeSurfaceMenu(bool state);
   void updateColorizeSurfaceMenu(QString const& text);
+  void updateOcclusionThreshold(double occlusionThreshold);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(VolumeOptions)

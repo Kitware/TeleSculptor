@@ -106,6 +106,9 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
   d->frameFile = QString();
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
+  this->OcclusionThreshold = 1;
+  this->InsideColorize = false;
+  this->LastColorizedFrame = -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -216,9 +219,9 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 
   vtkPolyData* volume = vtkPolyData::SafeDownCast(
     d->volumeActor->GetMapper()->GetInput());
-
-  volume->GetPointData()->SetActiveScalars(
-    qPrintable(d->UI.comboBoxColorDisplay->currentText()));
+  const char* activeScalar = qPrintable(d->UI.comboBoxColorDisplay->currentText());
+  std::cout << "activeScalar:" << activeScalar << std::endl;
+  volume->GetPointData()->SetActiveScalars(activeScalar);
 
   vtkMapper* mapper = d->volumeActor->GetMapper();
 
@@ -248,33 +251,43 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-
-  if (d->cameras->size() > 0)
+  if (! this->InsideColorize)
   {
-    d->UI.comboBoxColorDisplay->clear();
+    this->InsideColorize = true;
+    int colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
+    while (this->LastColorizedFrame != colorizedFrame)
+    {
+      this->LastColorizedFrame = colorizedFrame;
 
-    vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
-                                                    ->GetInput());
-    MeshColoration* coloration =
-      new MeshColoration(d->videoConfig, d->videoPath, d->cameras);
+      if (d->cameras->size() == 0)
+      {
+        d->UI.comboBoxColorDisplay->setEnabled(true);
+        emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+        return;
+      }
+      QEventLoop loop;
+      vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
+                                                      ->GetInput());
+      MeshColoration* coloration =
+        new MeshColoration(d->videoConfig, d->videoPath, d->cameras);
 
-    coloration->SetInput(volume);
-    coloration->SetOutput(volume);
-    coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
-    coloration->SetOcclusionThreshold(d->UI.doubleSpinBoxOcclusionThreshold->value());
-    coloration->SetFrame((d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1);
-    coloration->SetAverageColor(true);
-    connect(coloration, &MeshColoration::resultReady,
-            this, &ColorizeSurfaceOptions::meshColorationHandleResult);
-    connect(coloration, &MeshColoration::finished,
-            coloration, &MeshColoration::deleteLater);
-    coloration->start();
-    return;
+      coloration->SetInput(volume);
+      coloration->SetOutput(volume);
+      coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
+      coloration->SetOcclusionThreshold(this->OcclusionThreshold);
+      coloration->SetFrame(this->LastColorizedFrame);
+      coloration->SetAverageColor(true);
+      connect(coloration, &MeshColoration::resultReady,
+              this, &ColorizeSurfaceOptions::meshColorationHandleResult);
+      connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
+      connect(coloration, &MeshColoration::finished,
+              coloration, &MeshColoration::deleteLater);
+      coloration->start();
+      loop.exec();
+      colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
+    }
+    this->InsideColorize = false;
   }
-
-  d->UI.comboBoxColorDisplay->setEnabled(true);
-
-  emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
 }
 
 //-----------------------------------------------------------------------------
@@ -286,14 +299,6 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* colorati
     vtkPolyData* volume = coloration->GetOutput();
 
     std::string name;
-    int nbArray = volume->GetPointData()->GetNumberOfArrays();
-
-    for (int i = 0; i < nbArray; ++i)
-    {
-      name = volume->GetPointData()->GetArrayName(i);
-      d->UI.comboBoxColorDisplay->addItem(qtString(name));
-    }
-
     volume->GetPointData()->SetActiveScalars("MeanColoration");
     d->UI.comboBoxColorDisplay->setCurrentIndex(
       d->UI.comboBoxColorDisplay->findText("MeanColoration"));
@@ -301,7 +306,6 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* colorati
   d->UI.comboBoxColorDisplay->setEnabled(true);
 
   emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
-
 }
 
 
@@ -314,7 +318,6 @@ void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)
   d->UI.buttonCompute->setEnabled(state);
   d->UI.spinBoxFrameSampling->setEnabled(state);
   d->UI.comboBoxColorDisplay->setEnabled(false);
-  d->UI.comboBoxColorDisplay->clear();
 }
 
 //-----------------------------------------------------------------------------
