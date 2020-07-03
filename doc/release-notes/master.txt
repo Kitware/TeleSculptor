@@ -1,0 +1,17 @@
+TeleSculptor v1.2.0 Release Notes
+=================================
+
+This is a minor release of TeleSculptor that provides both new functionality
+and fixes over the previous v1.1.0 release. 
+
+
+Updates since v1.1.0
+--------------------
+
+TeleSculptor Application
+
+
+Fixes since v1.1.0
+------------------
+
+TeleSculptor Application
