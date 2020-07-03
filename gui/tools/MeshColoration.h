@@ -79,6 +79,10 @@ public:
   {
     this->OcclusionThreshold = threshold;
   }
+  void SetRemoveOcclusion(bool removeOcclusion)
+  {
+    this->RemoveOcclusion = removeOcclusion;
+  }
 
   // Adds mean and median colors to 'Output' if averageColor or
   // adds an array of colors for each camera (frame) otherwise.
@@ -104,6 +108,7 @@ protected:
   bool AverageColor;
   bool Error;
   float OcclusionThreshold;
+  bool RemoveOcclusion;
 
   struct ColorationData
   {

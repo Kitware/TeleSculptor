@@ -62,6 +62,10 @@ public:
   {
     this->OcclusionThreshold = occlusionThreshold;
   }
+  void setRemoveOcclusion(double removeOcclusion)
+  {
+    this->RemoveOcclusion = removeOcclusion;
+  }
   double getOcclusionThreshold()
   {
     return this->OcclusionThreshold;
@@ -73,14 +77,13 @@ public:
   std::string getVideoPath() const;
   void setCameras(kwiver::vital::camera_map_sptr cameras);
   kwiver::vital::camera_map_sptr getCameras() const;
-
   void enableMenu(bool);
+  void forceColorize();
 
 signals:
   void colorModeChanged(QString);
 
 public slots:
-
   void changeColorDisplay();
   void colorize();
   void meshColorationHandleResult(MeshColoration* coloration);
@@ -90,7 +93,9 @@ public slots:
 
 protected:
   double OcclusionThreshold;
+  bool RemoveOcclusion;
   bool InsideColorize;
+  const int INVALID_FRAME = -2;
   int LastColorizedFrame;
 
 private:

@@ -1581,8 +1581,9 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   coloration->setProperty("path", path);
   coloration->SetInput(mesh);
   coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
-  double occlusionThreshold = occlusion ? d->volumeOptions->getOcclusionThreshold() : 1000;
+  double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->SetOcclusionThreshold(occlusionThreshold);
+  coloration->SetRemoveOcclusion(occlusion);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
   meshFrameColors->CopyStructure(mesh);
   coloration->SetOutput(meshFrameColors);

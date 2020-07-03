@@ -107,8 +107,9 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
   this->OcclusionThreshold = 1;
+  this->RemoveOcclusion = true;
   this->InsideColorize = false;
-  this->LastColorizedFrame = -1;
+  this->LastColorizedFrame = INVALID_FRAME;
 }
 
 //-----------------------------------------------------------------------------
@@ -248,6 +249,13 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 }
 
 //-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::forceColorize()
+{
+  this->LastColorizedFrame = INVALID_FRAME;
+  colorize();
+}
+
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
@@ -275,6 +283,7 @@ void ColorizeSurfaceOptions::colorize()
       coloration->SetOutput(volume);
       coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
       coloration->SetOcclusionThreshold(this->OcclusionThreshold);
+      coloration->SetRemoveOcclusion(this->RemoveOcclusion);
       coloration->SetFrame(this->LastColorizedFrame);
       coloration->SetAverageColor(true);
       connect(coloration, &MeshColoration::resultReady,

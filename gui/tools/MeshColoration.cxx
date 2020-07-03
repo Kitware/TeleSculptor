@@ -100,7 +100,8 @@ MeshColoration::MeshColoration()
   this->Frame = -1;
   this->AverageColor = true;
   this->Error = false;
-  this->OcclusionThreshold = 1;
+  this->OcclusionThreshold = 1.0;
+  this->RemoveOcclusion = true;
 }
 
 MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& config,
@@ -194,20 +195,22 @@ void MeshColoration::run()
 
   };
   std::vector<DepthBuffer> depthBuffer(numFrames);
-  int i = 0;
-
-  LOG_INFO(main_logger, "Creating depth buffers: " << numFrames << " ...");
-  auto renWin = CreateDepthBufferPipeline();
-  for (auto it = depthBuffer.begin(); it != depthBuffer.end(); ++it)
+  if (this->RemoveOcclusion)
   {
-    kwiver::vital::camera_perspective_sptr camera = this->DataList[i].Camera_ptr;
-    kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[i].Image;
-    int width = colorImage.width();
-    int height = colorImage.height();
-    DepthBuffer db;
-    db.Buffer = RenderDepthBuffer(renWin, camera, width, height, db.Range);
-    *it = db;
-    ++i;
+    LOG_INFO(main_logger, "Creating depth buffers: " << numFrames << " ...");
+    auto renWin = CreateDepthBufferPipeline();
+    int i = 0;
+    for (auto it = depthBuffer.begin(); it != depthBuffer.end(); ++it)
+    {
+      kwiver::vital::camera_perspective_sptr camera = this->DataList[i].Camera_ptr;
+      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[i].Image;
+      int width = colorImage.width();
+      int height = colorImage.height();
+      DepthBuffer db;
+      db.Buffer = RenderDepthBuffer(renWin, camera, width, height, db.Range);
+      *it = db;
+      ++i;
+    }
   }
   if (this->AverageColor)
   {
@@ -310,10 +313,15 @@ void MeshColoration::run()
         int x = static_cast<int>(pixelPosition[0]);
         int y = static_cast<int>(pixelPosition[1]);
         kwiver::vital::rgb_color rgb = colorImage.at(x, y);
-        double* range = depthBuffer[idData].Range;
-        float depthBufferValueNorm = depthBuffer[idData].Buffer->GetValue(x + width * (height - y - 1));
-        float depthBufferValue = range[0] + (range[1] - range[0]) * depthBufferValueNorm;
-        if (depthBufferValue + this->OcclusionThreshold > depth)
+        float depthBufferValue = 0;
+        if (this->RemoveOcclusion)
+        {
+          double* range = depthBuffer[idData].Range;
+          float depthBufferValueNorm =
+            depthBuffer[idData].Buffer->GetValue(x + width * (height - y - 1));
+          depthBufferValue = range[0] + (range[1] - range[0]) * depthBufferValueNorm;
+        }
+        if (! this->RemoveOcclusion || depthBufferValue + this->OcclusionThreshold > depth)
         {
           if (this->AverageColor)
           {
