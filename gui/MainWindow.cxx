@@ -2889,7 +2889,10 @@ void MainWindow::acceptToolResults(
       }
     }
     // Set the frame sampling rate for coloring based on number of cameras
-    d->UI.worldView->initFrameSampling(static_cast<int>(data->cameras->size()));
+    if (data->cameras)
+    {
+      d->UI.worldView->initFrameSampling(static_cast<int>(data->cameras->size()));
+    }
   }
   else if (updateNeeded)
   {
