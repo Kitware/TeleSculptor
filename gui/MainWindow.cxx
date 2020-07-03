@@ -604,7 +604,7 @@ void MainWindowPrivate::addVideoSource(
       this->addFrame(nullptr, f);
     }
   }
-  catch (kv::file_not_found_exception const& e)
+  catch (kv::vital_exception const& e)
   {
     qWarning() << e.what();
     this->videoSource->close();
@@ -2005,6 +2005,7 @@ void MainWindow::loadVideo(QString const& path)
     QMessageBox::critical(
       this, "Error loading video\n",
       e.what());
+    return;
   }
 
 
