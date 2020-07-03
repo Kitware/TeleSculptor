@@ -1,0 +1,11 @@
+TeleSculptor v1.1.1 Release Notes
+=================================
+
+This release provides patches to the TeleSculptor v1.1.0 release to address
+issues. TeleSculptor v1.1.1 is a bug fix release with no new functionality.
+
+
+Fixes since v1.1.0
+------------------
+
+TeleSculptor Application
