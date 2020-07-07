@@ -604,7 +604,7 @@ void MainWindowPrivate::addVideoSource(
       this->addFrame(nullptr, f);
     }
   }
-  catch (kv::file_not_found_exception const& e)
+  catch (kv::vital_exception const& e)
   {
     qWarning() << e.what();
     this->videoSource->close();
@@ -2005,6 +2005,7 @@ void MainWindow::loadVideo(QString const& path)
     QMessageBox::critical(
       this, "Error loading video\n",
       e.what());
+    return;
   }
 
 
@@ -2889,7 +2890,10 @@ void MainWindow::acceptToolResults(
       }
     }
     // Set the frame sampling rate for coloring based on number of cameras
-    d->UI.worldView->initFrameSampling(static_cast<int>(data->cameras->size()));
+    if (data->cameras)
+    {
+      d->UI.worldView->initFrameSampling(static_cast<int>(data->cameras->size()));
+    }
   }
   else if (updateNeeded)
   {

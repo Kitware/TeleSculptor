@@ -9,3 +9,9 @@ Fixes since v1.1.0
 ------------------
 
 TeleSculptor Application
+
+ * Fixed a crash that occured when opening a bad video file.
+   TeleSculptor now handles the failure to load without crashing.
+
+ * Fixed a crash that happens when running end-to-end immediately after
+   feature tracking completes.
