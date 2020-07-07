@@ -108,60 +108,68 @@ void VideoImport::run()
 
   d->canceled = false;
 
-  if (!video_input::check_nested_algo_configuration(
-    BLOCK_VR, d->config))
+  try
   {
-    LOG_WARN(d->logger,
-      "An error was found in the video source algorithm configuration.");
-    return;
-  }
 
-  video_input::set_nested_algo_configuration(
-    BLOCK_VR, d->config, d->video_reader);
-
-  kwiver::vital::timestamp currentTimestamp;
-  d->video_reader->open(d->videoPath);
-
-  auto metadataMap =
-    std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
-
-  // If no metadata stream, exit early
-  if (! d->video_reader->get_implementation_capabilities()
-         .has_capability(kwiver::vital::algo::video_input::HAS_METADATA))
-  {
-    emit this->completed(metadataMap);
-    d->video_reader->close();
-    return;
-  }
-
-  auto num_frames = static_cast<int>(d->video_reader->num_frames());
-
-  QString description = QString("&Scanning metadata in %1 (Frame %2). "
-                                "Cancel to ignore metadata.")
-    .arg(QFileInfo{qtString(d->videoPath)}.fileName());
-  while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
-  {
-    auto frame = currentTimestamp.get_frame();
-    auto mdVec = d->video_reader->frame_metadata();
-
-    if (mdVec.size() > 0)
+    if (!video_input::check_nested_algo_configuration(
+      BLOCK_VR, d->config))
     {
-      metadataMap->emplace(frame, mdVec);
+      LOG_WARN(d->logger,
+        "An error was found in the video source algorithm configuration.");
+      return;
     }
 
-    QString desc = description.arg(frame);
-    emit this->progressChanged(desc, frame * 100 / num_frames);
-  }
+    video_input::set_nested_algo_configuration(
+      BLOCK_VR, d->config, d->video_reader);
 
-  if (d->canceled)
+    kwiver::vital::timestamp currentTimestamp;
+    d->video_reader->open(d->videoPath);
+
+    auto metadataMap =
+      std::make_shared<kwiver::vital::metadata_map::map_metadata_t>();
+
+    // If no metadata stream, exit early
+    if (!d->video_reader->get_implementation_capabilities()
+      .has_capability(kwiver::vital::algo::video_input::HAS_METADATA))
+    {
+      emit this->completed(metadataMap);
+      d->video_reader->close();
+      return;
+    }
+
+    auto num_frames = static_cast<int>(d->video_reader->num_frames());
+
+    QString description = QString("&Scanning metadata in %1 (Frame %2). "
+      "Cancel to ignore metadata.")
+      .arg(QFileInfo{ qtString(d->videoPath) }.fileName());
+    while (d->video_reader->next_frame(currentTimestamp) && !d->canceled)
+    {
+      auto frame = currentTimestamp.get_frame();
+      auto mdVec = d->video_reader->frame_metadata();
+
+      if (mdVec.size() > 0)
+      {
+        metadataMap->emplace(frame, mdVec);
+      }
+
+      QString desc = description.arg(frame);
+      emit this->progressChanged(desc, frame * 100 / num_frames);
+    }
+
+    if (d->canceled)
+    {
+      // invalidate the metadata map
+      metadataMap = nullptr;
+    }
+
+    emit this->progressChanged(QString("Loading video complete"), 100);
+    emit this->completed(metadataMap);
+  }
+  catch (kwiver::vital::vital_exception const& e)
   {
-    // invalidate the metadata map
-    metadataMap = nullptr;
+    emit this->progressChanged(QString("Loading Failed"), 100);
+    emit this->completed({});
   }
-
-  emit this->progressChanged(QString("Loading video complete"), 100);
-  emit this->completed(metadataMap);
-
   d->video_reader->close();
 }
 
