@@ -312,6 +312,7 @@ public:
 
   int loadCameras();
 
+  void findDepthMaps();
   void loadDepthMap(QString const& imagePath);
 
   void setActiveTool(AbstractTool* tool);
@@ -695,6 +696,16 @@ void MainWindowPrivate::updateFrames(
     sfmConstraints->set_metadata(videoMetadataMap);
   }
 
+  // If no cameras were previously loaded, try once more to load KRTD files
+  // This is necessary because the metadata loaded may contain the filenames
+  // needed to locate these files.
+  if (this->cameraMap()->size() == 0)
+  {
+    int num_cameras = this->loadCameras();
+    this->UI.worldView->initFrameSampling(num_cameras);
+  }
+
+
   if (this->cameraMap()->size() == 0)
   {
 #define GET_K_CONFIG(type, name) \
@@ -772,6 +783,13 @@ void MainWindowPrivate::updateFrames(
     }
 
     this->updateCameras(std::make_shared<kv::simple_camera_map>(camMap));
+  }
+
+  // Check one more time for depth maps now that the metadata has been loaded
+  if (this->project &&
+      this->project->config->has_value("output_depth_dir"))
+  {
+    this->findDepthMaps();
   }
 
   this->UI.worldView->queueResetView();
@@ -1218,6 +1236,26 @@ void MainWindowPrivate::loadImage(FrameData frame)
   else
   {
     this->loadEmptyImage(frame.camera);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindowPrivate::findDepthMaps()
+{
+  // Find depth map paths
+  if (this->project &&
+      this->project->config->has_value("output_depth_dir"))
+  {
+    for (auto& frame : this->frames)
+    {
+      auto depthName = qtString(this->getFrameName(frame.id)) + ".vti";
+      auto depthMapPath = QDir{ this->project->depthPath }.filePath(depthName);
+      QFileInfo check_file(depthMapPath);
+      if (check_file.exists() && check_file.isFile())
+      {
+        frame.depthMapPath = depthMapPath;
+      }
+    }
   }
 }
 
@@ -1863,19 +1901,9 @@ void MainWindow::loadProject(QString const& path)
   }
 
   // Find depth map paths
-  if (d->project &&
-      d->project->config->has_value("output_depth_dir"))
+  if (d->project->config->has_value("output_depth_dir"))
   {
-    for (auto& frame : d->frames)
-    {
-      auto depthName = qtString(d->getFrameName(frame.id)) + ".vti";
-      auto depthMapPath = QDir{ d->project->depthPath }.filePath(depthName);
-      QFileInfo check_file(depthMapPath);
-      if (check_file.exists() && check_file.isFile())
-      {
-        frame.depthMapPath = depthMapPath;
-      }
-    }
+    d->findDepthMaps();
   }
 
 #ifdef VTKWEBGLEXPORTER
