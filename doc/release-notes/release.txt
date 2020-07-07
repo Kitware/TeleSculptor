@@ -15,3 +15,10 @@ TeleSculptor Application
 
  * Fixed a crash that happens when running end-to-end immediately after
    feature tracking completes.
+
+ * Fixed an issue where cameras and depth maps in a project file were
+   not loaded when opening a project that uses an image list instead of
+   a video file.  This was because the metadata scan needs to complete
+   first to index the image file names for each frame.  Cameras and depth
+   maps are now loaded after the metadata scan is complete if not already
+   loaded earlier.
