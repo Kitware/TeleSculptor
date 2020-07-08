@@ -1142,8 +1142,8 @@ std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
     }
   }
   auto dummy_md = std::make_shared<kwiver::vital::metadata>();
-  dummy_md->add(NEW_METADATA_ITEM(kwiver::vital::VITAL_META_VIDEO_URI,
-                                  stdString(this->videoPath)));
+  dummy_md->add<kwiver::vital::VITAL_META_VIDEO_URI>(
+    stdString(this->videoPath));
   return frameName(frameId, dummy_md);
 }
 
