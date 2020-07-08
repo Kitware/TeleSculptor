@@ -8,6 +8,12 @@ issues. TeleSculptor v1.1.1 is a bug fix release with no new functionality.
 Fixes since v1.1.0
 ------------------
 
+Documentation
+
+ * Removed the old, outdated examples for MAP-Tk command line tools and
+   replaced them with link to videos that are good examples for processing
+   with TeleSculptor.
+
 TeleSculptor Application
 
  * Fixed a crash that occured when opening a bad video file.
