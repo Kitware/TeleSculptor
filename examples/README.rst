@@ -1,46 +1,39 @@
 ############################################
-             MAP-Tk Examples
+             TeleSculptor Examples
 ############################################
 
-This directory contains example configuration files to demonstrate how to run
-MAP-Tk tools on publically available data sets.  Each subdirectory corresponds
-to a data set and contains configuration files that have been tested on that
-data set.  The configuration file names match the names of command line tools
-which can run them.  The example data sets can be found on the KWIVER_ website
-at http://www.kwiver.org/testData/.  These selected data sets are subsets
-of larger datasets as described below.
+We recommend that new users try one of the following videos released as part
+of the `VIRAT Video Dataset`_. You will need to accept the Terms of Use before
+you proceed to the download. For a thorough description of TeleSculptor
+workflows, please see the `User Guide <../doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
 
-=================== ===========================================================
-kwiver_fmv_set_1_   A five-minute clip from the `VIRAT Video Dataset`_ with
-                    frames sampled at 10Hz. There are 3089 frames of video at
-                    720x480 resolution.  The aircraft makes about one complete
-                    orbit over a site in Fort A.P. Hill, Virginia.  The center
-                    of the site stays in the field of view most of the time.
 
-kwiver_wami_set_1_  A sample from one camera of the `CLIF 2007`_ data set.  It
-                    contains 495 frames from `Camera 0` (of a six-camera array)
-                    at 668x1004 resolution.  This sample has been down-sampled
-                    by a factor of four from the resolution of the original
-                    data.  The video is about 1.5Hz and make more than two
-                    orbits over Ohio State University.  Because only one camera
-                    is used, the stare point is outside of the field of view.
-                    Since the same locations are visited two or more times,
-                    this data set is useful for evaluating loop closure.
-=================== ===========================================================
+09172008flight1tape3_2.mpg_: The aircraft makes about one complete orbit over
+a site in Fort A.P. Hill, Virginia. The stare point remains fixed on the center
+of the scene and the field of view is quite narrow. The scene is composed
+primarily of buildings and vehicles.
 
-The easiest way to run these examples is to download and extract the data set
-files and copy both the data and corresponding example configuration files into
-a common directory.  Then run ``maptk_[tool] -c maptk_[tool].conf`` from within
-the directory where ``[tool]`` is replaced with one of the tool names, like
-``track_features``.  Run ``maptk_track_features`` first, followed by
-``maptk_bundle_adjust_tracks``.  The outputs are all written to the ``results``
-subdirectory, for which an empty directory is provided as a placeholder.
+09152008flight2tape2_4.mpg_: This is video of the same region but taken in a
+different style. The field of view is much larger and the stare point moves
+substantially. In addition to the buildings and vehicles which are the focus of
+the other clip, this video includes wide shots of roads and vegetation.
+
+If you are considering running TeleSculptor on different data, there are several things to
+keep in mind. The first is that TeleSculptor is optimized for aerial data and
+results may vary on data collected in other ways.
+Additionally, the way to data is captured has a significant impact on the
+quality of the model. It is important to have multiple views of the same regions
+from different directions and if possible the camera should complete a full rotation about the scene.
+It is best not to change the zoom of your lens and if you do it should be done
+slowly and gradually. Finally, you should avoid switching between different
+modalities, for example recording part of your video in color and the rest in infrared.
+If you are capturing images rather than video, it is important that there is
+substantial overlap in the content seen between different images.
 
 .. Appendix I: References
 .. ======================
 
-.. _CLIF 2007: https://www.sdms.afrl.af.mil/index.php?collection=clif2007
-.. _KWIVER: http://www.kwiver.org/
-.. _kwiver_fmv_set_1: http://www.kwiver.org/files/kwiver_fmv_set_1.tgz
-.. _kwiver_wami_set_1: http://www.kwiver.org/files/kwiver_wami_set_1.tgz
 .. _VIRAT Video Dataset: http://www.viratdata.org/
+.. _Kitware: http://www.kitware.com/
+.. _09152008flight2tape2_4.mpg: https://data.kitware.com/#item/56f580488d777f753209c72f
+.. _09172008flight1tape3_2.mpg: https://data.kitware.com/#item/5ef11b419014a6d84ed53971
