@@ -22,3 +22,10 @@ TeleSculptor Application
    first to index the image file names for each frame.  Cameras and depth
    maps are now loaded after the metadata scan is complete if not already
    loaded earlier.
+
+Testing
+
+ * Updated Travis CI scripts to use the same KWIVER hash as specified in
+   the TeleSculptor superbuild.  Previously it was building the KWIVER master
+   branch, which might not have been compatible with the TeleSculptor branch
+   being tested.
