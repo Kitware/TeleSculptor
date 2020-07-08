@@ -8,6 +8,12 @@ issues. TeleSculptor v1.1.1 is a bug fix release with no new functionality.
 Fixes since v1.1.0
 ------------------
 
+Documentation
+
+ * Removed the old, outdated examples for MAP-Tk command line tools and
+   replaced them with link to videos that are good examples for processing
+   with TeleSculptor.
+
 TeleSculptor Application
 
  * Fixed a crash that occured when opening a bad video file.
@@ -15,3 +21,17 @@ TeleSculptor Application
 
  * Fixed a crash that happens when running end-to-end immediately after
    feature tracking completes.
+
+ * Fixed an issue where cameras and depth maps in a project file were
+   not loaded when opening a project that uses an image list instead of
+   a video file.  This was because the metadata scan needs to complete
+   first to index the image file names for each frame.  Cameras and depth
+   maps are now loaded after the metadata scan is complete if not already
+   loaded earlier.
+
+Testing
+
+ * Updated Travis CI scripts to use the same KWIVER hash as specified in
+   the TeleSculptor superbuild.  Previously it was building the KWIVER master
+   branch, which might not have been compatible with the TeleSculptor branch
+   being tested.
