@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
+WORK_DIR=`pwd`
 INSTALL_DIR=$HOME/deps
 KITWARE_DIR=/opt/kitware
 HASH_DIR=/opt/kitware/hashes
@@ -111,4 +112,8 @@ kwiver_cmake_opts="\
  -DKWIVER_ENABLE_PROCESSES=ON \
  -DKWIVER_ENABLE_TOOLS=ON \
  -Dfletch_DIR=$KITWARE_DIR/fletch/share/cmake"
+# Get the hash of KWIVER to use
+ext_kwiver_file="${WORK_DIR}/CMake/telesculptor-external-kwiver.cmake"
+kwiver_branch=`grep GIT_TAG $ext_kwiver_file | awk '{print $NF}'`
+echo "Using KWIVER hash: ${kwiver_branch}"
 build_repo kwiver https://github.com/Kitware/kwiver.git
