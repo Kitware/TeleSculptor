@@ -97,10 +97,15 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
   connect(d->UI.buttonCompute, &QAbstractButton::clicked,
           this, &ColorizeSurfaceOptions::colorize);
 
-
   connect(d->UI.comboBoxColorDisplay,
           QOverload<int>::of(&QComboBox::currentIndexChanged),
           this, &ColorizeSurfaceOptions::changeColorDisplay);
+
+  connect(d->UI.doubleSpinBoxOcclusionThreshold, &QDoubleSpinBox::editingFinished,
+          this, &ColorizeSurfaceOptions::updateOcclusionThreshold);
+  connect(d->UI.checkBoxRemoveOcclusion,
+          &QCheckBox::stateChanged,
+          this, &ColorizeSurfaceOptions::removeOcclusionChanged);
 
   d->krtdFile = QString();
   d->frameFile = QString();
@@ -211,6 +216,8 @@ void ColorizeSurfaceOptions::enableMenu(bool state)
 
   d->UI.radioButtonAllFrames->setEnabled(state);
   d->UI.radioButtonCurrentFrame->setEnabled(state);
+  d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(state);
+  d->UI.checkBoxRemoveOcclusion->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +228,6 @@ void ColorizeSurfaceOptions::changeColorDisplay()
   vtkPolyData* volume = vtkPolyData::SafeDownCast(
     d->volumeActor->GetMapper()->GetInput());
   const char* activeScalar = qPrintable(d->UI.comboBoxColorDisplay->currentText());
-  std::cout << "activeScalar:" << activeScalar << std::endl;
   volume->GetPointData()->SetActiveScalars(activeScalar);
 
   vtkMapper* mapper = d->volumeActor->GetMapper();
@@ -306,8 +312,6 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* colorati
   if (coloration)
   {
     vtkPolyData* volume = coloration->GetOutput();
-
-    std::string name;
     volume->GetPointData()->SetActiveScalars("MeanColoration");
     d->UI.comboBoxColorDisplay->setCurrentIndex(
       d->UI.comboBoxColorDisplay->findText("MeanColoration"));
@@ -346,4 +350,19 @@ void ColorizeSurfaceOptions::currentFrameSelected()
   {
     colorize();
   }
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::updateOcclusionThreshold()
+{
+  QTE_D();
+  this->setOcclusionThreshold(d->UI.doubleSpinBoxOcclusionThreshold->value());
+  this->forceColorize();
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::removeOcclusionChanged(int removeOcclusion)
+{
+  this->setRemoveOcclusion(removeOcclusion);
+  this->forceColorize();
 }

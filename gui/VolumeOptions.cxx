@@ -107,12 +107,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   connect(d->UI.doubleSpinBoxSurfaceThreshold,
           QOverload<double>::of(&QDoubleSpinBox::valueChanged),
           qobject_cast<WorldView*>(parent), &WorldView::computeContour);
-
-  connect(d->UI.doubleSpinBoxOcclusionThreshold, &QDoubleSpinBox::editingFinished,
-          this, &VolumeOptions::updateOcclusionThreshold);
-  connect(d->UI.checkBoxRemoveOcclusion,
-          &QCheckBox::stateChanged,
-          this, &VolumeOptions::removeOcclusionChanged);
 }
 
 //-----------------------------------------------------------------------------
@@ -228,8 +222,6 @@ void VolumeOptions::showColorizeSurfaceMenu(bool state)
   QTE_D();
 
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
-  d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(state);
-  d->UI.checkBoxRemoveOcclusion->setEnabled(state);
   d->colorizeSurfaceOptions->enableMenu(state);
   if (state)
   {
@@ -247,21 +239,4 @@ void VolumeOptions::updateColorizeSurfaceMenu(QString const& text)
   d->UI.toolButtonColorizeSurfaceMenu->setText(text);
 
   emit modified();
-}
-
-//-----------------------------------------------------------------------------
-void VolumeOptions::updateOcclusionThreshold()
-{
-  QTE_D();
-
-  d->colorizeSurfaceOptions->setOcclusionThreshold(d->UI.doubleSpinBoxOcclusionThreshold->value());
-  d->colorizeSurfaceOptions->forceColorize();
-}
-
-//-----------------------------------------------------------------------------
-void VolumeOptions::removeOcclusionChanged(int removeOcclusion)
-{
-  QTE_D();
-  d->colorizeSurfaceOptions->setRemoveOcclusion(removeOcclusion);
-  d->colorizeSurfaceOptions->forceColorize();
 }

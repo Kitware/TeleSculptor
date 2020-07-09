@@ -79,8 +79,6 @@ signals:
 public slots:
   void showColorizeSurfaceMenu(bool state);
   void updateColorizeSurfaceMenu(QString const& text);
-  void updateOcclusionThreshold();
-  void removeOcclusionChanged(int removeOcclusion);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(VolumeOptions)

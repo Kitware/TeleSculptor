@@ -90,6 +90,9 @@ public slots:
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();
+  void updateOcclusionThreshold();
+  void removeOcclusionChanged(int removeOcclusion);
+
 
 protected:
   double OcclusionThreshold;

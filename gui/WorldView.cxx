@@ -113,6 +113,10 @@ using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
 
+namespace {
+  static auto logger = kwiver::vital::get_logger("telesculptor.worldview");
+};
+
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
@@ -1513,7 +1517,6 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->SetCompression(true);
   mIWriter->Write();
 
-  auto logger = kwiver::vital::get_logger("telesculptor.worldview");
   LOG_INFO(logger, "Saved : " << qPrintable(path));
 }
 
@@ -1558,7 +1561,7 @@ void WorldView::saveFusedMesh(const QString &path,
   else
   {
     vtkNew<vtkXMLPolyDataWriter> writer;
-    writer->SetFileName(qPrintable(qPrintable(path)));
+    writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
     writer->AddInputDataObject(d->contourFilter->GetOutput());
     writer->Write();
@@ -1591,7 +1594,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   coloration->SetAverageColor(false);
   connect(coloration, &MeshColoration::resultReady,
           this, &WorldView::meshColorationHandleResult);
-  connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
+  connect(coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit);
   connect(coloration, &MeshColoration::finished,
           coloration, &MeshColoration::deleteLater);
   coloration->start();
@@ -1610,7 +1613,7 @@ void WorldView::meshColorationHandleResult(MeshColoration* coloration)
     writer->AddInputDataObject(coloration->GetOutput());
     writer->Write();
 
-    std::cout << "Saved : " << qPrintable(path) << std::endl;
+    LOG_INFO(logger, "Saved : " << qPrintable(path));
   }
 }
 
