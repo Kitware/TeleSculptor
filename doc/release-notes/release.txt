@@ -14,6 +14,12 @@ Documentation
    replaced them with link to videos that are good examples for processing
    with TeleSculptor.
 
+Packaging
+
+ * Fixed the Dockerfile used for building installer packages for Ubuntu.
+   The Ubuntu build needs "patchelf" to properly package libraries.  This
+   is now added to the Dockerfile.
+
 TeleSculptor Application
 
  * Fixed a crash that occured when opening a bad video file.

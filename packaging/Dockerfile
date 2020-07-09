@@ -10,10 +10,14 @@
 # Use a base image with CUDA development libraries
 FROM nvidia/cuda:9.2-devel-ubuntu18.04
 
+# Specify which TeleSculptor branch to build
+ARG branch=release
+
 # Install required system packages to build TeleSculptor
 # Everything else is built from Fletch
 RUN apt-get update && apt-get install -y --no-install-recommends \
 build-essential file git cmake \
+wget automake \
 libgl1-mesa-dev libxt-dev libexpat1-dev libgtk2.0-dev liblapack-dev \
 python3-dev python3-docutils && \
 rm -rf /var/lib/apt/lists/*
@@ -23,8 +27,18 @@ rm -rf /var/lib/apt/lists/*
 # Some build steps fail without `python` available
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 
+# patchelf packaged for Ubuntu 18.04 has bugs that interfer with TeleSculptor
+# packaging. Build a newer version from source instead.
+RUN wget https://github.com/NixOS/patchelf/archive/0.11.tar.gz
+RUN tar -xzf 0.11.tar.gz
+WORKDIR patchelf-0.11
+RUN ./bootstrap.sh
+RUN ./configure
+RUN make install
+WORKDIR ..
+
 # Clone the source code from Git
-RUN git clone https://github.com/Kitware/TeleSculptor.git TeleSculptor/src
+RUN git clone -b ${branch} https://github.com/Kitware/TeleSculptor.git TeleSculptor/src
 
 # Make a build directory and set it as the working directory
 RUN mkdir TeleSculptor/bld
