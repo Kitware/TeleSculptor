@@ -87,7 +87,7 @@ if(TELESCULPTOR_SUPERBUILD)
   include(${TELESCULPTOR_CMAKE_DIR}/telesculptor-superbuild.cmake)
   return()
 endif()
-project(TeleSculptor VERSION 1.1.1)
+project(TeleSculptor VERSION 1.1.2)
 include( telesculptor-depends )
 
 # set the name for our package exports
