@@ -2036,6 +2036,11 @@ void MainWindow::loadVideo(QString const& path)
     return;
   }
 
+  if (d->project)
+  {
+    d->project->write();
+  }
+
 
   QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
     &d->videoImporter, &VideoImport::cancel);
