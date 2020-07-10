@@ -9,3 +9,7 @@ Fixes since v1.1.1
 ------------------
 
 TeleSculptor Application
+
+ * Fixed an issue with not saving project state after loading a video.
+   If TeleSculptor was closed after loading a video but before other
+   processing, the project would not remember which video was loaded.
