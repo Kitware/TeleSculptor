@@ -315,10 +315,11 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* colorati
     volume->GetPointData()->SetActiveScalars("MeanColoration");
     d->UI.comboBoxColorDisplay->setCurrentIndex(
       d->UI.comboBoxColorDisplay->findText("MeanColoration"));
+    d->UI.comboBoxColorDisplay->setEnabled(true);
+    emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   }
-  d->UI.comboBoxColorDisplay->setEnabled(true);
-
-  emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+  d->UI.checkBoxRemoveOcclusion->setEnabled(coloration);
+  d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(coloration);
 }
 
 

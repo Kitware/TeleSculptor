@@ -169,6 +169,7 @@ void MeshColoration::run()
     {
       LOG_INFO(main_logger, "No camera for this frame");
     }
+    LOG_INFO(main_logger, "Done: frame " << this->Frame);
     emit resultReady(nullptr);
     return;
   }
@@ -177,6 +178,7 @@ void MeshColoration::run()
   if (meshPointList == 0)
   {
     LOG_ERROR(main_logger, "invalid mesh points");
+    LOG_INFO(main_logger, "Done: frame " << this->Frame);
     emit resultReady(nullptr);
     return;
   }
