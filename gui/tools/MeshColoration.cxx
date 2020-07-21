@@ -161,9 +161,16 @@ void MeshColoration::run()
 
   if (this->Input == 0 || numFrames == 0 )
   {
-    LOG_ERROR(main_logger, "Error when input has been set");
+    if (this->Input == 0)
+    {
+      LOG_ERROR(main_logger, "Error when input has been set");
+    }
+    else
+    {
+      LOG_INFO(main_logger, "No camera for this frame");
+    }
     emit resultReady(nullptr);
-
+    return;
   }
 
   vtkPoints* meshPointList = this->Input->GetPoints();
@@ -171,6 +178,7 @@ void MeshColoration::run()
   {
     LOG_ERROR(main_logger, "invalid mesh points");
     emit resultReady(nullptr);
+    return;
   }
   vtkIdType nbMeshPoint = meshPointList->GetNumberOfPoints();
 
