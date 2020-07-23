@@ -10,6 +10,25 @@ Updates since v1.1.0
 
 TeleSculptor Application
 
+ * Move computation of mesh coloring to a separate thread to prevent it from
+   blocking GUI interaction while running.
+
+ * Display a progress bar when coloring the mesh using more than just the
+   current frame.
+
+ * Added an option to mesh coloring that excludes coloring surfaces that are
+   occluded from the camera's viewpoint.  This prevent colors on closer
+   surfaces from also spilling onto the hidden surfaces behind them.
+
+ * Added an option to mesh coloring that excludes coloring surfaces using
+   pixels masked out by the loaded mask image sequence.
+
+ * Added an option to export the fused mesh as a VTP file including the colors
+   projected from all frames instead of only the mean or median color.
+
+ * Updated depth computation tools to return uncertainty images to be displayed
+   and saved.
+
 
 Fixes since v1.1.0
 ------------------
