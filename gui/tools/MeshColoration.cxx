@@ -65,10 +65,7 @@ typedef kwiversys::SystemTools  ST;
 namespace
 {
 static char const* const BLOCK_VR = "video_reader";
-}
-
-namespace
-{
+static char const* const BLOCK_MR = "mask_reader";
 
 //----------------------------------------------------------------------------
 /// Compute median of a vector
@@ -100,18 +97,35 @@ MeshColoration::MeshColoration()
   this->Frame = -1;
   this->AverageColor = true;
   this->Error = false;
-  this->OcclusionThreshold = 1.0;
-  this->RemoveOcclusion = true;
+  this->OcclusionThreshold = 0.0;
+  this->RemoveOccluded = true;
+  this->RemoveMasked = true;
 }
 
-MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& config,
+MeshColoration::MeshColoration(kwiver::vital::config_block_sptr& videoConfig,
                                std::string const& videoPath,
+                               kwiver::vital::config_block_sptr& maskConfig,
+                               std::string const& maskPath,
                                kwiver::vital::camera_map_sptr& cameras)
   : MeshColoration()
 {
   this->videoPath = videoPath;
   kwiver::vital::algo::video_input::set_nested_algo_configuration(
-    BLOCK_VR, config, this->videoReader);
+    BLOCK_VR, videoConfig, this->videoReader);
+  this->maskPath = maskPath;
+  auto const hasMask = !this->maskPath.empty();
+  if (hasMask && ! kwiver::vital::algo::video_input::check_nested_algo_configuration(
+        BLOCK_MR, maskConfig))
+  {
+    LOG_ERROR(main_logger,
+      "An error was found in the mask reader configuration.");
+    return;
+  }
+  if (hasMask)
+  {
+    kwiver::vital::algo::video_input::set_nested_algo_configuration(
+      BLOCK_MR, maskConfig, this->maskReader);
+  }
   this->cameras = cameras;
 }
 
@@ -156,7 +170,6 @@ void MeshColoration::run()
 {
   LOG_INFO(main_logger, "Initialize camera and image list: frame " << this->Frame);
   initializeDataList(this->Frame);
-
   int numFrames = static_cast<int>(this->DataList.size());
 
   if (this->Input == 0 || numFrames == 0 )
@@ -205,15 +218,16 @@ void MeshColoration::run()
 
   };
   std::vector<DepthBuffer> depthBuffer(numFrames);
-  if (this->RemoveOcclusion)
+  if (this->RemoveOccluded)
   {
     LOG_INFO(main_logger, "Creating depth buffers: " << numFrames << " ...");
     auto renWin = CreateDepthBufferPipeline();
+
     int i = 0;
     for (auto it = depthBuffer.begin(); it != depthBuffer.end(); ++it)
     {
       kwiver::vital::camera_perspective_sptr camera = this->DataList[i].Camera_ptr;
-      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[i].Image;
+      const kwiver::vital::image_of<uint8_t>& colorImage = this->DataList[i].Image;
       int width = colorImage.width();
       int height = colorImage.height();
       DepthBuffer db;
@@ -307,7 +321,7 @@ void MeshColoration::run()
 
       // project 3D point to pixel coordinates
       auto pixelPosition = camera->project(position);
-      kwiver::vital::image_of<uint8_t> const& colorImage = this->DataList[idData].Image;
+      const kwiver::vital::image_of<uint8_t>& colorImage = this->DataList[idData].Image;
       int width = colorImage.width();
       int height = colorImage.height();
 
@@ -318,20 +332,38 @@ void MeshColoration::run()
       {
         continue;
       }
+      bool hasMask = true;
+      const kwiver::vital::image_of<uint8_t>& maskImage =
+        this->DataList[idData].MaskImage;
+      if (pixelPosition[0] < 0.0 ||
+          pixelPosition[1] < 0.0 ||
+          pixelPosition[0] >= maskImage.width() ||
+          pixelPosition[1] >= maskImage.height())
+      {
+        hasMask = false;
+      }
       try
       {
         int x = static_cast<int>(pixelPosition[0]);
         int y = static_cast<int>(pixelPosition[1]);
         kwiver::vital::rgb_color rgb = colorImage.at(x, y);
+        bool showPoint = true;
+        if (hasMask)
+        {
+          showPoint = (maskImage.at(x, y).r > 0);
+        }
+
         float depthBufferValue = 0;
-        if (this->RemoveOcclusion)
+        if (this->RemoveOccluded)
         {
           double* range = depthBuffer[idData].Range;
           float depthBufferValueNorm =
             depthBuffer[idData].Buffer->GetValue(x + width * (height - y - 1));
           depthBufferValue = range[0] + (range[1] - range[0]) * depthBufferValueNorm;
         }
-        if (! this->RemoveOcclusion || depthBufferValue + this->OcclusionThreshold > depth)
+        if ((! this->RemoveOccluded ||
+             depthBufferValue + this->OcclusionThreshold > depth) &&
+            (! this->RemoveMasked || showPoint))
         {
           if (this->AverageColor)
           {
@@ -390,7 +422,23 @@ void MeshColoration::initializeDataList(int frameId)
   this->videoReader->open(this->videoPath);
   kwiver::vital::timestamp ts;
   auto cam_map = this->cameras->cameras();
-
+  bool hasMask = true;
+  if (this->maskPath.empty())
+  {
+    hasMask = false;
+  }
+  else
+  {
+    try
+    {
+      this->maskReader->open(this->maskPath);
+    }
+    catch(std::exception& e)
+    {
+      hasMask = false;
+      LOG_ERROR(main_logger, "Cannot open mask file: " << this->maskPath);
+    }
+  }
   //Take a subset of images
   if (frameId < 0)
   {
@@ -403,13 +451,26 @@ void MeshColoration::initializeDataList(int frameId)
       }
       auto cam_ptr =
         std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr.second);
-      if (cam_ptr && this->videoReader->seek_frame(ts, cam_itr.first))
+      if (cam_ptr && this->videoReader->seek_frame(ts, cam_itr.first) &&
+          (! hasMask || this->maskReader->seek_frame(ts, cam_itr.first)))
       {
         try
         {
-          kwiver::vital::image_of<uint8_t>
-            image(this->videoReader->frame_image()->get_image());
-          this->DataList.push_back(ColorationData(image, cam_ptr, cam_itr.first));
+          kwiver::vital::image_container_sptr
+            image(this->videoReader->frame_image());
+          if (hasMask)
+          {
+            kwiver::vital::image_container_sptr
+              maskImage(this->maskReader->frame_image());
+            this->DataList.push_back(ColorationData(
+                                       image, maskImage, cam_ptr, cam_itr.first));
+          }
+          else
+          {
+            kwiver::vital::image_container_sptr maskImage;
+            this->DataList.push_back(ColorationData(
+                                       image, maskImage, cam_ptr, cam_itr.first));
+          }
         }
         catch (kwiver::vital::image_type_mismatch_exception)
         {
@@ -425,13 +486,24 @@ void MeshColoration::initializeDataList(int frameId)
     {
       auto cam_ptr =
         std::dynamic_pointer_cast<kwiver::vital::camera_perspective>(cam_itr->second);
-      if (cam_ptr && this->videoReader->seek_frame(ts, frameId))
+      if (cam_ptr && this->videoReader->seek_frame(ts, frameId) &&
+          (! hasMask || this->maskReader->seek_frame(ts, frameId)))
       {
         try
         {
-          kwiver::vital::image_of<uint8_t>
-            image(this->videoReader->frame_image()->get_image());
-          this->DataList.push_back(ColorationData(image, cam_ptr, frameId));
+          kwiver::vital::image_container_sptr
+            image(this->videoReader->frame_image());
+          if (hasMask)
+          {
+            kwiver::vital::image_container_sptr
+              maskImage(this->maskReader->frame_image());
+            this->DataList.push_back(ColorationData(image, maskImage, cam_ptr, frameId));
+          }
+          else
+          {
+            kwiver::vital::image_container_sptr maskImage;
+            this->DataList.push_back(ColorationData(image, maskImage, cam_ptr, frameId));
+          }
         }
         catch (kwiver::vital::image_type_mismatch_exception)
         {
@@ -440,6 +512,10 @@ void MeshColoration::initializeDataList(int frameId)
     }
   }
   this->videoReader->close();
+  if (hasMask)
+  {
+    this->maskReader->close();
+  }
 }
 
 

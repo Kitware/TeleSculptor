@@ -61,10 +61,14 @@ public:
 
   void setCameras(kwiver::vital::camera_map_sptr cameras);
   kwiver::vital::camera_map_sptr getCameras() const;
-  void setVideoConfig(std::string const& videoPath,
+  void setVideoConfig(std::string const& path,
                       kwiver::vital::config_block_sptr config);
   kwiver::vital::config_block_sptr getVideoConfig() const;
   std::string getVideoPath() const;
+  void setMaskConfig(std::string const& path,
+                     kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getMaskConfig() const;
+  std::string getMaskPath() const;
   void colorize();
 
   void setCurrentFrame(int);

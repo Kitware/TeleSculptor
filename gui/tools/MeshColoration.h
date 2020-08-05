@@ -56,8 +56,10 @@ class MeshColoration : public QThread
 
 public:
   MeshColoration();
-  MeshColoration(kwiver::vital::config_block_sptr& config,
+  MeshColoration(kwiver::vital::config_block_sptr& videoConfig,
                  std::string const& videoPath,
+                 kwiver::vital::config_block_sptr& maskConfig,
+                 std::string const& maskPath,
                  kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
 
@@ -79,9 +81,13 @@ public:
   {
     this->OcclusionThreshold = threshold;
   }
-  void SetRemoveOcclusion(bool removeOcclusion)
+  void SetRemoveOccluded(bool removeOccluded)
   {
-    this->RemoveOcclusion = removeOcclusion;
+    this->RemoveOccluded = removeOccluded;
+  }
+  void SetRemoveMasked(bool removeMasked)
+  {
+    this->RemoveMasked = removeMasked;
   }
 
   // Adds mean and median colors to 'Output' if averageColor or
@@ -108,16 +114,25 @@ protected:
   bool AverageColor;
   bool Error;
   float OcclusionThreshold;
-  bool RemoveOcclusion;
+  bool RemoveOccluded;
+  bool RemoveMasked;
 
   struct ColorationData
   {
-    ColorationData(kwiver::vital::image_of<uint8_t> image,
+    ColorationData(kwiver::vital::image_container_sptr imageContainer,
+                   kwiver::vital::image_container_sptr maskImageContainer,
                    kwiver::vital::camera_perspective_sptr camera_ptr,
                    kwiver::vital::frame_id_t frame) :
-      Image(image), Camera_ptr(camera_ptr), Frame(frame)
+      ImageContainer(imageContainer), Image(imageContainer->get_image()),
+      MaskImageContainer(maskImageContainer),
+      MaskImage(maskImageContainer ? maskImageContainer->get_image() :
+                kwiver::vital::image_of<uint8_t>()),
+      Camera_ptr(camera_ptr), Frame(frame)
     {}
+    kwiver::vital::image_container_sptr ImageContainer;
     kwiver::vital::image_of<uint8_t> Image;
+    kwiver::vital::image_container_sptr MaskImageContainer;
+    kwiver::vital::image_of<uint8_t> MaskImage;
     kwiver::vital::camera_perspective_sptr Camera_ptr;
     kwiver::vital::frame_id_t Frame;
   };
@@ -125,6 +140,8 @@ protected:
 
   std::string videoPath;
   kwiver::vital::algo::video_input_sptr videoReader;
+  std::string maskPath;
+  kwiver::vital::algo::video_input_sptr maskReader;
   kwiver::vital::camera_map_sptr cameras;
 };
 

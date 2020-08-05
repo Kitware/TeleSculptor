@@ -167,12 +167,12 @@ kwiver::vital::camera_map_sptr VolumeOptions::getCameras() const
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setVideoConfig(std::string const& videoPath,
+void VolumeOptions::setVideoConfig(std::string const& path,
                                    kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setVideoConfig(videoPath, config);
+  d->colorizeSurfaceOptions->setVideoConfig(path, config);
 }
 
 //-----------------------------------------------------------------------------
@@ -189,6 +189,31 @@ std::string VolumeOptions::getVideoPath() const
   QTE_D();
 
   return d->colorizeSurfaceOptions->getVideoPath();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setMaskConfig(std::string const& path,
+                                   kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setMaskConfig(path, config);
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr VolumeOptions::getMaskConfig() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getMaskConfig();
+}
+
+//-----------------------------------------------------------------------------
+std::string VolumeOptions::getMaskPath() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getMaskPath();
 }
 
 //-----------------------------------------------------------------------------

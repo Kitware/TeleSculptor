@@ -832,12 +832,21 @@ void WorldView::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVideoConfig(QString const& videoPath,
+void WorldView::setVideoConfig(QString const& path,
                                kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
-  d->volumeOptions->setVideoConfig(stdString(videoPath), config);
+  d->volumeOptions->setVideoConfig(stdString(path), config);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setMaskConfig(QString const& path,
+                               kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->volumeOptions->setMaskConfig(path.toStdString(), config);
 }
 
 //-----------------------------------------------------------------------------
@@ -1578,15 +1587,19 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   vtkPolyData* mesh = d->contourFilter->GetOutput();
   std::string videoPath = d->volumeOptions->getVideoPath();
   kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
+  std::string maskPath = d->volumeOptions->getMaskPath();
+  kwiver::vital::config_block_sptr maskConfig =  d->volumeOptions->getMaskConfig();
   kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
   MeshColoration* coloration =
-    new MeshColoration(videoConfig, videoPath, cameras);
+    new MeshColoration(videoConfig, videoPath,
+                       maskConfig, maskPath,
+                       cameras);
   coloration->setProperty("path", path);
   coloration->SetInput(mesh);
   coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->SetOcclusionThreshold(occlusionThreshold);
-  coloration->SetRemoveOcclusion(occlusion);
+  coloration->SetRemoveOccluded(occlusion);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
   meshFrameColors->CopyStructure(mesh);
   coloration->SetOutput(meshFrameColors);

@@ -62,9 +62,13 @@ public:
   {
     this->OcclusionThreshold = occlusionThreshold;
   }
-  void setRemoveOcclusion(double removeOcclusion)
+  void setRemoveOccluded(double removeOccluded)
   {
-    this->RemoveOcclusion = removeOcclusion;
+    this->RemoveOccluded = removeOccluded;
+  }
+  void setRemoveMasked(double removeMasked)
+  {
+    this->RemoveMasked = removeMasked;
   }
   double getOcclusionThreshold()
   {
@@ -75,6 +79,11 @@ public:
   void setVideoConfig(std::string const& path, kwiver::vital::config_block_sptr config);
   kwiver::vital::config_block_sptr getVideoConfig() const;
   std::string getVideoPath() const;
+
+  void setMaskConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getMaskConfig() const;
+  std::string getMaskPath() const;
+
   void setCameras(kwiver::vital::camera_map_sptr cameras);
   kwiver::vital::camera_map_sptr getCameras() const;
   void enableMenu(bool);
@@ -91,12 +100,14 @@ public slots:
   void allFrameSelected();
   void currentFrameSelected();
   void updateOcclusionThreshold();
-  void removeOcclusionChanged(int removeOcclusion);
+  void removeOccludedChanged(int removeOccluded);
+  void removeMaskedChanged(int removeMasked);
 
 
 protected:
   double OcclusionThreshold;
-  bool RemoveOcclusion;
+  bool RemoveOccluded;
+  bool RemoveMasked;
   bool InsideColorize;
   const int INVALID_FRAME = -2;
   int LastColorizedFrame;

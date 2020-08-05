@@ -47,6 +47,10 @@
 
 #include <QDebug>
 
+namespace {
+  static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "colorize_surface_options" ) );
+};
+
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
 {
@@ -61,6 +65,8 @@ public:
 
   kwiver::vital::config_block_sptr videoConfig;
   std::string videoPath;
+  kwiver::vital::config_block_sptr maskConfig;
+  std::string maskPath;
   kwiver::vital::camera_map_sptr cameras;
 
   QString krtdFile;
@@ -103,16 +109,21 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
 
   connect(d->UI.doubleSpinBoxOcclusionThreshold, &QDoubleSpinBox::editingFinished,
           this, &ColorizeSurfaceOptions::updateOcclusionThreshold);
-  connect(d->UI.checkBoxRemoveOcclusion,
+  connect(d->UI.checkBoxRemoveOccluded,
           &QCheckBox::stateChanged,
-          this, &ColorizeSurfaceOptions::removeOcclusionChanged);
+          this, &ColorizeSurfaceOptions::removeOccludedChanged);
+  connect(d->UI.checkBoxRemoveMasked,
+          &QCheckBox::stateChanged,
+          this, &ColorizeSurfaceOptions::removeMaskedChanged);
+
 
   d->krtdFile = QString();
   d->frameFile = QString();
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
   this->OcclusionThreshold = 1;
-  this->RemoveOcclusion = true;
+  this->RemoveOccluded = true;
+  this->RemoveMasked = true;
   this->InsideColorize = false;
   this->LastColorizedFrame = INVALID_FRAME;
 }
@@ -194,6 +205,34 @@ std::string ColorizeSurfaceOptions::getVideoPath() const
 }
 
 //-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setMaskConfig(std::string const& path,
+                                           kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+  d->maskConfig = config;
+  d->maskPath = path;
+  if (d->UI.radioButtonAllFrames->isEnabled())
+  {
+    this->forceColorize();
+    d->UI.checkBoxRemoveMasked->setEnabled(! d->maskPath.empty());
+  }
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getMaskConfig() const
+{
+  QTE_D();
+  return d->maskConfig;
+}
+
+//-----------------------------------------------------------------------------
+std::string ColorizeSurfaceOptions::getMaskPath() const
+{
+  QTE_D();
+  return d->maskPath;
+}
+
+//-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
@@ -217,7 +256,8 @@ void ColorizeSurfaceOptions::enableMenu(bool state)
   d->UI.radioButtonAllFrames->setEnabled(state);
   d->UI.radioButtonCurrentFrame->setEnabled(state);
   d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(state);
-  d->UI.checkBoxRemoveOcclusion->setEnabled(state);
+  d->UI.checkBoxRemoveOccluded->setEnabled(state);
+  d->UI.checkBoxRemoveMasked->setEnabled(state && ! d->maskPath.empty());
 }
 
 //-----------------------------------------------------------------------------
@@ -283,13 +323,16 @@ void ColorizeSurfaceOptions::colorize()
       vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                       ->GetInput());
       MeshColoration* coloration =
-        new MeshColoration(d->videoConfig, d->videoPath, d->cameras);
+        new MeshColoration(d->videoConfig, d->videoPath,
+                           d->maskConfig, d->maskPath,
+                           d->cameras);
 
       coloration->SetInput(volume);
       coloration->SetOutput(volume);
       coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
       coloration->SetOcclusionThreshold(this->OcclusionThreshold);
-      coloration->SetRemoveOcclusion(this->RemoveOcclusion);
+      coloration->SetRemoveOccluded(this->RemoveOccluded);
+      coloration->SetRemoveMasked(this->RemoveMasked);
       coloration->SetFrame(this->LastColorizedFrame);
       coloration->SetAverageColor(true);
       connect(coloration, &MeshColoration::resultReady,
@@ -318,7 +361,7 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* colorati
     d->UI.comboBoxColorDisplay->setEnabled(true);
     emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   }
-  d->UI.checkBoxRemoveOcclusion->setEnabled(coloration);
+  d->UI.checkBoxRemoveOccluded->setEnabled(coloration);
   d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(coloration);
 }
 
@@ -362,8 +405,15 @@ void ColorizeSurfaceOptions::updateOcclusionThreshold()
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::removeOcclusionChanged(int removeOcclusion)
+void ColorizeSurfaceOptions::removeOccludedChanged(int removeOccluded)
 {
-  this->setRemoveOcclusion(removeOcclusion);
+  this->setRemoveOccluded(removeOccluded);
+  this->forceColorize();
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::removeMaskedChanged(int removeMasked)
+{
+  this->setRemoveMasked(removeMasked);
   this->forceColorize();
 }

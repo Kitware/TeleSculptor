@@ -615,7 +615,7 @@ void MainWindowPrivate::addVideoSource(
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addMaskSource(
-  kv::config_block_sptr const& config, QString const& maskPath)
+  kv::config_block_sptr const& config, QString const& path)
 {
   // Save the configuration so independent video sources can be created for
   // tools
@@ -623,8 +623,9 @@ void MainWindowPrivate::addMaskSource(
   {
     this->project->config->merge_config(config);
   }
-  this->maskPath = maskPath;
+  this->maskPath = path;
   this->freestandingConfig->merge_config(config);
+  this->UI.worldView->setMaskConfig(path, config);
 }
 
 //-----------------------------------------------------------------------------
