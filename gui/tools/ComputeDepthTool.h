@@ -52,7 +52,8 @@ public:
 
   bool callback_handler(kwiver::vital::image_container_sptr depth,
                         std::string const& status,
-                        unsigned int percent_complete);
+                        unsigned int percent_complete,
+                        kwiver::vital::image_container_sptr uncertainty);
 
 protected:
   void run() override;
@@ -68,6 +69,6 @@ vtkSmartPointer<vtkImageData>
 depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
              const kwiver::vital::image_of<unsigned char>& color_img,
              int i0, int ni, int j0, int nj,
+             const kwiver::vital::image_of<double>& uncertainty_img = {},
              const kwiver::vital::image_of<unsigned char>& mask_img = {});
-
 #endif
