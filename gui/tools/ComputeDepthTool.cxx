@@ -249,12 +249,12 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
       }
       else
       {
-        //TODO pick a meaningful default value
+        // default value for unspecified uncertainty
         uncertainty->SetValue(pt_id, 0);
       }
 
       depths->SetValue(pt_id, depth_img(x, y));
-      
+
       color->SetTuple3(pt_id,
                        (int)color_img(x + i0, y + j0, 0),
                        (int)color_img(x + i0, y + j0, 1),
