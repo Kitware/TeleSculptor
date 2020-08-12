@@ -106,7 +106,7 @@ ComputeAllDepthTool::~ComputeAllDepthTool()
 //-----------------------------------------------------------------------------
 AbstractTool::Outputs ComputeAllDepthTool::outputs() const
 {
-  return Depth | ActiveFrame | BatchDepth;
+  return Depth | ActiveFrame;
 }
 
 //-----------------------------------------------------------------------------
@@ -367,7 +367,7 @@ void ComputeAllDepthTool::run()
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
     data->activeFrame = *fitr;
-    emit updated(data);
+    emit saved(data);
   }
 }
 
