@@ -9,3 +9,7 @@ Fixes since v1.1.1
 ------------------
 
 TeleSculptor Application
+
+ * Fixed Batch Compute Depth Maps tool to only save final depth maps and not
+   intermediate results.  This prevents intermediate results from accidentally
+   overwriting final results.
