@@ -367,10 +367,6 @@ void ComputeAllDepthTool::run()
     {
       uncertainty_img = kwiver::vital::image_of<double>(uncertainty->get_image());
     }
-    else
-    {
-      uncertainty_img = kwiver::vital::image_of<double>();
-    }
     kwiver::vital::image_of<double> depth_img(depth->get_image());
     auto image_data = depth_to_vtk(depth_img, d->ref_img,
                                    d->crop.min_x(), d->crop.width(),
