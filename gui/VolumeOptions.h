@@ -70,6 +70,7 @@ public:
   kwiver::vital::config_block_sptr getMaskConfig() const;
   std::string getMaskPath() const;
   void colorize();
+  void forceColorize();
 
   void setCurrentFrame(int);
 
@@ -82,6 +83,7 @@ signals:
 
 public slots:
   void showColorizeSurfaceMenu(bool state);
+  void reshowColorizeSurfaceMenu();
   void updateColorizeSurfaceMenu(QString const& text);
 
 private:

@@ -53,7 +53,8 @@
 class VolumeOptionsPrivate
 {
 public:
-  VolumeOptionsPrivate() {}
+  VolumeOptionsPrivate():colorizeSurfaceOptions(nullptr),volumeActor(nullptr)
+  {}
 
   void setPopup(QToolButton* button, QWidget* popup);
 
@@ -225,6 +226,14 @@ void VolumeOptions::colorize()
 }
 
 //-----------------------------------------------------------------------------
+void VolumeOptions::forceColorize()
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->forceColorize();
+}
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::setCurrentFrame(int frame)
 {
   QTE_D();
@@ -245,15 +254,25 @@ bool VolumeOptions::isColorOptionsEnabled()
 void VolumeOptions::showColorizeSurfaceMenu(bool state)
 {
   QTE_D();
-
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
   d->colorizeSurfaceOptions->enableMenu(state);
   if (state)
   {
-    this->colorize();
+    this->forceColorize();
   }
   d->volumeActor->GetMapper()->SetScalarVisibility(state);
   emit modified();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::reshowColorizeSurfaceMenu()
+{
+  QTE_D();
+  if (d->volumeActor)
+  {
+    d->volumeActor->GetMapper()->Update();
+    this->showColorizeSurfaceMenu(d->UI.checkBoxColorizeSurface->isChecked());
+  }
 }
 
 //-----------------------------------------------------------------------------

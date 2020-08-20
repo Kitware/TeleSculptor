@@ -494,7 +494,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, &WorldView::render);
 
   connect(this, &WorldView::contourChanged,
-          this, &WorldView::render);
+          d->volumeOptions, &VolumeOptions::reshowColorizeSurfaceMenu);
 
   auto const roiMenu = new QMenu(this);
   roiMenu->addAction(d->UI.actionResetROI);
@@ -906,12 +906,12 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   contourMapper->ScalarVisibilityOff();
 
   // Set the actor's mapper
-  d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->SetMapper(contourMapper);
   d->volumeActor->GetProperty()->SetColor(0.7, 0.7, 0.7);
   d->volumeActor->GetProperty()->SetAmbient(0.25);
   d->volumeActor->GetProperty()->SetDiffuse(0.75);
   d->volumeActor->SetVisibility(true);
-  d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
   if (d->UI.actionShowVolume->isChecked())
@@ -924,7 +924,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
           this, &WorldView::fusedMeshEnabled);
 
   // Add this actor to the renderer
-  d->renderer->AddActor(d->volumeActor.Get());
+  d->renderer->AddActor(d->volumeActor);
   emit contourChanged();
 }
 
@@ -935,7 +935,7 @@ void WorldView::resetVolume()
 
   d->volume = nullptr;
 
-  d->renderer->RemoveActor(d->volumeActor.Get());
+  d->renderer->RemoveActor(d->volumeActor);
 
   this->fusedMeshEnabled(false);
   d->volumeOptions->setEnabled(false);
@@ -965,13 +965,11 @@ void WorldView::computeContour(double threshold)
   QTE_D();
 
   d->contourFilter->SetValue(0, threshold);
-  this->render();
-
+  d->contourFilter->Update();
   if(d->volumeOptions->isColorOptionsEnabled())
   {
-    d->volumeOptions->colorize();
+    d->volumeOptions->forceColorize();
   }
-
 }
 
 //-----------------------------------------------------------------------------

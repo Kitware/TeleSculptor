@@ -308,7 +308,8 @@ void ColorizeSurfaceOptions::colorize()
   if (! this->InsideColorize)
   {
     this->InsideColorize = true;
-    int colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
+    int colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ?
+      d->currentFrame : -1;
     while (this->LastColorizedFrame != colorizedFrame)
     {
       this->LastColorizedFrame = colorizedFrame;
