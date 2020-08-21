@@ -96,6 +96,8 @@ public:
 
 signals:
   void resultReady(MeshColoration* coloration);
+  /// Update progress
+  void progressChanged(QString, int);
 
 protected:
   void initializeDataList(int frameId);

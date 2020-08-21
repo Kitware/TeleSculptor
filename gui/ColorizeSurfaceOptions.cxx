@@ -29,6 +29,7 @@
  */
 
 #include "ColorizeSurfaceOptions.h"
+#include "MainWindow.h"
 #include "ui_ColorizeSurfaceOptions.h"
 
 #include "tools/MeshColoration.h"
@@ -58,6 +59,8 @@ public:
   ColorizeSurfaceOptionsPrivate(): volumeActor(nullptr), currentFrame(-1)
   {}
 
+  MainWindow* mainWindow = nullptr;
+
   Ui::ColorizeSurfaceOptions UI;
   qtUiState uiState;
 
@@ -83,6 +86,16 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
   : QWidget(parent, flags), d_ptr(new ColorizeSurfaceOptionsPrivate)
 {
   QTE_D();
+
+  // find the main window
+  QObject* p = parent;
+  d->mainWindow = qobject_cast<MainWindow*>(p);
+  while (p && !d->mainWindow)
+  {
+    p = p->parent();
+    d->mainWindow = qobject_cast<MainWindow*>(p);
+  }
+  Q_ASSERT(d->mainWindow);
 
   // Set up UI
   d->UI.setupUi(this);
@@ -341,6 +354,12 @@ void ColorizeSurfaceOptions::colorize()
       connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
       connect(coloration, &MeshColoration::finished,
               coloration, &MeshColoration::deleteLater);
+      if (this->LastColorizedFrame < 0)
+      {
+        // only enable the progress bar if coloring with multiple frames
+        connect(coloration, &MeshColoration::progressChanged,
+                d->mainWindow, &MainWindow::updateToolProgress);
+      }
       coloration->start();
       loop.exec();
       colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;

@@ -220,7 +220,8 @@ void MeshColoration::run()
   std::vector<DepthBuffer> depthBuffer(numFrames);
   if (this->RemoveOccluded)
   {
-    LOG_INFO(main_logger, "Creating depth buffers: " << numFrames << " ...");
+    emit this->progressChanged("Creating depth buffers", 0);
+
     auto renWin = CreateDepthBufferPipeline();
 
     int i = 0;
@@ -283,11 +284,12 @@ void MeshColoration::run()
       ++i;
     }
   }
+  unsigned int progress_step = nbMeshPoint / 100;
   for (vtkIdType id = 0; id < nbMeshPoint; id++)
   {
-    if (id % 100000 == 0)
+    if (id % progress_step == 0)
     {
-      LOG_INFO(main_logger, "Color " << id << " of " << nbMeshPoint << " points");
+      emit this->progressChanged("Coloring Mesh Points", (100 * id) / nbMeshPoint);
     }
     if (this->AverageColor)
     {
@@ -413,7 +415,7 @@ void MeshColoration::run()
     this->Input->GetPointData()->AddArray(medianValues);
     this->Input->GetPointData()->AddArray(projectedDMValue);
   }
-  LOG_INFO(main_logger, "Done: frame " << this->Frame);
+  emit this->progressChanged("Done", 100);
   emit resultReady(this);
 }
 
@@ -467,7 +469,7 @@ void MeshColoration::initializeDataList(int frameId)
     {
       this->maskReader->open(this->maskPath);
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
       hasMask = false;
       LOG_ERROR(main_logger, "Cannot open mask file: " << this->maskPath);

@@ -407,7 +407,7 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 {
   QObject::connect(&videoImporter, &VideoImport::progressChanged,
-                   mainWindow, &MainWindow::updateVideoImportProgress);
+                   mainWindow, &MainWindow::updateToolProgress);
   QObject::connect(&videoImporter, &VideoImport::completed,
                    mainWindow, &MainWindow::updateFrames);
 
@@ -3387,7 +3387,7 @@ void MainWindow::applySimilarityTransform()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::updateVideoImportProgress(QString const& desc, int progress)
+void MainWindow::updateToolProgress(QString const& desc, int progress)
 {
   QTE_D();
 
