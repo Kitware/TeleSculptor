@@ -137,8 +137,7 @@ public:
     KeyFrames = 0x10,
     TrackChanges = 0x20,
     Depth = 0x40,
-    BatchDepth = 0x80,
-    Fusion = 0x100
+    Fusion = 0x80
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 

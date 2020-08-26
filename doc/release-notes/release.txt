@@ -13,3 +13,7 @@ TeleSculptor Application
  * Fixed an issue with not saving project state after loading a video.
    If TeleSculptor was closed after loading a video but before other
    processing, the project would not remember which video was loaded.
+
+ * Fixed Batch Compute Depth Maps tool to only save final depth maps and not
+   intermediate results.  This prevents intermediate results from accidentally
+   overwriting final results.
