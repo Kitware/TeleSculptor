@@ -14,3 +14,11 @@ TeleSculptor Application
    colormap to the entire height range, which is not very useful since
    most data sets have outliers.  This has been corrected such that the
    auto range of the colormap spans the middle 90% of the height values.
+
+ * Fixed an issue with not saving project state after loading a video.
+   If TeleSculptor was closed after loading a video but before other
+   processing, the project would not remember which video was loaded.
+
+ * Fixed Batch Compute Depth Maps tool to only save final depth maps and not
+   intermediate results.  This prevents intermediate results from accidentally
+   overwriting final results.
