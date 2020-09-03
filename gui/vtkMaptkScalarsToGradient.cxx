@@ -156,7 +156,9 @@ void vtkMaptkScalarsToGradient::MapScalarsThroughTable2(
       foreach (auto const i, qtIndexRange(numberOfValues))
       {
         auto const value = (*get)(input, i);
-        auto const k = (value - d->lower) * d->scale;
+        auto const k = std::isfinite(value) ?
+          (value - d->lower) * d->scale :
+          d->lower;
         auto const c = d->gradient.at(k);
 
         auto const out = output + (4 * i);
@@ -164,6 +166,10 @@ void vtkMaptkScalarsToGradient::MapScalarsThroughTable2(
         out[1] = c.green();
         out[2] = c.blue();
         out[3] = c.alpha();
+        if (!std::isfinite(value))
+        {
+          out[3] = 0;
+        }
       }
       break;
 
@@ -171,7 +177,9 @@ void vtkMaptkScalarsToGradient::MapScalarsThroughTable2(
       foreach (auto const i, qtIndexRange(numberOfValues))
       {
         auto const value = (*get)(input, i);
-        auto const k = (value - d->lower) * d->scale;
+        auto const k = std::isfinite(value) ?
+          (value - d->lower) * d->scale :
+          d->lower;
         auto const c = d->gradient.at(k);
 
         auto const out = output + (3 * i);

@@ -354,7 +354,6 @@ public:
   kv::feature_track_set_changes_sptr toolUpdateTrackChanges;
   vtkSmartPointer<vtkImageData> toolUpdateDepth;
   vtkSmartPointer<vtkImageData> toolUpdateVolume;
-  bool toolSaveDepthFlag = false;
 
   kv::config_block_sptr freestandingConfig = kv::config_block::empty_config();
 
@@ -2036,6 +2035,11 @@ void MainWindow::loadVideo(QString const& path)
     return;
   }
 
+  if (d->project)
+  {
+    d->project->write();
+  }
+
 
   QObject::connect(d->UI.actionCancelComputation, &QAction::triggered,
     &d->videoImporter, &VideoImport::cancel);
@@ -2889,10 +2893,6 @@ void MainWindow::acceptToolResults(
     {
       d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
     }
-    if (outputs.testFlag(AbstractTool::BatchDepth))
-    {
-      d->toolSaveDepthFlag = true;
-    }
     if (outputs.testFlag(AbstractTool::Fusion))
     {
       d->toolUpdateVolume = data->volume;
@@ -2957,8 +2957,7 @@ void MainWindow::saveToolResults()
       saveGeoOrigin(d->project->geoOriginFile);
     }
 
-    if (!outputs.testFlag(AbstractTool::BatchDepth) &&
-        outputs.testFlag(AbstractTool::Depth))
+    if (outputs.testFlag(AbstractTool::Depth))
     {
       saveDepthImage(d->project->depthPath);
     }
@@ -3033,15 +3032,6 @@ void MainWindow::updateToolResults()
     d->activeDepthFrame = d->toolUpdateActiveFrame;
     d->currentDepthFrame = d->toolUpdateActiveFrame;
     d->resetActiveDepthMap(d->toolUpdateActiveFrame);
-
-    // In batch depth, each update is a full depth map from a different ref
-    // frame that must be saved
-    if (d->toolSaveDepthFlag)
-    {
-      saveDepthImage(d->project->depthPath);
-      d->toolSaveDepthFlag = false;
-    }
-
     d->toolUpdateDepth = NULL;
   }
   if (d->toolUpdateVolume)
