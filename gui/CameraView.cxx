@@ -630,6 +630,8 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
   auto haveColor = false;
   auto maxObservations = unsigned{0};
   auto minZ = qInf(), maxZ = -qInf();
+  auto autoMinZ = qInf(), autoMaxZ = -qInf();
+  std::vector<double> zValues;
 
   foreach (auto const& lmi, landmarks)
   {
@@ -644,14 +646,27 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
     maxObservations = qMax(maxObservations, observations);
     minZ = qMin(minZ, z);
     maxZ = qMax(maxZ, z);
+    zValues.push_back(z);
+  }
+  if (!zValues.empty())
+  {
+    // Set the range to cover the middle 90% of the data
+    std::sort(zValues.begin(), zValues.end());
+    auto const n = zValues.size();
+    // index at 5% of the data
+    auto const i = n / 20;
+    autoMinZ = zValues[i];
+    autoMaxZ = zValues[n - 1 - i];
   }
 
   auto fields = QHash<QString, FieldInformation>{};
-  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ}});
+  fields.insert("Elevation", FieldInformation{Elevation, {minZ, maxZ},
+                                              {autoMinZ, autoMaxZ}});
   if (maxObservations)
   {
     auto const upper = static_cast<double>(maxObservations);
-    fields.insert("Observations", FieldInformation{Observations, {0.0, upper}});
+    fields.insert("Observations", FieldInformation{Observations, {0.0, upper},
+                                                   {0.0, upper}});
   }
 
   d->landmarkOptions->setTrueColorAvailable(haveColor);
