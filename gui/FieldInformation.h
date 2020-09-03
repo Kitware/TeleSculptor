@@ -36,7 +36,8 @@
 struct FieldInformation
 {
   QByteArray name;
-  double range[2];
+  double totalRange[2];
+  double autoRange[2];
 };
 
 #endif

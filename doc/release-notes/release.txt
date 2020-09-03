@@ -10,6 +10,11 @@ Fixes since v1.1.1
 
 TeleSculptor Application
 
+ * Coloring landmarks by height previously set the automatic range for the
+   colormap to the entire height range, which is not very useful since
+   most data sets have outliers.  This has been corrected such that the
+   auto range of the colormap spans the middle 90% of the height values.
+
  * Fixed an issue with not saving project state after loading a video.
    If TeleSculptor was closed after loading a video but before other
    processing, the project would not remember which video was loaded.
