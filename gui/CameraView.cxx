@@ -631,7 +631,7 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
   auto maxObservations = unsigned{0};
   auto minZ = qInf(), maxZ = -qInf();
   auto autoMinZ = qInf(), autoMaxZ = -qInf();
-  std::vector<double> zvals;
+  std::vector<double> zValues;
 
   foreach (auto const& lmi, landmarks)
   {
@@ -646,15 +646,17 @@ void CameraView::setLandmarksData(kwiver::vital::landmark_map const& lm)
     maxObservations = qMax(maxObservations, observations);
     minZ = qMin(minZ, z);
     maxZ = qMax(maxZ, z);
-    zvals.push_back(z);
+    zValues.push_back(z);
   }
-  if (!zvals.empty())
+  if (!zValues.empty())
   {
     // Set the range to cover the middle 90% of the data
-    std::sort(zvals.begin(), zvals.end());
-    auto idx = zvals.size() / 20;
-    autoMinZ = zvals[idx];
-    autoMaxZ = zvals[zvals.size() - 1 - idx];
+    std::sort(zValues.begin(), zValues.end());
+    auto const n = zValues.size();
+    // index at 5% of the data
+    auto const i = n / 20;
+    autoMinZ = zValues[i];
+    autoMaxZ = zValues[n - 1 - i];
   }
 
   auto fields = QHash<QString, FieldInformation>{};

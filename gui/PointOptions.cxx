@@ -398,9 +398,9 @@ void PointOptions::updateActiveDataField()
   auto const& fi = d->activeField();
   auto const mode = d->colorMode.checkedId();
 
-  d->dataColorOptions->setAvailableRange(fi.range[0], fi.range[1],
+  d->dataColorOptions->setAvailableRange(fi.totalRange[0], fi.totalRange[1],
                                          fi.autoRange[0], fi.autoRange[1]);
-  d->dataFilterOptions->setAvailableRange(fi.range[0], fi.range[1]);
+  d->dataFilterOptions->setAvailableRange(fi.totalRange[0], fi.totalRange[1]);
 
   if (mode == DataColor)
   {
