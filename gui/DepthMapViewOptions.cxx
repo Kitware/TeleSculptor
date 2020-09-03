@@ -180,7 +180,7 @@ void DepthMapViewOptions::updateRanges(vtkPointData* pointData)
       if (dataArray)
       {
         double range[2];
-        dataArray->GetRange(range);
+        dataArray->GetFiniteRange(range);
 
         auto cumulativeLower = range[0];
         auto cumulativeUpper = range[1];
