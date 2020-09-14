@@ -40,6 +40,7 @@
 #include "FuseDepthTool.h"
 #include "InitCamerasLandmarksTool.h"
 #include "TrackFeaturesTool.h"
+#include "MainWindow.h"
 
 #include <QMessageBox>
 #include <qtStlUtil.h>
@@ -63,6 +64,7 @@ public:
   std::unique_ptr<ComputeAllDepthTool> depther;
   std::unique_ptr<FuseDepthTool> fuser;
   QWidget* window;
+  MainWindow* mainwindow = nullptr;
 };
 
 QTE_IMPLEMENT_D_FUNC(RunAllTool)
@@ -77,6 +79,15 @@ RunAllTool::RunAllTool(QObject* parent)
   this->setText("&Run End-to-End");
   this->setToolTip("Runs the end-to-end reconstruction pipeline starting with "
                    "a video and ending with a surface mesh.");
+
+  // Find the main window
+  QObject* p = parent;
+  d_ptr->mainwindow = qobject_cast<MainWindow*>(p);
+  while (p && !d_ptr->mainwindow)
+  {
+    p = p->parent();
+    d_ptr->mainwindow = qobject_cast<MainWindow*>(p);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -140,13 +151,19 @@ void RunAllTool::reportToolError(QString const& msg)
 }
 
 //-----------------------------------------------------------------------------
-bool RunAllTool::runTool(AbstractTool* tool, bool last_tool)
+bool RunAllTool::runTool(AbstractTool* tool, bool save_final)
 {
   QTE_D();
   QObject::connect(tool, &AbstractTool::updated,
                    this, &RunAllTool::forwardInterimResults);
   QObject::connect(tool, &AbstractTool::failed,
                    this, &RunAllTool::reportToolError);
+  // A direct connection to the main window with a blocking connection is
+  // needed for "saved".  Using a slot on the RunAllTool to forward the message
+  // as done for "updated" causes deadlock.
+  QObject::connect(tool, &AbstractTool::saved,
+                   d->mainwindow, &MainWindow::acceptToolSaveResults,
+                   Qt::BlockingQueuedConnection);
 
   tool->setToolData(this->data());
   d->output = tool->outputs();
@@ -154,7 +171,7 @@ bool RunAllTool::runTool(AbstractTool* tool, bool last_tool)
   tool->wait();
   if (d->failed || isCanceled())
     return false;
-  if (!last_tool)
+  if (save_final)
   {
     saveResults(tool);
   }
@@ -246,10 +263,10 @@ void RunAllTool::run()
   roi->AddBounds(bounds);
   setROI(roi);
 
-  if (!runTool(d->depther.get()))
+  if (!runTool(d->depther.get(), false))
   {
     return;
   }
 
-  runTool(d->fuser.get(), true);
+  runTool(d->fuser.get(), false);
 }

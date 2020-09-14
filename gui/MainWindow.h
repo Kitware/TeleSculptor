@@ -98,6 +98,7 @@ public slots:
   void saveDepthImage(QString const& path);
   void saveGeoOrigin(QString const& path);
   void saveToolResults();
+  void acceptToolSaveResults(std::shared_ptr<ToolData> data);
 
 
   void saveWebGLScene();
@@ -126,7 +127,6 @@ protected slots:
   void reportToolError(QString const&);
   void acceptToolInterimResults(std::shared_ptr<ToolData> data);
   void acceptToolFinalResults();
-  void acceptToolSaveResults(std::shared_ptr<ToolData> data);
   void updateToolResults();
   void addFrame(int);
   void updateFrames(
