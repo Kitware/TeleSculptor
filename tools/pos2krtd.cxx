@@ -230,9 +230,10 @@ static int maptk_main(int argc, char const* argv[])
 
 
   // register the algorithm implementations
-  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/kwiver/modules";
-  kwiver::vital::plugin_manager::instance().add_search_path(rel_plugin_path);
-  kwiver::vital::plugin_manager::instance().load_all_plugins();
+  auto& vpm = kwiver::vital::plugin_manager::instance();
+  std::string rel_plugin_path = kwiver::vital::get_executable_path() + "/../lib/kwiver/plugins";
+  vpm.add_search_path(rel_plugin_path);
+  vpm.load_all_plugins(kwiver::vital::plugin_manager::plugin_type::ALGORITHMS);
 
   // Tell PROJ where to find its data files
   std::string rel_proj_path = kwiver::vital::get_executable_path() + "/../share/proj";
