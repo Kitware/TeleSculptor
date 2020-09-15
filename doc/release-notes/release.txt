@@ -23,5 +23,8 @@ TeleSculptor Application
    intermediate results.  This prevents intermediate results from accidentally
    overwriting final results.
 
+ * Fixed Run End-to-End tool to properly save depth maps after disabling the
+   writing of intermediate results.
+
  * Fixed the display of color mapped data when non-finitie values are present
    in the data.  The data range is now set using only the finite values.
