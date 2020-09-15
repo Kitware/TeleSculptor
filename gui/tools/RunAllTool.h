@@ -55,7 +55,7 @@ public slots:
 
 protected:
   void run() override;
-  bool runTool(AbstractTool* tool, bool last_tool = false);
+  bool runTool(AbstractTool* tool, bool save_final = true);
   void saveResults(AbstractTool* tool);
 
 protected slots:
