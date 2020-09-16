@@ -110,9 +110,8 @@ int main(int argc, char** argv)
   // Load KWIVER plugins
   auto const exeDir = QDir{QApplication::applicationDirPath()};
   auto& vpm = kwiver::vital::plugin_manager::instance();
-  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/kwiver/modules")));
-  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/kwiver/processes")));
-  vpm.load_all_plugins();
+  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/kwiver/plugins")));
+  vpm.load_all_plugins(kwiver::vital::plugin_manager::plugin_type::ALGORITHMS);
 
   // Tell PROJ where to find its data files
   auto projDataDir = exeDir.absoluteFilePath("../share/proj");

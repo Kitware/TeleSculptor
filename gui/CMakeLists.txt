@@ -319,25 +319,21 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
   list(APPEND FIXUP_DIRS "${QT_LIBRARY_DIR}")
   list(APPEND FIXUP_DIRS "${QT_BINARY_DIR}")
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules"
-          DESTINATION lib/kwiver
-          COMPONENT Runtime
-          FILES_MATCHING PATTERN "*plugin${CMAKE_SHARED_MODULE_SUFFIX}" )
+  # Install KWIVER plugins and configuration files
+  set(kwiver_plugin_types
+      algorithms applets modules plugin_explorer processes)
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules/applets"
-          DESTINATION lib/kwiver/modules
-          COMPONENT Runtime
-          FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
+  foreach(plugin_type ${kwiver_plugin_types})
+    install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/plugins/${plugin_type}"
+            DESTINATION lib/kwiver/plugins
+            COMPONENT Runtime
+            FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
+  endforeach()
 
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/modules/"
+  # Logger plugins are a special case and are loaded differently
+  # they must be installed with other dynamic libraries
+  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/plugins/logger/"
           DESTINATION ${plugin_dest_dir}
-          COMPONENT Runtime
-          FILES_MATCHING PATTERN "*logger${CMAKE_SHARED_MODULE_SUFFIX}"
-          PATTERN "applets" EXCLUDE
-          PATTERN "plugin_explorer" EXCLUDE )
-
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/processes"
-          DESTINATION lib/kwiver
           COMPONENT Runtime
           FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
@@ -354,9 +350,6 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
   if(${TELESCULPTOR_ENABLE_TOOLS})
     set(kwiver_tools
         kwiver
-        pipe_config
-        pipe_to_dot
-        pipeline_runner
         plugin_explorer)
 
     set(KWIVER_BIN_DIR "${KWIVER_DIR}/bin")
@@ -400,9 +393,7 @@ set(bundle_path \"${bundle_path}\")
         file(GLOB_RECURSE QTPLUGINS
             \"${dest_prefix}/${qtplugin_dest_dir}/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         file(GLOB_RECURSE KWIVER_PLUGINS
-            \"${dest_prefix}/lib/kwiver/modules/*${CMAKE_SHARED_MODULE_SUFFIX}\")
-        file(GLOB_RECURSE SPROKIT_PLUGINS
-            \"${dest_prefix}/lib/kwiver/processes/*${CMAKE_SHARED_MODULE_SUFFIX}\")
+            \"${dest_prefix}/lib/kwiver/plugins/*${CMAKE_SHARED_MODULE_SUFFIX}\")
         file(GLOB_RECURSE LOGGER_PLUGINS
             \"${dest_prefix}/${plugin_dest_dir}/vital_*_logger${CMAKE_SHARED_LIBRARY_SUFFIX}\")
         set(BU_CHMOD_BUNDLE_ITEMS ON)
@@ -411,7 +402,7 @@ set(bundle_path \"${bundle_path}\")
         include( ${TELESCULPTOR_BINARY_DIR}/CMakeFiles/plugin-libs-\${CMAKE_INSTALL_CONFIG_NAME}.cmake )
         list(APPEND FIXUP_DIRS ${FIXUP_DIRS} \${bundle_path})
         list(REMOVE_DUPLICATES FIXUP_DIRS)
-        set(libs \${KWIVER_PLUGINS} \${SPROKIT_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
+        set(libs \${KWIVER_PLUGINS} \${LOGGER_PLUGINS} \${QTPLUGINS})
         include(BundleUtilities)
         fixup_bundle(\"${gui-exe}\" \"\${libs}\" \"\${FIXUP_DIRS}\")
 
