@@ -77,6 +77,7 @@ public:
   compute_depth_sptr depth_algo;
   unsigned int max_iterations;
   int num_support;
+  double angle_span;
   kwiver::vital::image_of<unsigned char> ref_img;
   kwiver::vital::image_of<unsigned char> ref_mask;
   kwiver::vital::frame_id_t ref_frame;
@@ -168,6 +169,7 @@ bool ComputeDepthTool::execute(QWidget* window)
   std::string iterations_key = ":super3d:iterations";
   d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
   d->num_support = config->get_value<int>("compute_depth:num_support", 10);
+  d->angle_span = config->get_value<double>("compute_depth:angle_span", 15.0);
 
   // Set the callback to receive updates
   using std::placeholders::_1;
@@ -280,6 +282,7 @@ void ComputeDepthTool::run()
 {
   QTE_D();
   using kwiver::vital::camera_perspective;
+  using kwiver::arrows::core::find_similar_cameras_angles;
 
   int frame = this->activeFrame();
 
@@ -301,38 +304,41 @@ void ComputeDepthTool::run()
   data->activeFrame = frame;
   emit updated(data);
 
-  // get a sorted list of all frames which have cameras
-  std::vector<kwiver::vital::frame_id_t> frames;
-  frames.reserve(cm.size());
-  for (auto const p : cm)
-  {
-    frames.push_back(p.first);
-  }
-  // find an iterator for the current frame
-  auto fitr = std::lower_bound(frames.begin(), frames.end(), frame);
-  if (fitr == frames.end() || *fitr != frame)
+  kwiver::vital::camera_perspective_map pcm;
+  pcm.set_from_base_camera_map(cm);
+  auto const ref_cam_itr = cm.find(frame);
+  if (ref_cam_itr == cm.end())
   {
     const std::string msg = "No camera available on the selected frame";
     LOG_DEBUG(this->data()->logger, msg);
     throw kwiver::vital::invalid_value(msg);
   }
+  camera_perspective_sptr ref_cam =
+    std::dynamic_pointer_cast<camera_perspective>(ref_cam_itr->second);
+  if (!ref_cam)
+  {
+    const std::string msg = "Reference camera is not perspective";
+    LOG_DEBUG(this->data()->logger, msg);
+    throw kwiver::vital::invalid_value(msg);
+  }
 
-  // Compute an iterator range containing total_support entries and
-  // centered at the current frame.  When at the boundary the window
-  // shifts to be not centered, but retains the same size.
-  auto fitr_begin = (fitr - frames.begin() > halfsupport) ?
-                    fitr - halfsupport : frames.begin();
-  auto fitr_end = frames.end();
-  if (fitr_end - fitr_begin > total_support)
+  auto similar_cameras = find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, total_support);
+  // make sure the reference frame is included
+  similar_cameras->insert(frame, ref_cam);
+
+  if (similar_cameras->size() < 2)
   {
-    fitr_end = fitr_begin + total_support;
+    const std::string msg = "Not enough cameras with similar viewpoints";
+    LOG_DEBUG(this->data()->logger, msg);
+    throw kwiver::vital::invalid_value(msg);
   }
-  else
+
+  LOG_DEBUG(this->data()->logger, "found "<<similar_cameras->size()<<" cameras within " << d->angle_span << " degrees");
+  for (auto const& item : similar_cameras->cameras())
   {
-    // if cut off at the end, back up the beginning
-    fitr_begin = (fitr_end - frames.begin() > total_support) ?
-                 fitr_end - total_support : frames.begin();
+    LOG_DEBUG(this->data()->logger, "   frame " << item.first);
   }
+
 
   d->video_reader->open(this->data()->videoPath);
   if (hasMask)
@@ -341,32 +347,26 @@ void ComputeDepthTool::run()
   }
 
   kwiver::vital::timestamp currentTimestamp;
-  // seek to the first frame
-  d->video_reader->seek_frame(currentTimestamp, *fitr_begin);
-  if (hasMask)
-  {
-    d->mask_reader->seek_frame(currentTimestamp, *fitr_begin);
-  }
 
   // collect all the frames
-  for (auto f = fitr_begin; f < fitr_end; ++f)
+  for (auto const& item : similar_cameras->T_cameras())
   {
-    while (currentTimestamp.get_frame() < *f)
+    // seek to the frame
+    d->video_reader->seek_frame(currentTimestamp, item.first);
+    if (hasMask)
     {
-      d->video_reader->next_frame(currentTimestamp);
-      if (hasMask)
-        d->mask_reader->next_frame(currentTimestamp);
+      d->mask_reader->seek_frame(currentTimestamp, item.first);
     }
-    if (currentTimestamp.get_frame() != *f)
+    if (currentTimestamp.get_frame() != item.first)
     {
-      LOG_WARN(this->data()->logger, "Could not find frame " << *f);
+      LOG_WARN(this->data()->logger, "Could not find frame " << item.first);
       continue;
     }
-    auto cam = cm.find(*f);
+    auto cam = item.second;
     auto const image = d->video_reader->frame_image();
     if (!image)
     {
-      LOG_WARN(this->data()->logger, "No image available on frame " << *f);
+      LOG_WARN(this->data()->logger, "No image available on frame " << item.first);
       continue;
     }
     auto const mdv = d->video_reader->frame_metadata();
@@ -374,13 +374,13 @@ void ComputeDepthTool::run()
     {
       image->set_metadata(mdv[0]);
     }
-    if (*f == frame)
+    if (item.first == frame)
     {
       ref_frame = static_cast<int>(frames_out.size());
     }
     frames_out.push_back(image);
-    cameras_out.push_back(std::dynamic_pointer_cast<camera_perspective>(cam->second));
-    frame_ids.push_back(*f);
+    cameras_out.push_back(item.second);
+    frame_ids.push_back(item.first);
 
     if (hasMask)
     {
