@@ -12,4 +12,5 @@ call setup_KWIVER.bat %config%
 cd @TELESCULPTOR_BINARY_DIR@
 set PATH=%PATH%;@TELESCULPTOR_BINARY_DIR@/bin/%config%;
 set KWIVER_CONFIG_PATH=%KWIVER_CONFIG_PATH%;@TELESCULPTOR_BINARY_DIR@\share\telesculptor\@TeleSculptor_VERSION@\config
+set VITAL_LOGGER_FACTORY=%KWIVER_PLUGIN_PATH%/logger/vital_log4cplus_logger
 set LOG4CPLUS_CONFIGURATION=@TELESCULPTOR_BINARY_DIR@\share\telesculptor\@TeleSculptor_VERSION@\config\log4cplus.properties
