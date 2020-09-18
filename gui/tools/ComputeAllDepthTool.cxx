@@ -94,7 +94,7 @@ ComputeAllDepthTool::ComputeAllDepthTool(QObject* parent)
   : AbstractTool(parent), d_ptr(new ComputeAllDepthToolPrivate)
 {
   this->data()->logger =
-    kwiver::vital::get_logger("telesculptor.tools.compute_depth");
+    kwiver::vital::get_logger("telesculptor.tools.batch_compute_depth");
 
   this->setText("&Batch Compute Depth Maps");
   this->setToolTip("Computes depth maps for multiple images.");
