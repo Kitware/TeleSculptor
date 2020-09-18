@@ -321,7 +321,7 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
 
   # Install KWIVER plugins and configuration files
   set(kwiver_plugin_types
-      algorithms applets modules plugin_explorer processes)
+      algorithms applets logger modules plugin_explorer processes)
 
   foreach(plugin_type ${kwiver_plugin_types})
     install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/plugins/${plugin_type}"
@@ -329,13 +329,6 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
             COMPONENT Runtime
             FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
   endforeach()
-
-  # Logger plugins are a special case and are loaded differently
-  # they must be installed with other dynamic libraries
-  install(DIRECTORY "${KWIVER_DIR}/lib/${BINARY_DIR}/kwiver/plugins/logger/"
-          DESTINATION ${plugin_dest_dir}
-          COMPONENT Runtime
-          FILES_MATCHING PATTERN "*${CMAKE_SHARED_MODULE_SUFFIX}" )
 
   install(DIRECTORY "${KWIVER_DIR}/share/kwiver/${KWIVER_VERSION}/config"
           DESTINATION share/kwiver/${KWIVER_VERSION}

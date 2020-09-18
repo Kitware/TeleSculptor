@@ -100,17 +100,21 @@ int main(int argc, char** argv)
   QApplication app(args.qtArgc(), args.qtArgv());
   qtUtil::setApplicationIcon("telesculptor");
 
+  auto const exeDir = QDir{ QApplication::applicationDirPath() };
+  auto const plugin_path =
+    stdString(exeDir.absoluteFilePath("../lib/kwiver/plugins"));
+
   // Prefer the log4cplus logger if no logger is specified
   std::string logger;
   if (!kwiversys::SystemTools::GetEnv("VITAL_LOGGER_FACTORY", logger))
   {
-    kwiversys::SystemTools::PutEnv("VITAL_LOGGER_FACTORY=vital_log4cplus_logger");
+    auto const logger_path = plugin_path + "/logger/vital_log4cplus_logger";
+    kwiversys::SystemTools::PutEnv("VITAL_LOGGER_FACTORY=" + logger_path);
   }
 
   // Load KWIVER plugins
-  auto const exeDir = QDir{QApplication::applicationDirPath()};
   auto& vpm = kwiver::vital::plugin_manager::instance();
-  vpm.add_search_path(stdString(exeDir.absoluteFilePath("../lib/kwiver/plugins")));
+  vpm.add_search_path(plugin_path);
   vpm.load_all_plugins(kwiver::vital::plugin_manager::plugin_type::ALGORITHMS);
 
   // Tell PROJ where to find its data files
