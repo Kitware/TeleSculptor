@@ -32,6 +32,8 @@
 #define TELESCULPTOR_COMPUTEDEPTHTOOL_H_
 
 #include "AbstractTool.h"
+#include <vital/types/camera_perspective_map.h>
+#include <vital/algo/video_input.h>
 
 class ComputeDepthToolPrivate;
 
@@ -55,6 +57,10 @@ public:
                         unsigned int percent_complete,
                         kwiver::vital::image_container_sptr uncertainty);
 
+  /// handler for callback on image gathering status
+  bool gather_status_handler(unsigned int curr_frame,
+                             unsigned int num_frames);
+
 protected:
   void run() override;
 
@@ -71,4 +77,18 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
              int i0, int ni, int j0, int nj,
              const kwiver::vital::image_of<double>& uncertainty_img = {},
              const kwiver::vital::image_of<unsigned char>& mask_img = {});
+
+using gather_callback_t = std::function<bool(unsigned int, unsigned int)>;
+
+/// Helper function to gather corresponding images and cameras
+int gather_depth_frames(
+  kwiver::vital::camera_perspective_map const& cameras,
+  kwiver::vital::algo::video_input_sptr video,
+  kwiver::vital::algo::video_input_sptr masks,
+  kwiver::vital::frame_id_t ref_frame,
+  std::vector<kwiver::vital::camera_perspective_sptr>& cameras_out,
+  std::vector<kwiver::vital::image_container_sptr>& frames_out,
+  std::vector<kwiver::vital::image_container_sptr>& masks_out,
+  gather_callback_t cb = nullptr);
+
 #endif

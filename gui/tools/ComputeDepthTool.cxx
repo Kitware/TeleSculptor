@@ -43,6 +43,7 @@
 #include <qtStlUtil.h>
 
 #include <algorithm>
+#include <functional>
 
 #include <vtkDoubleArray.h>
 #include <vtkImageData.h>
@@ -278,11 +279,84 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
 }
 
 //-----------------------------------------------------------------------------
+/// Helper function to gather corresponding images and cameras
+int gather_depth_frames(
+  camera_perspective_map const& cameras,
+  video_input_sptr video,
+  video_input_sptr masks,
+  frame_id_t ref_frame,
+  std::vector<camera_perspective_sptr>& cameras_out,
+  std::vector<image_container_sptr>& frames_out,
+  std::vector<image_container_sptr>& masks_out,
+  gather_callback_t cb)
+{
+  auto logger = kwiver::vital::get_logger(
+    "telesculptor.tools.compute_depth.gather_depth_frames");
+  cameras_out.clear();
+  frames_out.clear();
+  masks_out.clear();
+  if (!video)
+  {
+    return 0;
+  }
+  int ref_index = 0;
+  kwiver::vital::timestamp currentTimestamp;
+  for (auto const& item : cameras.T_cameras())
+  {
+    if (cb && !cb(static_cast<unsigned int>(frames_out.size()),
+                  static_cast<unsigned int>(cameras.size())))
+    {
+      break;
+    }
+    // seek to the frame
+    video->seek_frame(currentTimestamp, item.first);
+    if (currentTimestamp.get_frame() != item.first)
+    {
+      LOG_WARN(logger, "Could not find video frame " << item.first);
+      continue;
+    }
+    if (masks)
+    {
+      masks->seek_frame(currentTimestamp, item.first);
+    }
+    if (currentTimestamp.get_frame() != item.first)
+    {
+      LOG_WARN(logger, "Could not find mask frame " << item.first);
+      continue;
+    }
+    auto cam = item.second;
+    auto const image = video->frame_image();
+    if (!image)
+    {
+      LOG_WARN(logger, "No image available on frame " << item.first);
+      continue;
+    }
+    auto const mdv = video->frame_metadata();
+    if (!mdv.empty())
+    {
+      image->set_metadata(mdv[0]);
+    }
+    frames_out.push_back(image);
+    cameras_out.push_back(item.second);
+    if (masks)
+    {
+      masks_out.push_back(masks->frame_image());
+    }
+    if (item.first == ref_frame)
+    {
+      ref_index = static_cast<int>(frames_out.size());
+    }
+  }
+  return ref_index;
+}
+
+//-----------------------------------------------------------------------------
 void ComputeDepthTool::run()
 {
   QTE_D();
   using kwiver::vital::camera_perspective;
   using kwiver::arrows::core::find_similar_cameras_angles;
+  using namespace std::placeholders;
 
   int frame = this->activeFrame();
 
@@ -290,14 +364,8 @@ void ComputeDepthTool::run()
   auto const& cm = this->cameras()->cameras();
   auto const hasMask = !this->data()->maskPath.empty();
 
-  std::vector<kwiver::vital::image_container_sptr> frames_out;
-  std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
-  std::vector<kwiver::vital::image_container_sptr> masks_out;
-  std::vector<kwiver::vital::landmark_sptr> landmarks_out;
-  std::vector<kwiver::vital::frame_id_t> frame_ids;
   const int halfsupport = d->num_support;
   const int total_support = 2 * d->num_support + 1;
-  int ref_frame = 0;
 
   this->setDescription("Collecting Video Frames");
   auto data = std::make_shared<ToolData>();
@@ -322,7 +390,8 @@ void ComputeDepthTool::run()
     throw kwiver::vital::invalid_value(msg);
   }
 
-  auto similar_cameras = find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, total_support);
+  auto similar_cameras =
+    find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, total_support);
   // make sure the reference frame is included
   similar_cameras->insert(frame, ref_cam);
 
@@ -349,49 +418,20 @@ void ComputeDepthTool::run()
   kwiver::vital::timestamp currentTimestamp;
 
   // collect all the frames
-  for (auto const& item : similar_cameras->T_cameras())
-  {
-    // seek to the frame
-    d->video_reader->seek_frame(currentTimestamp, item.first);
-    if (hasMask)
-    {
-      d->mask_reader->seek_frame(currentTimestamp, item.first);
-    }
-    if (currentTimestamp.get_frame() != item.first)
-    {
-      LOG_WARN(this->data()->logger, "Could not find frame " << item.first);
-      continue;
-    }
-    auto cam = item.second;
-    auto const image = d->video_reader->frame_image();
-    if (!image)
-    {
-      LOG_WARN(this->data()->logger, "No image available on frame " << item.first);
-      continue;
-    }
-    auto const mdv = d->video_reader->frame_metadata();
-    if (!mdv.empty())
-    {
-      image->set_metadata(mdv[0]);
-    }
-    if (item.first == frame)
-    {
-      ref_frame = static_cast<int>(frames_out.size());
-    }
-    frames_out.push_back(image);
-    cameras_out.push_back(item.second);
-    frame_ids.push_back(item.first);
-
-    if (hasMask)
-    {
-      masks_out.push_back(d->mask_reader->frame_image());
-    }
-  }
+  std::vector<kwiver::vital::image_container_sptr> frames_out;
+  std::vector<kwiver::vital::camera_perspective_sptr> cameras_out;
+  std::vector<kwiver::vital::image_container_sptr> masks_out;
+  video_input_sptr mask_reader = hasMask ? d->mask_reader : nullptr;
+  auto cb = std::bind(&ComputeDepthTool::gather_status_handler, this, _1, _2);
+  int ref_frame = gather_depth_frames(*similar_cameras, d->video_reader,
+                                      mask_reader, frame,
+                                      cameras_out, frames_out, masks_out, cb);
 
   LOG_DEBUG(this->data()->logger, "ref frame at index " << ref_frame
                                   << " out of " << frames_out.size());
 
   // Convert landmarks to vector
+  std::vector<kwiver::vital::landmark_sptr> landmarks_out;
   landmarks_out.reserve(lm.size());
   foreach (auto const& l, lm)
   {
@@ -486,6 +526,23 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
   this->setDescription(QString::fromStdString(status));
   this->updateProgress(percent_complete);
 
+  emit updated(data);
+  return !this->isCanceled();
+}
+
+/// handler for callback on image gathering status
+bool
+ComputeDepthTool
+::gather_status_handler(unsigned int curr_frame,
+                        unsigned int num_frames)
+{
+  // update status message
+  std::stringstream ss;
+  ss << "Accumulating frame " << curr_frame
+     << " of " << num_frames;
+  this->setDescription(QString::fromStdString(ss.str()));
+
+  auto data = std::make_shared<ToolData>();
   emit updated(data);
   return !this->isCanceled();
 }
