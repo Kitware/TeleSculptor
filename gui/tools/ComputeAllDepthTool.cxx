@@ -196,6 +196,7 @@ void ComputeAllDepthTool::run()
   QTE_D();
   using kwiver::vital::camera_perspective;
   using kwiver::arrows::core::find_similar_cameras_angles;
+  using kwiver::arrows::core::gather_depth_frames;
   using namespace std::placeholders;
   auto const hasMask = !this->data()->maskPath.empty();
 

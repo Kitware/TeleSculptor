@@ -279,83 +279,12 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
 }
 
 //-----------------------------------------------------------------------------
-/// Helper function to gather corresponding images and cameras
-int gather_depth_frames(
-  camera_perspective_map const& cameras,
-  video_input_sptr video,
-  video_input_sptr masks,
-  frame_id_t ref_frame,
-  std::vector<camera_perspective_sptr>& cameras_out,
-  std::vector<image_container_sptr>& frames_out,
-  std::vector<image_container_sptr>& masks_out,
-  gather_callback_t cb)
-{
-  auto logger = kwiver::vital::get_logger(
-    "telesculptor.tools.compute_depth.gather_depth_frames");
-  cameras_out.clear();
-  frames_out.clear();
-  masks_out.clear();
-  if (!video)
-  {
-    return 0;
-  }
-  int ref_index = 0;
-  kwiver::vital::timestamp currentTimestamp;
-  for (auto const& item : cameras.T_cameras())
-  {
-    if (cb && !cb(static_cast<unsigned int>(frames_out.size()),
-                  static_cast<unsigned int>(cameras.size())))
-    {
-      break;
-    }
-    // seek to the frame
-    video->seek_frame(currentTimestamp, item.first);
-    if (currentTimestamp.get_frame() != item.first)
-    {
-      LOG_WARN(logger, "Could not find video frame " << item.first);
-      continue;
-    }
-    if (masks)
-    {
-      masks->seek_frame(currentTimestamp, item.first);
-    }
-    if (currentTimestamp.get_frame() != item.first)
-    {
-      LOG_WARN(logger, "Could not find mask frame " << item.first);
-      continue;
-    }
-    auto cam = item.second;
-    auto const image = video->frame_image();
-    if (!image)
-    {
-      LOG_WARN(logger, "No image available on frame " << item.first);
-      continue;
-    }
-    auto const mdv = video->frame_metadata();
-    if (!mdv.empty())
-    {
-      image->set_metadata(mdv[0]);
-    }
-    frames_out.push_back(image);
-    cameras_out.push_back(item.second);
-    if (masks)
-    {
-      masks_out.push_back(masks->frame_image());
-    }
-    if (item.first == ref_frame)
-    {
-      ref_index = static_cast<int>(frames_out.size());
-    }
-  }
-  return ref_index;
-}
-
-//-----------------------------------------------------------------------------
 void ComputeDepthTool::run()
 {
   QTE_D();
   using kwiver::vital::camera_perspective;
   using kwiver::arrows::core::find_similar_cameras_angles;
+  using kwiver::arrows::core::gather_depth_frames;
   using namespace std::placeholders;
 
   int frame = this->activeFrame();
