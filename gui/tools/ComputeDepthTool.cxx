@@ -169,7 +169,7 @@ bool ComputeDepthTool::execute(QWidget* window)
   // TODO: find a more general way to get the number of iterations
   std::string iterations_key = ":super3d:iterations";
   d->max_iterations = config->get_value<unsigned int>(BLOCK_CD + iterations_key, 0);
-  d->num_support = config->get_value<int>("compute_depth:num_support", 10);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 20);
   d->angle_span = config->get_value<double>("compute_depth:angle_span", 15.0);
 
   // Set the callback to receive updates
@@ -364,9 +364,6 @@ void ComputeDepthTool::run()
   auto const& cm = this->cameras()->cameras();
   auto const hasMask = !this->data()->maskPath.empty();
 
-  const int halfsupport = d->num_support;
-  const int total_support = 2 * d->num_support + 1;
-
   this->setDescription("Collecting Video Frames");
   auto data = std::make_shared<ToolData>();
   data->activeFrame = frame;
@@ -391,7 +388,7 @@ void ComputeDepthTool::run()
   }
 
   auto similar_cameras =
-    find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, total_support);
+    find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, d->num_support);
   // make sure the reference frame is included
   similar_cameras->insert(frame, ref_cam);
 

@@ -172,7 +172,7 @@ bool ComputeAllDepthTool::execute(QWidget* window)
   d->end_frame = config->get_value<int>("batch_depth:end_frame", -1);
   d->num_depth = config->get_value<int>("batch_depth:num_depth", -1);
 
-  d->num_support = config->get_value<int>("compute_depth:num_support", 10);
+  d->num_support = config->get_value<int>("compute_depth:num_support", 20);
   d->angle_span = config->get_value<double>("compute_depth:angle_span", 15.0);
 
   // Set the callback to receive updates
@@ -201,9 +201,6 @@ void ComputeAllDepthTool::run()
 
   auto const& lm = this->landmarks()->landmarks();
   auto const& cm = this->cameras()->cameras();
-  const int halfsupport = d->num_support;
-  const int total_support = 2 * halfsupport + 1;
-
 
   std::vector<kwiver::vital::frame_id_t> frames_in_range;
   for (auto itr = cm.begin(); itr != cm.end(); itr++)
@@ -212,12 +209,9 @@ void ComputeAllDepthTool::run()
       frames_in_range.push_back(itr->first);
   }
 
-  kwiver::vital::frame_id_t num_frames =
-    frames_in_range.size() - 2 * halfsupport;
-
   d->num_depth_maps =
     std::min(static_cast<size_t>(d->num_depth),
-             static_cast<size_t>(num_frames));
+             frames_in_range.size());
 
   d->video_reader->open(this->data()->videoPath);
   if (hasMask)
@@ -239,7 +233,8 @@ void ComputeAllDepthTool::run()
   for (size_t c = 0; c < d->num_depth_maps && !this->isCanceled(); ++c)
   {
     d->depth_count = c;
-    size_t curr_frame_idx = halfsupport + (c * num_frames) / (d->num_depth_maps-1);
+    size_t curr_frame_idx = (c * (frames_in_range.size()-1)) /
+                            (d->num_depth_maps-1);
     this->updateProgress(static_cast<int>(c),
                          static_cast<int>(d->num_depth_maps));
     auto fitr = frames_in_range.begin() + curr_frame_idx;
@@ -264,7 +259,7 @@ void ComputeAllDepthTool::run()
     }
 
     auto similar_cameras =
-      find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, total_support);
+      find_similar_cameras_angles(*ref_cam, pcm, d->angle_span, d->num_support);
     // make sure the reference frame is included
     similar_cameras->insert(*fitr, ref_cam);
 
