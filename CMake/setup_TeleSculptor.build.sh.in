@@ -12,6 +12,6 @@ source setup_KWIVER.sh
 export KWIVER_CONFIG_PATH=$KWIVER_CONFIG_PATH:@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TeleSculptor_VERSION@/config
 cd $CURR_DIR
 
-export VITAL_LOGGER_FACTORY=$KWIVER_PLUGIN_PATH/logger/vital_log4cplus_logger
+export VITAL_LOGGER_FACTORY=${KWIVER_PLUGIN_PATH%%:*}/logger/vital_log4cplus_logger
 export LOG4CPLUS_CONFIGURATION=@TELESCULPTOR_BINARY_DIR@/share/telesculptor/@TeleSculptor_VERSION@/config/log4cplus.properties
 
