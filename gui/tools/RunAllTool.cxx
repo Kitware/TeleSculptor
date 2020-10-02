@@ -32,7 +32,7 @@
 #include "GuiCommon.h"
 
 #include <arrows/core/depth_utils.h>
-#include <arrows/core/sfm_utils.h>
+#include <arrows/mvg/sfm_utils.h>
 #include <arrows/core/transform.h>
 
 #include "BundleAdjustTool.h"
@@ -239,7 +239,7 @@ void RunAllTool::run()
     auto landmarks = this->landmarks();
     auto cameras = this->cameras();
     kwiver::vital::vector_3d offset =
-      kwiver::arrows::core::landmarks_ground_center(*landmarks);
+      kwiver::arrows::mvg::landmarks_ground_center(*landmarks);
 
     kwiver::vital::vector_3d new_origin = lgcs.origin().location() + offset;
     lgcs.set_origin(kwiver::vital::geo_point(new_origin, lgcs.origin().crs()));
