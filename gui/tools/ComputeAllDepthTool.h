@@ -52,7 +52,8 @@ public:
 
   bool callback_handler(kwiver::vital::image_container_sptr depth,
                         std::string const& status,
-                        unsigned int percent_complete);
+                        unsigned int percent_complete,
+                        kwiver::vital::image_container_sptr uncertainty);
 
 protected:
   virtual void run() QTE_OVERRIDE;

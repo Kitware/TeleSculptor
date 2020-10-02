@@ -41,6 +41,7 @@
 class vtkActor;
 
 class ColorizeSurfaceOptionsPrivate;
+class MeshColoration;
 
 class ColorizeSurfaceOptions : public QWidget
 {
@@ -54,26 +55,62 @@ public:
   void addColorDisplay(std::string name);
 
   void initFrameSampling(int nbFrames);
+  int getFrameSampling() const;
 
   void setCurrentFrame(int frame);
+  void setOcclusionThreshold(double occlusionThreshold)
+  {
+    this->OcclusionThreshold = occlusionThreshold;
+  }
+  void setRemoveOccluded(double removeOccluded)
+  {
+    this->RemoveOccluded = removeOccluded;
+  }
+  void setRemoveMasked(double removeMasked)
+  {
+    this->RemoveMasked = removeMasked;
+  }
+  double getOcclusionThreshold()
+  {
+    return this->OcclusionThreshold;
+  }
 
   void setActor(vtkActor* actor);
-  void setVideoInfo(kwiver::vital::config_block_sptr config,
-                    std::string const& path);
-  void setCameras(kwiver::vital::camera_map_sptr cameras);
+  void setVideoConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getVideoConfig() const;
+  std::string getVideoPath() const;
 
+  void setMaskConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getMaskConfig() const;
+  std::string getMaskPath() const;
+
+  void setCameras(kwiver::vital::camera_map_sptr cameras);
+  kwiver::vital::camera_map_sptr getCameras() const;
   void enableMenu(bool);
+  void forceColorize();
 
 signals:
   void colorModeChanged(QString);
 
 public slots:
-
   void changeColorDisplay();
   void colorize();
+  void meshColorationHandleResult(MeshColoration* coloration);
   void enableAllFramesParameters(bool);
   void allFrameSelected();
   void currentFrameSelected();
+  void updateOcclusionThreshold();
+  void removeOccludedChanged(int removeOccluded);
+  void removeMaskedChanged(int removeMasked);
+
+
+protected:
+  double OcclusionThreshold;
+  bool RemoveOccluded;
+  bool RemoveMasked;
+  bool InsideColorize;
+  const int INVALID_FRAME = -2;
+  int LastColorizedFrame;
 
 private:
 

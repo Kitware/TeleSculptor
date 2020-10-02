@@ -38,45 +38,111 @@
 #include <vital/types/camera_perspective.h>
 
 // VTK Class
+class vtkFloatArray;
 class vtkPolyData;
+class vtkRenderWindow;
+
+#include <vtkSmartPointer.h>
 
 #include <string>
 #include <vector>
 
-class MeshColoration
+// Qt classes
+#include <QThread>
+
+class MeshColoration : public QThread
 {
+  Q_OBJECT;
+
 public:
   MeshColoration();
-  MeshColoration(vtkPolyData* mesh,
-                 kwiver::vital::config_block_sptr& config,
+  MeshColoration(kwiver::vital::config_block_sptr& videoConfig,
                  std::string const& videoPath,
+                 kwiver::vital::config_block_sptr& maskConfig,
+                 std::string const& maskPath,
                  kwiver::vital::camera_map_sptr& cameras);
   ~MeshColoration();
 
   MeshColoration(MeshColoration const&) = delete;
   MeshColoration& operator=(MeshColoration const&) = delete;
 
-  // SETTER
-  void SetInput(vtkPolyData* mesh);
+  // Input mesh.
+  void SetInput(vtkSmartPointer<vtkPolyData> input);
+  vtkSmartPointer<vtkPolyData> GetInput();
+  // Output mesh
+  void SetOutput(vtkSmartPointer<vtkPolyData> mesh);
+  vtkSmartPointer<vtkPolyData> GetOutput();
   void SetFrameSampling(int sample);
+  void SetFrame(int frame)
+  { this->Frame = frame;}
+  void SetAverageColor(bool averageColor)
+  { this->AverageColor = averageColor;}
+  void SetOcclusionThreshold(float threshold)
+  {
+    this->OcclusionThreshold = threshold;
+  }
+  void SetRemoveOccluded(bool removeOccluded)
+  {
+    this->RemoveOccluded = removeOccluded;
+  }
+  void SetRemoveMasked(bool removeMasked)
+  {
+    this->RemoveMasked = removeMasked;
+  }
 
-  // GETTER
-  vtkPolyData* GetOutput();
+  // Adds mean and median colors to 'Output' if averageColor or
+  // adds an array of colors for each camera (frame) otherwise.
+  void run() override;
 
-  // Functions
-  bool ProcessColoration(int frame = -1);
-  void initializeDataList(int frameId);
+signals:
+  void resultReady(MeshColoration* coloration);
+  /// Update progress
+  void progressChanged(QString, int);
 
 protected:
-  // Attributes
-  vtkPolyData* OutputMesh;
+  void initializeDataList(int frameId);
+  void pushData(kwiver::vital::camera_map::map_camera_t::value_type cam_itr,
+            kwiver::vital::timestamp& ts, bool hasMask);
+  vtkSmartPointer<vtkRenderWindow> CreateDepthBufferPipeline();
+  vtkSmartPointer<vtkFloatArray> RenderDepthBuffer(
+    vtkSmartPointer<vtkRenderWindow> renWin,
+    kwiver::vital::camera_perspective_sptr camera_ptr, int width, int height, double range[2]);
+
+
+protected:
+  // input mesh
+  vtkSmartPointer<vtkPolyData> Input;
+  vtkSmartPointer<vtkPolyData> Output;
   int Sampling;
-  typedef std::pair<kwiver::vital::image_of<uint8_t>,
-                    kwiver::vital::camera_perspective_sptr> ColorationData;
+  int Frame;
+  bool AverageColor;
+  bool Error;
+  float OcclusionThreshold;
+  bool RemoveOccluded;
+  bool RemoveMasked;
+
+  struct ColorationData
+  {
+    ColorationData(kwiver::vital::image_container_sptr imageContainer,
+                   kwiver::vital::image_container_sptr maskImageContainer,
+                   kwiver::vital::camera_perspective_sptr camera_ptr,
+                   kwiver::vital::frame_id_t frame) :
+      Image(imageContainer->get_image()),
+      MaskImage(maskImageContainer ? maskImageContainer->get_image() :
+                kwiver::vital::image_of<uint8_t>()),
+      Camera_ptr(camera_ptr), Frame(frame)
+    {}
+    kwiver::vital::image_of<uint8_t> Image;
+    kwiver::vital::image_of<uint8_t> MaskImage;
+    kwiver::vital::camera_perspective_sptr Camera_ptr;
+    kwiver::vital::frame_id_t Frame;
+  };
   std::vector<ColorationData> DataList;
 
   std::string videoPath;
   kwiver::vital::algo::video_input_sptr videoReader;
+  std::string maskPath;
+  kwiver::vital::algo::video_input_sptr maskReader;
   kwiver::vital::camera_map_sptr cameras;
 };
 

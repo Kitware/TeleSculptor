@@ -176,9 +176,11 @@ bool ComputeAllDepthTool::execute(QWidget* window)
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
+  using std::placeholders::_4;
   typedef compute_depth::callback_t callback_t;
   callback_t cb = std::bind(&ComputeAllDepthTool::callback_handler,
-                            this, _1, _2, _3);
+                            this, _1, _2, _3, _4);
+
   d->depth_algo->set_callback(cb);
 
   return AbstractTool::execute(window);
@@ -348,21 +350,28 @@ void ComputeAllDepthTool::run()
     double height_min, height_max;
     kwiver::arrows::core::height_range_from_3d_bounds(minpt, maxpt, height_min, height_max);
 
+    kwiver::vital::image_container_sptr uncertainty = nullptr;
     //compute depth
     auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                         height_min, height_max,
                                         static_cast<unsigned int>(ref_frame),
-                                        d->crop, masks_out);
+                                        d->crop, uncertainty, masks_out);
     if (!depth)
     {
       // depth computation terminated early or failed to produce a result
       continue;
     }
+
+    kwiver::vital::image_of<double> uncertainty_img;
+    if (uncertainty)
+    {
+      uncertainty_img = kwiver::vital::image_of<double>(uncertainty->get_image());
+    }
     kwiver::vital::image_of<double> depth_img(depth->get_image());
     auto image_data = depth_to_vtk(depth_img, d->ref_img,
                                    d->crop.min_x(), d->crop.width(),
                                    d->crop.min_y(), d->crop.height(),
-                                   d->ref_mask);
+                                   uncertainty_img, d->ref_mask);
 
     auto data = std::make_shared<ToolData>();
     data->copyDepth(image_data);
@@ -376,7 +385,8 @@ bool
 ComputeAllDepthTool
 ::callback_handler(kwiver::vital::image_container_sptr depth,
                    std::string const& status,
-                   unsigned int percent_complete)
+                   unsigned int percent_complete,
+                   kwiver::vital::image_container_sptr uncertainty)
 {
   QTE_D();
   // make a copy of the tool data
@@ -384,10 +394,20 @@ ComputeAllDepthTool
   if (depth)
   {
     kwiver::vital::image_of<double> depth_img(depth->get_image());
+
+    kwiver::vital::image_of<double> uncertainty_img;
+    if (uncertainty)
+    {
+      uncertainty_img = kwiver::vital::image_of<double>(uncertainty->get_image());
+    }
+    else
+    {
+      uncertainty_img = kwiver::vital::image_of<double>();
+    }
     auto depthData = depth_to_vtk(depth_img, d->ref_img,
                                   d->crop.min_x(), d->crop.width(),
                                   d->crop.min_y(), d->crop.height(),
-                                  d->ref_mask);
+                                  uncertainty_img, d->ref_mask);
     data->copyDepth(depthData);
   }
   // Compute overall percent complete accounting for the percentage of depth

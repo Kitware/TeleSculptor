@@ -56,13 +56,21 @@ public:
   void setActor(vtkActor* actor);
 
   void initFrameSampling(int nbFrames);
+  int getFrameSampling() const;
+  double getOcclusionThreshold() const;
 
   void setCameras(kwiver::vital::camera_map_sptr cameras);
-
-  void setVideoConfig(std::string const& videoPath,
+  kwiver::vital::camera_map_sptr getCameras() const;
+  void setVideoConfig(std::string const& path,
                       kwiver::vital::config_block_sptr config);
-
+  kwiver::vital::config_block_sptr getVideoConfig() const;
+  std::string getVideoPath() const;
+  void setMaskConfig(std::string const& path,
+                     kwiver::vital::config_block_sptr config);
+  kwiver::vital::config_block_sptr getMaskConfig() const;
+  std::string getMaskPath() const;
   void colorize();
+  void forceColorize();
 
   void setCurrentFrame(int);
 
@@ -75,6 +83,7 @@ signals:
 
 public slots:
   void showColorizeSurfaceMenu(bool state);
+  void reshowColorizeSurfaceMenu();
   void updateColorizeSurfaceMenu(QString const& text);
 
 private:

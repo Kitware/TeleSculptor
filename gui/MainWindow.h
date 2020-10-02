@@ -106,6 +106,7 @@ public slots:
   void saveVolume();
   void enableSaveFusedMesh(bool);
   void saveFusedMesh();
+  void saveFusedMeshFrameColors();
 
   void enableSaveDepthPoints(bool);
 
@@ -117,6 +118,8 @@ public slots:
 
   void showAboutDialog();
   void showUserManual();
+
+  void updateToolProgress(QString const&, int);
 
 protected slots:
   void setSlideSpeed(int);
@@ -131,7 +134,6 @@ protected slots:
   void addFrame(int);
   void updateFrames(
     std::shared_ptr<kwiver::vital::metadata_map::map_metadata_t>);
-  void updateVideoImportProgress(QString const&, int);
   void enableAntiAliasing(bool enable);
 
   void setIgnoreMetadata(bool);

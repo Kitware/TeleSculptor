@@ -407,7 +407,7 @@ QTE_IMPLEMENT_D_FUNC(MainWindow)
 MainWindowPrivate::MainWindowPrivate(MainWindow* mainWindow)
 {
   QObject::connect(&videoImporter, &VideoImport::progressChanged,
-                   mainWindow, &MainWindow::updateVideoImportProgress);
+                   mainWindow, &MainWindow::updateToolProgress);
   QObject::connect(&videoImporter, &VideoImport::completed,
                    mainWindow, &MainWindow::updateFrames);
 
@@ -615,7 +615,7 @@ void MainWindowPrivate::addVideoSource(
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addMaskSource(
-  kv::config_block_sptr const& config, QString const& maskPath)
+  kv::config_block_sptr const& config, QString const& path)
 {
   // Save the configuration so independent video sources can be created for
   // tools
@@ -623,8 +623,9 @@ void MainWindowPrivate::addMaskSource(
   {
     this->project->config->merge_config(config);
   }
-  this->maskPath = maskPath;
+  this->maskPath = path;
   this->freestandingConfig->merge_config(config);
+  this->UI.worldView->setMaskConfig(path, config);
 }
 
 //-----------------------------------------------------------------------------
@@ -1530,6 +1531,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::saveVolume);
   connect(d->UI.actionExportFusedMesh, &QAction::triggered,
           this, &MainWindow::saveFusedMesh);
+  connect(d->UI.actionExportFusedMeshFrameColors, &QAction::triggered,
+          this, &MainWindow::saveFusedMeshFrameColors);
   connect(d->UI.actionExportDepthPoints, &QAction::triggered,
           this, QOverload<>::of(&MainWindow::saveDepthPoints));
   connect(d->UI.actionExportTracks, &QAction::triggered,
@@ -2593,6 +2596,7 @@ void MainWindow::enableSaveFusedMesh(bool state)
 
   d->UI.actionExportVolume->setEnabled(state);
   d->UI.actionExportFusedMesh->setEnabled(state);
+  d->UI.actionExportFusedMeshFrameColors->setEnabled(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -2638,6 +2642,33 @@ void MainWindow::saveFusedMesh()
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
       d->UI.worldView->saveFusedMesh(path, lgcs);
+    }
+  }
+  catch (...)
+  {
+    auto const msg =
+      QString("An error occurred while exporting the mesh to \"%1\". "
+              "The output file may not have been written correctly.");
+    QMessageBox::critical(this, "Export error", msg.arg(path));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::saveFusedMeshFrameColors()
+{
+  QTE_D();
+
+  auto const name = d->project->workingDir.dirName();
+  auto const path = QFileDialog::getSaveFileName(
+    this, "Export Fused Mesh Frame Colors", name + QString("_fused_mesh_frame_colors.vtp"),
+    "VTK Polydata (*.vtp);;"
+    "All Files (*)");
+
+  try
+  {
+    if (!path.isEmpty())
+    {
+      d->UI.worldView->saveFusedMeshFrameColors(path);
     }
   }
   catch (...)
@@ -3356,7 +3387,7 @@ void MainWindow::applySimilarityTransform()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::updateVideoImportProgress(QString const& desc, int progress)
+void MainWindow::updateToolProgress(QString const& desc, int progress)
 {
   QTE_D();
 

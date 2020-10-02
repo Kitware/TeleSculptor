@@ -39,6 +39,7 @@
 #include "FieldInformation.h"
 #include "GroundControlPointsWidget.h"
 #include "ImageOptions.h"
+#include "tools/MeshColoration.h"
 #include "PointOptions.h"
 #include "RulerOptions.h"
 #include "RulerWidget.h"
@@ -111,6 +112,10 @@
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
+
+namespace {
+  static auto logger = kwiver::vital::get_logger("telesculptor.worldview");
+};
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -489,7 +494,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
           this, &WorldView::render);
 
   connect(this, &WorldView::contourChanged,
-          this, &WorldView::render);
+          d->volumeOptions, &VolumeOptions::reshowColorizeSurfaceMenu);
 
   auto const roiMenu = new QMenu(this);
   roiMenu->addAction(d->UI.actionResetROI);
@@ -827,12 +832,21 @@ void WorldView::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVideoConfig(QString const& videoPath,
+void WorldView::setVideoConfig(QString const& path,
                                kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
-  d->volumeOptions->setVideoConfig(stdString(videoPath), config);
+  d->volumeOptions->setVideoConfig(stdString(path), config);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setMaskConfig(QString const& path,
+                               kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->volumeOptions->setMaskConfig(path.toStdString(), config);
 }
 
 //-----------------------------------------------------------------------------
@@ -892,12 +906,12 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   contourMapper->ScalarVisibilityOff();
 
   // Set the actor's mapper
-  d->volumeActor->SetMapper(contourMapper.Get());
+  d->volumeActor->SetMapper(contourMapper);
   d->volumeActor->GetProperty()->SetColor(0.7, 0.7, 0.7);
   d->volumeActor->GetProperty()->SetAmbient(0.25);
   d->volumeActor->GetProperty()->SetDiffuse(0.75);
   d->volumeActor->SetVisibility(true);
-  d->volumeOptions->setActor(d->volumeActor.Get());
+  d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
   if (d->UI.actionShowVolume->isChecked())
@@ -910,7 +924,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
           this, &WorldView::fusedMeshEnabled);
 
   // Add this actor to the renderer
-  d->renderer->AddActor(d->volumeActor.Get());
+  d->renderer->AddActor(d->volumeActor);
   emit contourChanged();
 }
 
@@ -921,7 +935,7 @@ void WorldView::resetVolume()
 
   d->volume = nullptr;
 
-  d->renderer->RemoveActor(d->volumeActor.Get());
+  d->renderer->RemoveActor(d->volumeActor);
 
   this->fusedMeshEnabled(false);
   d->volumeOptions->setEnabled(false);
@@ -951,13 +965,11 @@ void WorldView::computeContour(double threshold)
   QTE_D();
 
   d->contourFilter->SetValue(0, threshold);
-  this->render();
-
+  d->contourFilter->Update();
   if(d->volumeOptions->isColorOptionsEnabled())
   {
-    d->volumeOptions->colorize();
+    d->volumeOptions->forceColorize();
   }
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1512,7 +1524,6 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->SetCompression(true);
   mIWriter->Write();
 
-  auto logger = kwiver::vital::get_logger("telesculptor.worldview");
   LOG_INFO(logger, "Saved : " << qPrintable(path));
 }
 
@@ -1564,6 +1575,57 @@ void WorldView::saveFusedMesh(const QString &path,
   }
 
   std::cout << "Saved : " << qPrintable(path) << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
+{
+  QTE_D();
+  QEventLoop loop;
+  vtkPolyData* mesh = d->contourFilter->GetOutput();
+  std::string videoPath = d->volumeOptions->getVideoPath();
+  kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
+  std::string maskPath = d->volumeOptions->getMaskPath();
+  kwiver::vital::config_block_sptr maskConfig =  d->volumeOptions->getMaskConfig();
+  kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
+  MeshColoration* coloration =
+    new MeshColoration(videoConfig, videoPath,
+                       maskConfig, maskPath,
+                       cameras);
+  coloration->setProperty("path", path);
+  coloration->SetInput(mesh);
+  coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
+  double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
+  coloration->SetOcclusionThreshold(occlusionThreshold);
+  coloration->SetRemoveOccluded(occlusion);
+  vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
+  meshFrameColors->CopyStructure(mesh);
+  coloration->SetOutput(meshFrameColors);
+  coloration->SetFrame(-1);
+  coloration->SetAverageColor(false);
+  connect(coloration, &MeshColoration::resultReady,
+          this, &WorldView::meshColorationHandleResult);
+  connect(coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit);
+  connect(coloration, &MeshColoration::finished,
+          coloration, &MeshColoration::deleteLater);
+  coloration->start();
+  loop.exec();
+}
+
+
+void WorldView::meshColorationHandleResult(MeshColoration* coloration)
+{
+  if (coloration)
+  {
+    QString path = coloration->property("path").toString();
+    vtkNew<vtkXMLPolyDataWriter> writer;
+    writer->SetFileName(qPrintable(path));
+    writer->SetDataModeToBinary();
+    writer->AddInputDataObject(coloration->GetOutput());
+    writer->Write();
+
+    LOG_INFO(logger, "Saved : " << qPrintable(path));
+  }
 }
 
 //-----------------------------------------------------------------------------

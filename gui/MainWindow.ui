@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="qtMenu" name="menuFile">
@@ -60,6 +60,7 @@
      <addaction name="separator"/>
      <addaction name="actionExportVolume"/>
      <addaction name="actionExportFusedMesh"/>
+     <addaction name="actionExportFusedMeshFrameColors"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -133,7 +134,7 @@
   </widget>
   <widget class="QDockWidget" name="cameraSelectorDock">
    <property name="windowTitle">
-    <string>Camera Selection</string>
+    <string>Camera Selectio&amp;n</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -220,7 +221,7 @@
   </widget>
   <widget class="QDockWidget" name="depthMapViewDock">
    <property name="windowTitle">
-    <string>DepthMap View</string>
+    <string>&amp;DepthMap View</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -229,7 +230,7 @@
   </widget>
   <widget class="QDockWidget" name="metadataDock">
    <property name="windowTitle">
-    <string>Metadata</string>
+    <string>&amp;Metadata</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -260,7 +261,7 @@
   </widget>
   <widget class="QDockWidget" name="loggerDock">
    <property name="windowTitle">
-    <string>Log Viewer</string>
+    <string>&amp;Log Viewer</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -405,7 +406,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>WebGL Scene...</string>
+    <string>&amp;WebGL Scene...</string>
    </property>
    <property name="visible">
     <bool>false</bool>
@@ -421,7 +422,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Volume...</string>
+    <string>&amp;Volume...</string>
    </property>
   </action>
   <action name="actionExportFusedMesh">
@@ -429,7 +430,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Fused Mesh...</string>
+    <string>&amp;Fused Mesh...</string>
    </property>
   </action>
   <action name="actionShowWorldAxes">
@@ -463,7 +464,7 @@
     <string>&amp;Depth Map...</string>
    </property>
    <property name="iconText">
-    <string>Depth Map</string>
+    <string>Depth Map...</string>
    </property>
    <property name="toolTip">
     <string>Export the current back projected depth map to a point cloud file</string>
@@ -488,7 +489,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Keyframes Only</string>
+    <string>&amp;Keyframes Only</string>
    </property>
   </action>
   <action name="actionTrackedFramesOnly">
@@ -499,7 +500,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Tracked Frames Only</string>
+    <string>&amp;Tracked Frames Only</string>
    </property>
   </action>
   <action name="actionExportGroundControlPoints">
@@ -524,7 +525,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Antialias Views</string>
+    <string>Antialias &amp;Views</string>
    </property>
    <property name="toolTip">
     <string>Enable anti-aliasing filter for smoother geometry in each view (may produce artifacts)</string>
@@ -583,7 +584,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Ignore Metadata</string>
+    <string>&amp;Ignore Metadata</string>
    </property>
    <property name="toolTip">
     <string>Disable the use of loaded metadata as a constraint in camera estimation</string>
@@ -594,7 +595,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Variable Lens</string>
+    <string>&amp;Variable Lens</string>
    </property>
    <property name="toolTip">
     <string>Allow estimation of variable camera lens across the video</string>
@@ -609,6 +610,14 @@
    </property>
    <property name="toolTip">
     <string>Keep the origin of the local geospatial coordinates fixed.</string>
+   </property>
+  </action>
+  <action name="actionExportFusedMeshFrameColors">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Fused Mesh Frame Colors...</string>
    </property>
   </action>
  </widget>

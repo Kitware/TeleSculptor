@@ -173,8 +173,10 @@ bool ComputeDepthTool::execute(QWidget* window)
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
+  using std::placeholders::_4;
   typedef compute_depth::callback_t callback_t;
-  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this, _1, _2, _3);
+  callback_t cb = std::bind(&ComputeDepthTool::callback_handler, this,
+                            _1, _2, _3, _4);
   d->depth_algo->set_callback(cb);
 
   return AbstractTool::execute(window);
@@ -185,6 +187,7 @@ vtkSmartPointer<vtkImageData>
 depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
              const kwiver::vital::image_of<unsigned char>& color_img,
              int i0, int ni, int j0, int nj,
+             const kwiver::vital::image_of<double>& uncertainty_img,
              const kwiver::vital::image_of<unsigned char>&mask_img)
 {
   if (depth_img.size() == 0 ||
@@ -228,7 +231,6 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
   {
     for (int x = 0; x < ni; x++)
     {
-      uncertainty->SetValue(pt_id, 0);
       if (mask_img.size() > 0)
       {
         if (mask_img(x, y) > 127)
@@ -241,7 +243,18 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
         weight->SetValue(pt_id, 1.0);
       }
 
+      if (uncertainty_img.size() > 0)
+      {
+        uncertainty->SetValue(pt_id, uncertainty_img(x, y));
+      }
+      else
+      {
+        // default value for unspecified uncertainty
+        uncertainty->SetValue(pt_id, 0);
+      }
+
       depths->SetValue(pt_id, depth_img(x, y));
+
       color->SetTuple3(pt_id,
                        (int)color_img(x + i0, y + j0, 0),
                        (int)color_img(x + i0, y + j0, 1),
@@ -411,19 +424,32 @@ void ComputeDepthTool::run()
   data = std::make_shared<ToolData>();
   data->activeFrame = frame;
   emit updated(data);
+
+  kwiver::vital::image_container_sptr uncertainty = nullptr;
   auto depth = d->depth_algo->compute(frames_out, cameras_out,
                                       height_min, height_max,
-                                      ref_frame, d->crop, masks_out);
+                                      ref_frame, d->crop,
+                                      uncertainty, masks_out);
   if (!depth)
   {
     // processing was terminated before any result was produced
     return;
   }
+
+  kwiver::vital::image_of<double> uncertainty_img;
+  if (uncertainty)
+  {
+    uncertainty_img = kwiver::vital::image_of<double>(uncertainty->get_image());
+  }
+  else
+  {
+    uncertainty_img = kwiver::vital::image_of<double>();
+  }
   kwiver::vital::image_of<double> depth_img(depth->get_image());
   auto image_data = depth_to_vtk(depth_img, d->ref_img,
                                  d->crop.min_x(), d->crop.width(),
                                  d->crop.min_y(), d->crop.height(),
-                                 d->ref_mask);
+                                 uncertainty_img, d->ref_mask);
 
   this->updateDepth(image_data);
 }
@@ -432,7 +458,8 @@ void ComputeDepthTool::run()
 bool
 ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
                                    std::string const& status,
-                                   unsigned int percent_complete)
+                                   unsigned int percent_complete,
+                                   kwiver::vital::image_container_sptr uncertainty)
 {
   QTE_D();
   // make a copy of the tool data
@@ -440,10 +467,19 @@ ComputeDepthTool::callback_handler(kwiver::vital::image_container_sptr depth,
   if (depth)
   {
     kwiver::vital::image_of<double> depth_img(depth->get_image());
+    kwiver::vital::image_of<double> uncertainty_img;
+    if (uncertainty)
+    {
+      uncertainty_img = kwiver::vital::image_of<double>(uncertainty->get_image());
+    }
+    else
+    {
+      uncertainty_img = kwiver::vital::image_of<double>();
+    }
     auto depthData = depth_to_vtk(depth_img, d->ref_img,
                                   d->crop.min_x(), d->crop.width(),
                                   d->crop.min_y(), d->crop.height(),
-                                  d->ref_mask);
+                                  uncertainty_img, d->ref_mask);
     data->copyDepth(depthData);
   }
   data->activeFrame = d->ref_frame;

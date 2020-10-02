@@ -53,7 +53,8 @@
 class VolumeOptionsPrivate
 {
 public:
-  VolumeOptionsPrivate() {}
+  VolumeOptionsPrivate():colorizeSurfaceOptions(nullptr),volumeActor(nullptr)
+  {}
 
   void setPopup(QToolButton* button, QWidget* popup);
 
@@ -101,9 +102,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
           this, &VolumeOptions::showColorizeSurfaceMenu);
 
-  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
-          this, &VolumeOptions::colorOptionsEnabled);
-
   connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
           this, &VolumeOptions::updateColorizeSurfaceMenu);
 
@@ -137,6 +135,23 @@ void VolumeOptions::initFrameSampling(int nbFrames)
 }
 
 //-----------------------------------------------------------------------------
+int VolumeOptions::getFrameSampling() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getFrameSampling();
+}
+
+//-----------------------------------------------------------------------------
+double VolumeOptions::getOcclusionThreshold() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getOcclusionThreshold();
+}
+
+
+//-----------------------------------------------------------------------------
 void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 {
   QTE_D();
@@ -145,12 +160,61 @@ void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setVideoConfig(std::string const& videoPath,
+kwiver::vital::camera_map_sptr VolumeOptions::getCameras() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getCameras();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setVideoConfig(std::string const& path,
                                    kwiver::vital::config_block_sptr config)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setVideoInfo(config, videoPath);
+  d->colorizeSurfaceOptions->setVideoConfig(path, config);
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr VolumeOptions::getVideoConfig() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getVideoConfig();
+}
+
+//-----------------------------------------------------------------------------
+std::string VolumeOptions::getVideoPath() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getVideoPath();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setMaskConfig(std::string const& path,
+                                   kwiver::vital::config_block_sptr config)
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->setMaskConfig(path, config);
+}
+
+//-----------------------------------------------------------------------------
+kwiver::vital::config_block_sptr VolumeOptions::getMaskConfig() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getMaskConfig();
+}
+
+//-----------------------------------------------------------------------------
+std::string VolumeOptions::getMaskPath() const
+{
+  QTE_D();
+
+  return d->colorizeSurfaceOptions->getMaskPath();
 }
 
 //-----------------------------------------------------------------------------
@@ -159,6 +223,14 @@ void VolumeOptions::colorize()
   QTE_D();
 
   d->colorizeSurfaceOptions->colorize();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::forceColorize()
+{
+  QTE_D();
+
+  d->colorizeSurfaceOptions->forceColorize();
 }
 
 //-----------------------------------------------------------------------------
@@ -182,12 +254,25 @@ bool VolumeOptions::isColorOptionsEnabled()
 void VolumeOptions::showColorizeSurfaceMenu(bool state)
 {
   QTE_D();
-
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
   d->colorizeSurfaceOptions->enableMenu(state);
+  if (state)
+  {
+    this->forceColorize();
+  }
   d->volumeActor->GetMapper()->SetScalarVisibility(state);
-
   emit modified();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::reshowColorizeSurfaceMenu()
+{
+  QTE_D();
+  if (d->volumeActor)
+  {
+    d->volumeActor->GetMapper()->Update();
+    this->showColorizeSurfaceMenu(d->UI.checkBoxColorizeSurface->isChecked());
+  }
 }
 
 //-----------------------------------------------------------------------------

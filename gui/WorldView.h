@@ -46,6 +46,7 @@ class vtkMaptkImageDataGeometryFilter;
 class vtkObject;
 class vtkPolyData;
 class vtkStructuredGrid;
+class MeshColoration;
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
@@ -72,8 +73,10 @@ public:
 
   void resetVolume();
 
-  void setVideoConfig(QString const& videoPath,
+  void setVideoConfig(QString const& path,
                       kwiver::vital::config_block_sptr config);
+  void setMaskConfig(QString const& path,
+                     kwiver::vital::config_block_sptr config);
   void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableAntiAliasing(bool enable);
@@ -138,6 +141,8 @@ public slots:
   void saveVolume(QString const& path);
   void saveFusedMesh(QString const& path,
                      kwiver::vital::local_geo_cs const & lgcs);
+  void saveFusedMeshFrameColors(QString const& path, bool occlusion = true);
+  void meshColorationHandleResult(MeshColoration* coloration);
 
   void invalidateGeometry();
 
