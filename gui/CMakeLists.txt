@@ -210,6 +210,7 @@ target_link_libraries(TeleSculptor
   maptk
   kwiver::kwiver_adapter
   kwiver::kwiver_algo_core
+  kwiver::kwiver_algo_mvg
   kwiver::sprokit_pipeline
   kwiver::vital_vpm
   qtExtensions
