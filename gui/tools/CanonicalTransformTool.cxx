@@ -33,7 +33,7 @@
 
 #include <vital/algo/estimate_canonical_transform.h>
 
-#include <arrows/core/transform.h>
+#include <arrows/mvg/transform.h>
 
 #include <QMessageBox>
 
@@ -125,6 +125,6 @@ void CanonicalTransformTool::run()
   auto const& xf =
     d->algorithm->estimate_transform(this->cameras(), this->landmarks());
 
-  this->updateCameras(kwiver::arrows::core::transform(this->cameras(), xf));
-  this->updateLandmarks(kwiver::arrows::core::transform(this->landmarks(), xf));
+  this->updateCameras(kwiver::arrows::mvg::transform(this->cameras(), xf));
+  this->updateLandmarks(kwiver::arrows::mvg::transform(this->landmarks(), xf));
 }

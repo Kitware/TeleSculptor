@@ -33,7 +33,7 @@
 
 #include <arrows/core/depth_utils.h>
 #include <arrows/mvg/sfm_utils.h>
-#include <arrows/core/transform.h>
+#include <arrows/mvg/transform.h>
 
 #include "BundleAdjustTool.h"
 #include "ComputeAllDepthTool.h"
@@ -246,8 +246,8 @@ void RunAllTool::run()
     constraints->set_local_geo_cs(lgcs);
     this->setSfmConstraints(constraints);
 
-    kwiver::arrows::core::translate_inplace(*landmarks, -offset);
-    kwiver::arrows::core::translate_inplace(*cameras, -offset);
+    kwiver::arrows::mvg::translate_inplace(*landmarks, -offset);
+    kwiver::arrows::mvg::translate_inplace(*cameras, -offset);
   }
 
   //Compute an ROI from landmarks

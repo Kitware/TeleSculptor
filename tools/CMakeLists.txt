@@ -41,6 +41,7 @@ kwiver_add_executable(maptk_bundle_adjust_tracks bundle_adjust_tracks.cxx)
 target_link_libraries(maptk_bundle_adjust_tracks
   PRIVATE             maptk
                       kwiver::kwiver_algo_core
+                      kwiver::kwiver_algo_mvg
                       kwiver::vital_vpm
                       kwiver::kwiversys
   )
@@ -48,7 +49,7 @@ target_link_libraries(maptk_bundle_adjust_tracks
 kwiver_add_executable(maptk_apply_gcp apply_gcp.cxx)
 target_link_libraries(maptk_apply_gcp
   PRIVATE             maptk
-                      kwiver::kwiver_algo_core
+                      kwiver::kwiver_algo_mvg
                       kwiver::vital_vpm
                       kwiver::kwiversys
   )
@@ -57,6 +58,7 @@ kwiver_add_executable(maptk_analyze_tracks analyze_tracks.cxx)
 target_link_libraries(maptk_analyze_tracks
   PRIVATE             maptk
                       kwiver::kwiver_algo_core
+                      kwiver::kwiver_algo_mvg
                       kwiver::vital_vpm
                       kwiver::kwiversys
   )

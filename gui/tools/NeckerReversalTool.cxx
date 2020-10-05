@@ -30,7 +30,7 @@
 
 #include "NeckerReversalTool.h"
 
-#include <arrows/core/necker_reverse.h>
+#include <arrows/mvg/necker_reverse.h>
 
 #include <QMessageBox>
 
@@ -78,7 +78,7 @@ void NeckerReversalTool::run()
   auto cp = this->cameras();
   auto lp = this->landmarks();
 
-  kwiver::arrows::core::necker_reverse(cp, lp);
+  kwiver::arrows::mvg::necker_reverse(cp, lp);
 
   this->updateCameras(cp);
   this->updateLandmarks(lp);
