@@ -55,7 +55,7 @@
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
 
-#include <arrows/core/projected_track_set.h>
+#include <arrows/mvg/projected_track_set.h>
 #include <maptk/version.h>
 
 typedef kwiversys::SystemTools     ST;
@@ -325,7 +325,8 @@ static int maptk_main(int argc, char const* argv[])
         return EXIT_FAILURE;
       }
 
-      comparison_tracks = kwiver::arrows::projected_tracks( landmarks, cameras );
+      comparison_tracks =
+        kwiver::arrows::mvg::projected_tracks( landmarks, cameras );
     }
 
     // Read images one by one, this is more memory efficient than loading them all

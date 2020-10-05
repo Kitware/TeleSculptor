@@ -66,8 +66,8 @@
 #include <kwiversys/SystemTools.hxx>
 #include <kwiversys/CommandLineArguments.hxx>
 
-#include <arrows/core/metrics.h>
-#include <arrows/core/transform.h>
+#include <arrows/mvg/metrics.h>
+#include <arrows/mvg/transform.h>
 
 #include <maptk/geo_reference_points_io.h>
 #include <vital/types/local_geo_cs.h>
@@ -474,9 +474,10 @@ static int maptk_main(int argc, char const* argv[])
                               << " reference points triangulated");
       }
 
-      double post_tri_rmse = kwiver::arrows::reprojection_rmse(cam_map->cameras(),
-                                                              sba_space_landmarks->landmarks(),
-                                                              reference_tracks->tracks());
+      double post_tri_rmse =
+        kwiver::arrows::mvg::reprojection_rmse(cam_map->cameras(),
+                                               sba_space_landmarks->landmarks(),
+                                               reference_tracks->tracks());
       LOG_DEBUG(main_logger, "Post-triangulation RMSE: " << post_tri_rmse);
 
       // Estimate ST from sba-space to reference space.
@@ -494,8 +495,8 @@ static int maptk_main(int argc, char const* argv[])
 
     // apply to cameras and landmarks
     LOG_INFO(main_logger, "Applying transform to cameras and landmarks");
-    cam_map = kwiver::arrows::core::transform(cam_map, sim_transform);
-    lm_map = kwiver::arrows::core::transform(lm_map, sim_transform);
+    cam_map = kwiver::arrows::mvg::transform(cam_map, sim_transform);
+    lm_map = kwiver::arrows::mvg::transform(lm_map, sim_transform);
   }
 
   //

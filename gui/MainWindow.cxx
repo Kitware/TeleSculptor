@@ -64,7 +64,7 @@
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
-#include <arrows/core/transform.h>
+#include <arrows/mvg/transform.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_from_metadata.h>
@@ -485,13 +485,13 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   }
 
   // shift the landmarks
-  kwiver::arrows::core::translate_inplace(*this->landmarks, -offset);
+  kwiver::arrows::mvg::translate_inplace(*this->landmarks, -offset);
   this->UI.worldView->setLandmarks(*landmarks);
   this->UI.cameraView->setLandmarksData(*landmarks);
 
   // shift the cameras
   auto cameras = this->cameraMap();
-  kwiver::arrows::core::translate_inplace(*cameras, -offset);
+  kwiver::arrows::mvg::translate_inplace(*cameras, -offset);
   this->updateCameras(cameras);
 
   // shift the GCPs
@@ -3285,11 +3285,11 @@ void MainWindow::applySimilarityTransform()
   sim_transform = st_estimator->estimate_transform(from_pts, to_pts);
 
   // Transform landmarks
-  d->landmarks = kwiver::arrows::core::transform(d->landmarks, sim_transform);
+  d->landmarks = kwiver::arrows::mvg::transform(d->landmarks, sim_transform);
 
   // Transform cameras
   auto camera_map = d->cameraMap();
-  camera_map = kwiver::arrows::core::transform(camera_map, sim_transform);
+  camera_map = kwiver::arrows::mvg::transform(camera_map, sim_transform);
   d->updateCameras(camera_map);
 
   // Transform GCP's
