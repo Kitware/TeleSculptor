@@ -47,13 +47,15 @@ class vtkObject;
 class vtkPolyData;
 class vtkStructuredGrid;
 class MeshColoration;
+namespace kwiver { namespace arrows { namespace vtk {
+      class vtkKwiverCamera;
+    } } }
 
 namespace kwiver { namespace vital { class landmark_map; } }
 
 class GroundControlPointsWidget;
 class RulerOptions;
 class RulerWidget;
-class vtkMaptkCamera;
 
 class WorldViewPrivate;
 
@@ -99,7 +101,7 @@ signals:
 public slots:
   void setBackgroundColor(QColor const&);
 
-  void addCamera(int id, vtkMaptkCamera* camera);
+  void addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera);
   void removeCamera(int id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 

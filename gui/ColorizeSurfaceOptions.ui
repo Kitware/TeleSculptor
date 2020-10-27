@@ -87,17 +87,17 @@
      </property>
      <item>
       <property name="text">
-       <string>MeanColoration</string>
+       <string>mean</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>MedianColoration</string>
+       <string>median</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>NbProjectedDepthMap</string>
+       <string>count</string>
       </property>
      </item>
     </widget>

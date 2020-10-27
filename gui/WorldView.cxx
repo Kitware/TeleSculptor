@@ -44,7 +44,6 @@
 #include "RulerOptions.h"
 #include "RulerWidget.h"
 #include "VolumeOptions.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkCameraRepresentation.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 #include "vtkMaptkInteractorStyle.h"
@@ -52,6 +51,7 @@
 
 #include <maptk/write_pdal.h>
 
+#include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
@@ -973,7 +973,7 @@ void WorldView::computeContour(double threshold)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addCamera(int id, vtkMaptkCamera* camera)
+void WorldView::addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
   Q_UNUSED(id)
 
@@ -1004,7 +1004,7 @@ void WorldView::setActiveCamera(int id)
 
   d->cameraRep->SetActiveCamera(id);
   auto* const camera =
-    dynamic_cast<vtkMaptkCamera*>(d->cameraRep->GetActiveCamera());
+    dynamic_cast<kwiver::arrows::vtk::vtkKwiverCamera*>(d->cameraRep->GetActiveCamera());
 
   if (camera)
   {
@@ -1592,17 +1592,17 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
     new MeshColoration(videoConfig, videoPath,
                        maskConfig, maskPath,
                        cameras);
-  coloration->setProperty("path", path);
-  coloration->SetInput(mesh);
-  coloration->SetFrameSampling(d->volumeOptions->getFrameSampling());
+  coloration->setProperty("mesh_output_path", path);
+  coloration->set_input(mesh);
+  coloration->set_frame_sampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
-  coloration->SetOcclusionThreshold(occlusionThreshold);
-  coloration->SetRemoveOccluded(occlusion);
+  coloration->set_occlusion_threshold(occlusionThreshold);
+  coloration->set_remove_occluded(occlusion);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
   meshFrameColors->CopyStructure(mesh);
-  coloration->SetOutput(meshFrameColors);
-  coloration->SetFrame(-1);
-  coloration->SetAverageColor(false);
+  coloration->set_output(meshFrameColors);
+  coloration->set_frame(-1);
+  coloration->set_all_frames(true);
   connect(coloration, &MeshColoration::resultReady,
           this, &WorldView::meshColorationHandleResult);
   connect(coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit);
@@ -1617,11 +1617,11 @@ void WorldView::meshColorationHandleResult(MeshColoration* coloration)
 {
   if (coloration)
   {
-    QString path = coloration->property("path").toString();
+    QString path = coloration->property("mesh_output_path").toString();
     vtkNew<vtkXMLPolyDataWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
-    writer->AddInputDataObject(coloration->GetOutput());
+    writer->AddInputDataObject(coloration->get_output());
     writer->Write();
 
     LOG_INFO(logger, "Saved : " << qPrintable(path));

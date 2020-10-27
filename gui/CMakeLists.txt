@@ -130,7 +130,6 @@ set(gui_sources
   WorldView.cxx
   main.cxx
   vtkMaptkAxesActor.cxx
-  vtkMaptkCamera.cxx
   vtkMaptkCameraRepresentation.cxx
   vtkMaptkDistanceRepresentation2D.cxx
   vtkMaptkDistanceWidget.cxx
@@ -213,6 +212,7 @@ target_link_libraries(TeleSculptor
   kwiver::kwiver_algo_mvg
   kwiver::sprokit_pipeline
   kwiver::vital_vpm
+  kwiver_algo_vtk
   qtExtensions
   ${AppKit}
   ${VTK_LIBRARIES}

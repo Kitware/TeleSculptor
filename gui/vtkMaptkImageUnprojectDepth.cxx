@@ -29,7 +29,7 @@
 */
 #include "vtkMaptkImageUnprojectDepth.h"
 
-#include "vtkMaptkCamera.h"
+#include "arrows/vtk/vtkKwiverCamera.h"
 
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -40,7 +40,8 @@
 
 vtkStandardNewMacro(vtkMaptkImageUnprojectDepth);
 
-vtkCxxSetObjectMacro(vtkMaptkImageUnprojectDepth, Camera, vtkMaptkCamera);
+vtkCxxSetObjectMacro(vtkMaptkImageUnprojectDepth,
+                     Camera, kwiver::arrows::vtk::vtkKwiverCamera);
 
 //-----------------------------------------------------------------------------
 vtkMaptkImageUnprojectDepth::vtkMaptkImageUnprojectDepth()
@@ -98,7 +99,7 @@ void vtkMaptkImageUnprojectDepth::SimpleExecute(vtkImageData* input,
   }
 
   vtkIntArray* crop = static_cast<vtkIntArray*>(output->GetFieldData()->GetArray("Crop"));
-  vtkSmartPointer<vtkMaptkCamera> cropCam;
+  vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera> cropCam;
   auto cam = this->Camera;
   if (crop)
   {

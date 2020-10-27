@@ -43,7 +43,9 @@
 class CameraView;
 class ToolData;
 class WorldView;
-class vtkMaptkCamera;
+namespace kwiver { namespace arrows { namespace vtk {
+class vtkKwiverCamera;
+}}}
 
 class MainWindowPrivate;
 
@@ -55,7 +57,7 @@ public:
   explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
   ~MainWindow() override;
 
-  vtkMaptkCamera* activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* activeCamera();
   WorldView* worldView();
   CameraView* cameraView();
   kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;

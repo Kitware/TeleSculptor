@@ -30,8 +30,7 @@
 
 #include "vtkMaptkCameraRepresentation.h"
 
-#include "vtkMaptkCamera.h"
-
+#include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/types/vector.h>
 
 
@@ -67,10 +66,10 @@ void BuildCameraFrustum(
   // Build frustum from camera data
   vtkNew<vtkPlanes> planes;
   double planeCoeffs[24];
-  if (vtkMaptkCamera::SafeDownCast(camera))
+  if (kwiver::arrows::vtk::vtkKwiverCamera::SafeDownCast(camera))
   {
-    vtkNew<vtkMaptkCamera> tempCamera;
-    tempCamera->DeepCopy(vtkMaptkCamera::SafeDownCast(camera));
+    vtkNew<kwiver::arrows::vtk::vtkKwiverCamera> tempCamera;
+    tempCamera->DeepCopy(kwiver::arrows::vtk::vtkKwiverCamera::SafeDownCast(camera));
     tempCamera->SetClippingRange(0.01, farClipDistance);
     tempCamera->GetFrustumPlanes(planeCoeffs);
   }
