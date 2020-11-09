@@ -43,8 +43,10 @@
 class CameraView;
 class ToolData;
 class WorldView;
-namespace kwiver { namespace arrows { namespace vtk {
-class vtkKwiverCamera;
+namespace kwiver {
+namespace arrows {
+namespace vtk {
+  class vtkKwiverCamera;
 }}}
 
 class MainWindowPrivate;

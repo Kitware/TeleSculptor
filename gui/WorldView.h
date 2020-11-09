@@ -47,11 +47,16 @@ class vtkObject;
 class vtkPolyData;
 class vtkStructuredGrid;
 class MeshColoration;
-namespace kwiver { namespace arrows { namespace vtk {
-      class vtkKwiverCamera;
-    } } }
+namespace kwiver {
+namespace arrows {
+namespace vtk {
+  class vtkKwiverCamera;
+}}}
 
-namespace kwiver { namespace vital { class landmark_map; } }
+namespace kwiver {
+namespace vital {
+  class landmark_map;
+}}
 
 class GroundControlPointsWidget;
 class RulerOptions;
