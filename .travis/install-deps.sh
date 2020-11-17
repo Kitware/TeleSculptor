@@ -3,14 +3,19 @@ set -e
 
 WORK_DIR=`pwd`
 INSTALL_DIR=$HOME/deps
+CMAKE_INSTALL_DIR=/opt/kitware/cmake
 KITWARE_DIR=/opt/kitware
 HASH_DIR=/opt/kitware/hashes
 mkdir -p $HASH_DIR
 mkdir -p $INSTALL_DIR
+mkdir -p $CMAKE_INSTALL_DIR
 
 # Make a directory to test installation of TeleSculptor into
 mkdir -p $HOME/install
 
+echo "Downloading and installing cmake 3.15 binaries into: " $CMAKE_INSTALL_DIR
+wget -qO- "https://cmake.org/files/v3.15/cmake-3.15.7-Linux-x86_64.tar.gz" | \
+tar --strip-components=1 -xz -C $CMAKE_INSTALL_DIR
 
 # download and unpack Fletch
 cd /tmp
@@ -89,7 +94,7 @@ build_repo ()
     # checkout branch after clone in case $BRANCH is actually a hash
     git checkout $BRANCH
     cd ../build
-    cmake ../source \
+    $CMAKE_INSTALL_DIR/bin/cmake ../source \
           -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/ \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
