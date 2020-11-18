@@ -34,10 +34,10 @@
 #include "GroundControlPointsWidget.h"
 #include "MainWindow.h"
 #include "WorldView.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkPointPicker.h"
 #include "vtkMaptkPointPlacer.h"
 
+#include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/types/geodesy.h>
 
 #include <vtkHandleWidget.h>
@@ -409,7 +409,7 @@ void GroundControlPointsHelperPrivate::updateActivePoint(int handleId)
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelperPrivate::addCameraViewPoint()
 {
-  vtkMaptkCamera* camera = this->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = this->mainWindow->activeCamera();
   if (!camera)
   {
     return false;
@@ -493,7 +493,7 @@ void GroundControlPointsHelper::addWorldViewPoint()
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -567,7 +567,7 @@ void GroundControlPointsHelper::moveCameraViewPoint()
     d->mainWindow->worldView()->groundControlPointsWidget();
   int handleId = worldWidget->activeHandle();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     d->updatePoint(handleId);
@@ -588,7 +588,7 @@ void GroundControlPointsHelper::moveWorldViewPoint()
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -614,7 +614,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -668,7 +668,7 @@ void GroundControlPointsHelper::updateViewsFromGCPs()
   GroundControlPointsWidget* cameraWidget =
     d->mainWindow->cameraView()->groundControlPointsWidget();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
 
   for (auto const& i : d->groundControlPoints)
   {

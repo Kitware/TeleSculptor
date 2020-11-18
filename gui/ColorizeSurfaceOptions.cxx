@@ -341,14 +341,14 @@ void ColorizeSurfaceOptions::colorize()
                            d->maskConfig, d->maskPath,
                            d->cameras);
 
-      coloration->SetInput(volume);
-      coloration->SetOutput(volume);
-      coloration->SetFrameSampling(d->UI.spinBoxFrameSampling->value());
-      coloration->SetOcclusionThreshold(this->OcclusionThreshold);
-      coloration->SetRemoveOccluded(this->RemoveOccluded);
-      coloration->SetRemoveMasked(this->RemoveMasked);
-      coloration->SetFrame(this->LastColorizedFrame);
-      coloration->SetAverageColor(true);
+      coloration->set_input(volume);
+      coloration->set_output(volume);
+      coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
+      coloration->set_occlusion_threshold(this->OcclusionThreshold);
+      coloration->set_remove_occluded(this->RemoveOccluded);
+      coloration->set_remove_masked(this->RemoveMasked);
+      coloration->set_frame(this->LastColorizedFrame);
+      coloration->set_all_frames(false);
       connect(coloration, &MeshColoration::resultReady,
               this, &ColorizeSurfaceOptions::meshColorationHandleResult);
       connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
@@ -369,15 +369,16 @@ void ColorizeSurfaceOptions::colorize()
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::meshColorationHandleResult(MeshColoration* coloration)
+void ColorizeSurfaceOptions::meshColorationHandleResult(
+  MeshColoration* coloration)
 {
   QTE_D();
   if (coloration)
   {
-    vtkPolyData* volume = coloration->GetOutput();
-    volume->GetPointData()->SetActiveScalars("MeanColoration");
+    vtkPolyData* volume = coloration->get_output();
+    volume->GetPointData()->SetActiveScalars("mean");
     d->UI.comboBoxColorDisplay->setCurrentIndex(
-      d->UI.comboBoxColorDisplay->findText("MeanColoration"));
+      d->UI.comboBoxColorDisplay->findText("mean"));
     d->UI.comboBoxColorDisplay->setEnabled(true);
     emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   }

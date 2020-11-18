@@ -55,7 +55,6 @@
 #include "RulerHelper.h"
 #include "RulerOptions.h"
 #include "VideoImport.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkImageDataGeometryFilter.h"
 #include "vtkMaptkImageUnprojectDepth.h"
 
@@ -65,6 +64,7 @@
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
 #include <arrows/mvg/transform.h>
+#include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_from_metadata.h>
@@ -274,7 +274,7 @@ public:
   struct FrameData
   {
     int id;
-    vtkSmartPointer<vtkMaptkCamera> camera;
+    vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera> camera;
 
     QString depthMapPath; // Full path to depth map data
   };
@@ -308,7 +308,7 @@ public:
   std::string getFrameName(kv::frame_id_t frame);
 
   void loadImage(FrameData frame);
-  void loadEmptyImage(vtkMaptkCamera* camera);
+  void loadEmptyImage(kwiver::arrows::vtk::vtkKwiverCamera* camera);
 
   int loadCameras();
 
@@ -535,7 +535,7 @@ void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
 
     if (auto* const fd = qtGet(this->frames, orphanIndex))
     {
-      fd->camera = vtkSmartPointer<vtkMaptkCamera>::New();
+      fd->camera = vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera>::New();
       fd->camera->SetCamera(camera);
       fd->camera->Update();
 
@@ -557,7 +557,7 @@ void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::addImage(QString const& imagePath)
+void MainWindowPrivate::addImage(QString const&)
 {
   // TODO: Create/manage image list video source
 }
@@ -646,7 +646,7 @@ void MainWindowPrivate::addFrame(
   {
     this->orphanFrames.clear();
 
-    cd.camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    cd.camera = vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera>::New();
     cd.camera->SetCamera(camera);
     cd.camera->Update();
 
@@ -897,7 +897,7 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
 
   if (!fr->camera)
   {
-    fr->camera = vtkSmartPointer<vtkMaptkCamera>::New();
+    fr->camera = vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera>::New();
     this->UI.worldView->addCamera(fr->id, fr->camera);
   }
   fr->camera->SetCamera(cam);
@@ -1149,7 +1149,7 @@ std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::loadEmptyImage(vtkMaptkCamera* camera)
+void MainWindowPrivate::loadEmptyImage(kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
   auto imageDimensions = QSize(1, 1);
   if (camera)
@@ -2059,7 +2059,7 @@ void MainWindow::loadVideo(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::loadMaskImage(QString const& path)
+void MainWindow::loadMaskImage(QString const&)
 {
   // TODO
 }
@@ -3419,7 +3419,7 @@ kwiver::vital::local_geo_cs MainWindow::localGeoCoordinateSystem() const
 }
 
 //-----------------------------------------------------------------------------
-vtkMaptkCamera* MainWindow::activeCamera()
+kwiver::arrows::vtk::vtkKwiverCamera* MainWindow::activeCamera()
 {
   QTE_D();
 

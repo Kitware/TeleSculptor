@@ -34,10 +34,10 @@
 #include "MainWindow.h"
 #include "RulerWidget.h"
 #include "WorldView.h"
-#include "vtkMaptkCamera.h"
 #include "vtkMaptkPointPicker.h"
 #include "vtkMaptkPointPlacer.h"
 
+#include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/types/geodesy.h>
 
 #include <vtkHandleWidget.h>
@@ -70,7 +70,7 @@ QTE_IMPLEMENT_D_FUNC(RulerHelper)
 void RulerHelperPrivate::updateCameraViewRulerTickDistance()
 {
   QTE_Q();
-  vtkMaptkCamera* camera = this->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = this->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -141,7 +141,7 @@ void RulerHelper::addWorldViewPoint(int pointId)
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -205,7 +205,7 @@ void RulerHelper::moveCameraViewPoint(int pointId)
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -237,7 +237,7 @@ void RulerHelper::moveWorldViewPoint(int pointId)
 {
   QTE_D();
 
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -272,7 +272,7 @@ void RulerHelper::moveWorldViewPoint(int pointId)
 void RulerHelper::addCameraViewPoint(int pointId)
 {
   QTE_D();
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;
@@ -302,7 +302,7 @@ void RulerHelper::addCameraViewPoint(int pointId)
 void RulerHelper::updateCameraViewRuler()
 {
   QTE_D();
-  vtkMaptkCamera* camera = d->mainWindow->activeCamera();
+  kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
     return;

@@ -42,7 +42,6 @@ class vtkImageData;
 namespace kwiver { namespace vital { class landmark_map; } }
 namespace kwiver { namespace vital { class track; } }
 
-class vtkMaptkCamera;
 class GroundControlPointsWidget;
 class RulerWidget;
 

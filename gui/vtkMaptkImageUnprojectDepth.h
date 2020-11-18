@@ -33,7 +33,11 @@
 
 #include "vtkSimpleImageToImageFilter.h"
 
-class vtkMaptkCamera;
+namespace kwiver {
+namespace arrows {
+namespace vtk {
+class vtkKwiverCamera;
+}}}
 
 class vtkMaptkImageUnprojectDepth : public vtkSimpleImageToImageFilter
 {
@@ -43,8 +47,8 @@ public:
 
   // Description:
   // Get/Set the camera to be displayed as the active camera
-  void SetCamera(vtkMaptkCamera* camera);
-  vtkGetObjectMacro(Camera, vtkMaptkCamera);
+  void SetCamera(kwiver::arrows::vtk::vtkKwiverCamera* camera);
+  vtkGetObjectMacro(Camera, kwiver::arrows::vtk::vtkKwiverCamera);
 
   // Description:
   // Get/Set the depth array name.  Default is "Depths".
@@ -65,7 +69,7 @@ private:
   vtkMaptkImageUnprojectDepth(vtkMaptkImageUnprojectDepth const&) = delete;
   void operator=(vtkMaptkImageUnprojectDepth const&) = delete;
 
-  vtkMaptkCamera* Camera;
+  kwiver::arrows::vtk::vtkKwiverCamera* Camera;
 
   char* DepthArrayName;
   char* UnprojectedPointArrayName;
