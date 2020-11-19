@@ -235,7 +235,7 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="MetadataView" name="metadata">
+   <widget class="kwiver::arrows::qt::MetadataView" name="metadata">
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
     </property>
@@ -646,9 +646,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>MetadataView</class>
+   <class>kwiver::arrows::qt::MetadataView</class>
    <extends>QScrollArea</extends>
-   <header>MetadataView.h</header>
+   <header location="global">arrows/qt/widgets/MetadataView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -118,7 +118,6 @@ set(gui_sources
   MainWindow.cxx
   MatchMatrixAlgorithms.cxx
   MatchMatrixWindow.cxx
-  MetadataView.cxx
   PointOptions.cxx
   Project.cxx
   RulerHelper.cxx
@@ -210,6 +209,7 @@ target_link_libraries(TeleSculptor
   kwiver::kwiver_adapter
   kwiver::kwiver_algo_core
   kwiver::kwiver_algo_mvg
+  kwiver_algo_qt_widgets
   kwiver::sprokit_pipeline
   kwiver::vital_vpm
   kwiver_algo_vtk
