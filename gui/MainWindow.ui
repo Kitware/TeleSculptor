@@ -266,7 +266,7 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="LoggerView" name="Logger"/>
+   <widget class="kwiver::arrows::qt::LoggerView" name="Logger"/>
   </widget>
   <action name="actionNewProject">
    <property name="text">
@@ -664,9 +664,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>LoggerView</class>
+   <class>kwiver::arrows::qt::LoggerView</class>
    <extends>QWidget</extends>
-   <header>LoggerView.h</header>
+   <header location="global">arrows/qt/widgets/LoggerView.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
