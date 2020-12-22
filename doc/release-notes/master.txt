@@ -29,6 +29,11 @@ TeleSculptor Application
  * Updated depth computation tools to return uncertainty images to be displayed
    and saved.
 
+ * Update Depth Map and Batch Depth Map estimation tools to select the
+   support frames based on a new angle_span parameter rather than
+   sequential frames.  This allows more consistent angular sampling
+   of frames.
+
 
 Fixes since v1.1.0
 ------------------

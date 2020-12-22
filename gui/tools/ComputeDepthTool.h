@@ -55,6 +55,10 @@ public:
                         unsigned int percent_complete,
                         kwiver::vital::image_container_sptr uncertainty);
 
+  /// handler for callback on image gathering status
+  bool gather_status_handler(unsigned int curr_frame,
+                             unsigned int num_frames);
+
 protected:
   void run() override;
 
@@ -71,4 +75,5 @@ depth_to_vtk(const kwiver::vital::image_of<double>& depth_img,
              int i0, int ni, int j0, int nj,
              const kwiver::vital::image_of<double>& uncertainty_img = {},
              const kwiver::vital::image_of<unsigned char>& mask_img = {});
+
 #endif

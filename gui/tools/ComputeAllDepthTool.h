@@ -55,6 +55,13 @@ public:
                         unsigned int percent_complete,
                         kwiver::vital::image_container_sptr uncertainty);
 
+  /// handler for callback on image gathering status
+  bool gather_status_handler(unsigned int curr_frame,
+                             unsigned int num_frames,
+                             unsigned int curr_depth_map,
+                             unsigned int num_depth_maps,
+                             kwiver::vital::frame_id_t active_frame_id);
+
 protected:
   virtual void run() QTE_OVERRIDE;
 
