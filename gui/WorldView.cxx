@@ -113,10 +113,6 @@ using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
 
-namespace {
-  static auto logger = kwiver::vital::get_logger("telesculptor.worldview");
-};
-
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
 {
@@ -131,7 +127,8 @@ public:
       scaleDirty(false),
       axesDirty(false),
       axesVisible(false),
-      renderQueued(false)
+      renderQueued(false),
+      logger(kwiver::vital::get_logger("telesculptor.worldview"))
   {
   }
 
@@ -218,6 +215,8 @@ public:
   bool axesVisible;
 
   bool renderQueued;
+
+  kwiver::vital::logger_handle_t logger;
 };
 
 //-----------------------------------------------------------------------------
@@ -1524,7 +1523,7 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->SetCompression(true);
   mIWriter->Write();
 
-  LOG_INFO(logger, "Saved : " << qPrintable(path));
+  LOG_INFO(d->logger, "Saved : " << qPrintable(path));
 }
 
 //-----------------------------------------------------------------------------
@@ -1615,6 +1614,8 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
 
 void WorldView::meshColorationHandleResult(MeshColoration* coloration)
 {
+  QTE_D();
+
   if (coloration)
   {
     QString path = coloration->property("mesh_output_path").toString();
@@ -1624,7 +1625,7 @@ void WorldView::meshColorationHandleResult(MeshColoration* coloration)
     writer->AddInputDataObject(coloration->get_output());
     writer->Write();
 
-    LOG_INFO(logger, "Saved : " << qPrintable(path));
+    LOG_INFO(d->logger, "Saved : " << qPrintable(path));
   }
 }
 
