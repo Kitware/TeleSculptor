@@ -48,10 +48,6 @@
 
 #include <QDebug>
 
-namespace {
-  static kwiver::vital::logger_handle_t main_logger( kwiver::vital::get_logger( "colorize_surface_options" ) );
-};
-
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
 {
