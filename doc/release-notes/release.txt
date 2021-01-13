@@ -30,3 +30,6 @@ TeleSculptor Application
    in the data.  The data range is now set using only the finite values.
 
  * Fixed warning in new versions of CMake about conversion of TYPE to STRING.
+
+ * Fixed an issue with the Camera View not properly updating the visualization
+   of landmarks when landmarks change during tool updates.
