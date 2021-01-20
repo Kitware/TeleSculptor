@@ -169,7 +169,8 @@ target_link_libraries(TeleSculptor
   qtExtensions
   ${AppKit}
   ${VTK_LIBRARIES}
-  ${QT_LIBRARIES}
+  Qt5::Widgets
+  Qt5::Svg
 )
 
 if(vtkWebGLExporter_LOADED)

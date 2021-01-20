@@ -24,11 +24,6 @@ include( telesculptor-utils ) # local utilities
 set(Qt5_MODULES Core Designer UiPlugin Widgets Svg Xml)
 find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 
-set(QT_LIBRARIES )
-foreach(module ${Qt5_MODULES})
-  list(APPEND QT_LIBRARIES Qt5::${module})
-endforeach()
-
 find_package(qtExtensions REQUIRED)
 include(${qtExtensions_USE_FILE})
 if(QTE_QT_VERSION VERSION_EQUAL "4")
