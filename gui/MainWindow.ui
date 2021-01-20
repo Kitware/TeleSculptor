@@ -654,7 +654,7 @@
   <customwidget>
    <class>qtProgressWidget</class>
    <extends>QWidget</extends>
-   <header>qtProgressWidget.h</header>
+   <header location="global">qtProgressWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
