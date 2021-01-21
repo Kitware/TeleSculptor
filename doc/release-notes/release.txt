@@ -31,6 +31,9 @@ TeleSculptor Application
 
  * Fixed warning in new versions of CMake about conversion of TYPE to STRING.
 
+ * Fixed an issue with the Camera View not properly updating the visualization
+   of landmarks when landmarks change during tool updates.
+
 Packaging
 
  * Fix bug in creating TeleSculptor package on Windows with vc16.  The search
