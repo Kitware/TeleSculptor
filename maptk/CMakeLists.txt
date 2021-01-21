@@ -50,7 +50,7 @@ if(TELESCULPTOR_USE_PDAL)
   target_link_libraries( maptk
     PRIVATE              ${PDAL_LIBRARIES}
     )
-  target_include_directories( maptk
+  target_include_directories( maptk SYSTEM
     PRIVATE                   ${PDAL_INCLUDE_DIRS}
                               ${PDAL_INCLUDE_DIRS}/pdal
     )
