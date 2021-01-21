@@ -50,7 +50,7 @@ if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
-SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo) 
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo)
 
 get_property(CMAKE_GENERATOR_IS_MULTI_CONFIG GLOBAL
     PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -172,7 +172,6 @@ kwiver_configure_file( telesculptor-config
   "${TELESCULPTOR_CONFIG_FILE}"
   TELESCULPTOR_SOURCE_DIR
   TELESCULPTOR_BINARY_DIR
-  EIGEN3_INCLUDE_DIR
   TeleSculptor_VERSION
   telesculptor_libs
   module_path
@@ -186,7 +185,6 @@ set(module_path "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/cmake/telesculptor")
 kwiver_configure_file( telesculptor-install-config
   "${TELESCULPTOR_SOURCE_DIR}/CMake/telesculptor-config-install.cmake.in"
   "${TELESCULPTOR_CONFIG_INSTALL_FILE}"
-  EIGEN3_INCLUDE_DIR
   TeleSculptor_VERSION
   telesculptor_libs
   module_path
