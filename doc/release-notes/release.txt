@@ -30,3 +30,9 @@ TeleSculptor Application
    in the data.  The data range is now set using only the finite values.
 
  * Fixed warning in new versions of CMake about conversion of TYPE to STRING.
+
+Packaging
+
+ * Fix bug in creating TeleSculptor package on Windows with vc16.  The search
+   path for OpenCV DLLs included only vc14 and vc15.  It now will look for any
+   vc version.
