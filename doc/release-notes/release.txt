@@ -33,3 +33,9 @@ TeleSculptor Application
 
  * Fixed an issue with the Camera View not properly updating the visualization
    of landmarks when landmarks change during tool updates.
+
+Packaging
+
+ * Fix bug in creating TeleSculptor package on Windows with vc16.  The search
+   path for OpenCV DLLs included only vc14 and vc15.  It now will look for any
+   vc version.
