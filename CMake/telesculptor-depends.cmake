@@ -21,7 +21,7 @@ include( telesculptor-utils ) # local utilities
 # otherwise CMake will be unable to find those targets.
 # In the future, this should be exported by KWIVER.
 
-set(Qt5_MODULES Core Designer UiPlugin Widgets Svg Xml)
+set(Qt5_MODULES Core Widgets Svg Xml)
 find_package(Qt5 5.7 COMPONENTS ${Qt5_MODULES} REQUIRED)
 
 find_package(qtExtensions REQUIRED)
