@@ -3012,6 +3012,7 @@ void MainWindow::updateToolResults()
   {
     d->landmarks = d->toolUpdateLandmarks;
     d->UI.worldView->setLandmarks(*d->landmarks);
+    d->updateCameraView();
 
     d->UI.actionExportLandmarks->setEnabled(
       d->landmarks && d->landmarks->size());
