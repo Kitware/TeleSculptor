@@ -47,6 +47,11 @@ option(TELESCULPTOR_USE_PDAL "Enable PDAL support for saving to LAS" ON)
 if(TELESCULPTOR_USE_PDAL)
   find_package(PDAL 1.0.0 REQUIRED)
 
+  # PDAL library names are improperly exported in PDAL 1.7.2 for non-Windows
+  if (${PDAL_VERSION} VERSION_EQUAL "1.7.2" AND NOT WIN32)
+    set(PDAL_LIBRARIES "pdal_base")
+  endif()
+
   target_link_libraries( maptk
     PRIVATE              ${PDAL_LIBRARIES}
     )
