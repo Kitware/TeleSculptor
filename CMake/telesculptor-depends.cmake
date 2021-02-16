@@ -30,26 +30,45 @@ if(QTE_QT_VERSION VERSION_EQUAL "4")
     "Please provide path to qtExtensions built with Qt version 5 or higher.")
 endif()
 
-find_package(VTK REQUIRED
-  COMPONENTS
-  vtkFiltersSources
-  vtkGUISupportQt
-  vtkIOGeometry
-  vtkIOImage
-  vtkIOPLY
-  vtkIOXML
-  vtkImagingCore
-  vtkInteractionStyle
-  vtkInteractionWidgets
-  vtkRenderingAnnotation
-  vtkRenderingFreeType
-  )
+find_package(VTK)
+if(VTK_VERSION VERSION_LESS 9.0)
+  find_package(VTK REQUIRED
+    COMPONENTS
+    vtkFiltersSources
+    vtkGUISupportQt
+    vtkIOGeometry
+    vtkIOImage
+    vtkIOPLY
+    vtkIOXML
+    vtkImagingCore
+    vtkInteractionStyle
+    vtkInteractionWidgets
+    vtkRenderingAnnotation
+    vtkRenderingFreeType
+    )
 
-if(VTK_VERSION VERSION_LESS 8.2)
-  message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.2 "
-    "(Found ${VTK_VERSION})")
+  if(VTK_VERSION VERSION_LESS 8.2)
+    message(FATAL_ERROR "${PROJECT_NAME} supports VTK >= v8.2 "
+      "(Found ${VTK_VERSION})")
+  endif()
+  include(${VTK_USE_FILE})
+else()
+  find_package(VTK REQUIRED
+    COMPONENTS
+    FiltersSources
+    GUISupportQt
+    IOGeometry
+    IOImage
+    IOPLY
+    IOXML
+    ImagingCore
+    InteractionStyle
+    InteractionWidgets
+    RenderingAnnotation
+    RenderingFreeType
+    )
 endif()
-include(${VTK_USE_FILE})
+
 if(VTK_QT_VERSION VERSION_EQUAL "4")
   message(FATAL_ERROR "${PROJECT_NAME} does not support Qt4. "
     "But VTK_QT_VERSION is ${VTK_QT_VERSION}. "
