@@ -165,7 +165,7 @@ void VideoImport::run()
     emit this->progressChanged(QString("Loading video complete"), 100);
     emit this->completed(metadataMap);
   }
-  catch (kwiver::vital::vital_exception const& e)
+  catch (kwiver::vital::vital_exception const&)
   {
     emit this->progressChanged(QString("Loading Failed"), 100);
     emit this->completed({});
