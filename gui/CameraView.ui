@@ -40,7 +40,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QVTKOpenGLWidget" name="renderWidget" native="true">
+    <widget class="QVTKOpenGLNativeWidget" name="renderWidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -206,9 +206,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QVTKOpenGLWidget</class>
+   <class>QVTKOpenGLNativeWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QVTKOpenGLWidget.h</header>
+   <header location="global">QVTKOpenGLNativeWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

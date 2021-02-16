@@ -48,7 +48,7 @@
 
 #include <memory>
 
-#include <QVTKOpenGLWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 #include <vtkOpenGLRenderWindow.h>
 
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 {
   // Set the default surface format for the OpenGL view
   vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
-  QSurfaceFormat::setDefaultFormat(QVTKOpenGLWidget::defaultFormat());
+  QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
   vtkObject::GlobalWarningDisplayOff();
 
   // Set application information

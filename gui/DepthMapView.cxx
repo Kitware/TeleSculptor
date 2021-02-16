@@ -152,7 +152,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
-  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+  d->UI.renderWidget->setRenderWindow(d->renderWindow);
 
   // Set up depth map actor
   d->scalarFilter->SetScalarArrayName(DepthMapArrays::Depth);
@@ -182,7 +182,7 @@ DepthMapView::DepthMapView(QWidget* parent, Qt::WindowFlags flags)
 
   // Set interactor
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->UI.renderWidget->GetInteractor()->SetInteractorStyle(is);
+  d->UI.renderWidget->interactor()->SetInteractorStyle(is);
 }
 
 //-----------------------------------------------------------------------------
