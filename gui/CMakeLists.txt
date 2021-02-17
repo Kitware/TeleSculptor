@@ -173,6 +173,9 @@ target_link_libraries(TeleSculptor
   Qt5::Svg
 )
 
+target_compile_definitions(TeleSculptor
+  PUBLIC VTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
+
 if(vtkWebGLExporter_LOADED)
   message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
   target_compile_definitions(TeleSculptor PRIVATE -DVTKWEBGLEXPORTER)

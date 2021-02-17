@@ -528,14 +528,22 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
+#if VTK_VERSION_MAJOR < 9
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+#else
   d->UI.renderWidget->setRenderWindow(d->renderWindow);
+#endif
 
   // Set interactor
+#if VTK_VERSION_MAJOR < 9
+  auto renderInteractor = d->UI.renderWidget->GetInteractor();
+#else
+  auto renderInteractor = d->UI.renderWidget->interactor();
+#endif
   vtkNew<vtkInteractorStyleRubberBand2D> is;
-  d->UI.renderWidget->interactor()->SetInteractorStyle(is);
-  d->groundControlPointsWidget->setInteractor(
-    d->UI.renderWidget->interactor());
-  d->rulerWidget->setInteractor(d->UI.renderWidget->interactor());
+  renderInteractor->SetInteractorStyle(is);
+  d->groundControlPointsWidget->setInteractor(renderInteractor);
+  d->rulerWidget->setInteractor(renderInteractor);
 
   // Set up actors
   d->renderer->AddActor(d->featureRep->GetActivePointsWithDescActor());

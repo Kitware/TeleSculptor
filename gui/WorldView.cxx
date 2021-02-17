@@ -551,15 +551,20 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   // Set up render pipeline
   d->renderer->SetBackground(0, 0, 0);
   d->renderWindow->AddRenderer(d->renderer);
+#if VTK_VERSION_MAJOR < 9
+  d->UI.renderWidget->SetRenderWindow(d->renderWindow);
+  auto renderInteractor = d->UI.renderWidget->GetInteractor();
+#else
   d->UI.renderWidget->setRenderWindow(d->renderWindow);
+  auto renderInteractor = d->UI.renderWidget->interactor();
+#endif
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
-  d->groundControlPointsWidget->setInteractor(
-    d->UI.renderWidget->interactor());
+  d->groundControlPointsWidget->setInteractor(renderInteractor);
   connect(d->UI.actionPlaceEditGCP, &QAction::toggled,
           this, &WorldView::pointPlacementEnabled);
 
   d->rulerWidget = new RulerWidget(this);
-  d->rulerWidget->setInteractor(d->UI.renderWidget->interactor());
+  d->rulerWidget->setInteractor(renderInteractor);
   connect(d->UI.actionShowRuler, &QAction::toggled,
           this, &WorldView::rulerEnabled);
 
