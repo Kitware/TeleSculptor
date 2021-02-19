@@ -175,6 +175,11 @@ target_link_libraries(TeleSculptor
 
 target_compile_definitions(TeleSculptor
   PUBLIC VTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
+if(VTK_VERSION VERSION_GREATER_EQUAL 9.0)
+  vtk_module_autoinit(
+    TARGETS TeleSculptor
+    MODULES ${VTK_LIBRARIES})
+endif()
 
 if(vtkWebGLExporter_LOADED)
   message(STATUS "Module vtkWebGLExporter present: wekGL export enabled")
