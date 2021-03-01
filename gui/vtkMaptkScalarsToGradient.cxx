@@ -36,6 +36,8 @@
 #include <qtGradient.h>
 #include <qtIndexRange.h>
 
+#include <cmath>
+
 vtkStandardNewMacro(vtkMaptkScalarsToGradient);
 
 QTE_IMPLEMENT_D_FUNC(vtkMaptkScalarsToGradient)
