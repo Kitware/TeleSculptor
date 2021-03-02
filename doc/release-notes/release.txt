@@ -34,6 +34,9 @@ TeleSculptor Application
  * Fixed an issue with the Camera View not properly updating the visualization
    of landmarks when landmarks change during tool updates.
 
+ * Fixed an issue std::isfininte not being resolved due to the missing cmath
+   header.
+
 Packaging
 
  * Fix bug in creating TeleSculptor package on Windows with vc16.  The search
