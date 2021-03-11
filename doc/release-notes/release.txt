@@ -4,6 +4,11 @@ TeleSculptor v1.1.2 Release Notes
 This release provides patches to the TeleSculptor v1.1.1 release to address
 issues. TeleSculptor v1.1.2 is a bug fix release with no new functionality.
 
+TeleSculptor v1.1.2 also updates from KWIVER v1.5.0 to v1.5.1.  Many of these
+KWIVER bug fixes also resolve TeleSculptor issues.  Please also refer to the
+release notes for KWIVER v1.5.1.
+https://github.com/Kitware/kwiver/releases/tag/v1.5.1
+
 
 Fixes since v1.1.1
 ------------------
@@ -26,7 +31,7 @@ TeleSculptor Application
  * Fixed Run End-to-End tool to properly save depth maps after disabling the
    writing of intermediate results.
 
- * Fixed the display of color mapped data when non-finitie values are present
+ * Fixed the display of color mapped data when non-finite values are present
    in the data.  The data range is now set using only the finite values.
 
  * Fixed warning in new versions of CMake about conversion of TYPE to STRING.
@@ -34,8 +39,8 @@ TeleSculptor Application
  * Fixed an issue with the Camera View not properly updating the visualization
    of landmarks when landmarks change during tool updates.
 
- * Fixed an issue std::isfininte not being resolved due to the missing cmath
-   header.
+ * Fixed an issue in which std::isfinite is not resolved with some compilers
+   due to the missing cmath header.
 
 Packaging
 
