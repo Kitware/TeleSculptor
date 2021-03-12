@@ -8,6 +8,7 @@ Flatpak is a utility for software deployment and package management for Linux. I
 Building and running com.github.Kitware.TeleSculptor
 ----------------------------------------------------
 
+#. Create new working folder.
 #. Install flatpak-builder, for Ubuntu, ``sudo apt install flatpak-builder``
 #. ``git clone git://github.com/flathub/shared-modules.git``
 #. Download com.github.Kitware.TeleSculptor.yaml
