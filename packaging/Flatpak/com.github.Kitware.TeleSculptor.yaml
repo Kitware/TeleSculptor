@@ -1,0 +1,256 @@
+app-id: com.github.Kitware.TeleSculptor
+runtime: org.kde.Platform
+sdk: org.kde.Sdk
+runtime-version: '5.15'
+command: telesculptor
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+
+modules:
+  - shared-modules/glew/glew.json
+  - shared-modules/glu/glu-9.json
+        
+  - name: Eigen3
+    buildsystem: cmake-ninja
+    builddir: true
+    cleanup: 
+      - "*"
+    sources:
+      - type: archive
+        url: https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.bz2
+        sha256: 0fa5cafe78f66d2b501b43016858070d52ba47bd9b1016b0165a7b8e04675677 
+ 
+  - name: python3-numpy
+    buildsystem: simple
+    build-commands:
+      - rm pyproject.toml
+      - pip3 install --prefix=/app .
+    sources:
+      - type: archive
+        url: https://files.pythonhosted.org/packages/51/60/3f0fe5b7675a461d96b9d6729beecd3532565743278a9c3fe6dd09697fa7/numpy-1.19.5.zip
+        sha256: a76f502430dd98d7546e1ea2250a7360c065a5fdea52b2dffe8ae7180909b6f4
+        
+  - name: pybind11    
+    buildsystem: simple
+    build-commands:
+      - python3.8 setup.py build
+      - cmake -DPYBIND11_INSTALL=ON -DPYBIND11_TEST=OFF .
+      - cmake --build .
+      - python3.8 setup.py install --skip-build --force --prefix=/app
+    sources:
+      - type: archive
+        url: https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz
+        sha256: 8ff2fff22df038f5cd02cea8af56622bc67f5b64534f1b83b9f133b8366acff2
+
+  - name: Boost
+    buildsystem: simple
+    build-commands:
+      - ./bootstrap.sh --prefix=/app
+      - ./b2 install variant=release link=shared runtime-link=shared cxxflags="$CXXFLAGS" linkflags="$LDFLAGS" -j $FLATPAK_BUILDER_N_JOBS
+    sources:
+      - type: archive
+        url: https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz
+        sha256: aeb26f80e80945e82ee93e5939baebdca47b9dee80a07d3144be1e1a6a66dd6a        
+        
+  - name: PROJ4
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+      - -DBUILD_CCT=OFF
+      - -DBUILD_CS2CS=OFF
+      - -DBUILD_GEOD=OFF
+      - -DBUILD_GIE=OFF
+      - -DBUILD_PROJ=ON
+      - -DBUILD_PROJINFO=ON
+      - -DBUILD_TESTING=OFF
+      #- -DPROJ_TESTS=OFF
+    sources:
+      - type: archive
+        url: https://download.osgeo.org/proj/proj-6.0.0.tar.gz
+        sha256: 4510a2c1c8f9056374708a867c51b1192e8d6f9a5198dd320bf6a168e44a3657
+        
+  - name: GDAL
+    buildsystem: autotools
+    config-opts:
+      - --disable-all-optional-drivers
+    sources:
+      - type: archive
+        url: https://github.com/OSGeo/gdal/releases/download/v3.2.1/gdal-3.2.1.tar.gz
+        sha256: 43d40ba940e3927e38f9e98062ff62f9fa993ceade82f26f16fab7e73edb572e
+
+  - name: GeoTIFF
+    builddir: true
+    buildsystem: simple
+    build-commands:
+      - ./configure --prefix=/app
+      - make install -j
+    sources:
+      - type: archive
+        url: https://download.osgeo.org/geotiff/libgeotiff/libgeotiff-1.4.3.tar.gz
+        sha256: b8510d9b968b5ee899282cdd5bef13fd02d5a4c19f664553f81e31127bc47265
+ 
+  - name: PDAL
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+      - -DWITH_TESTS=OFF
+    sources:
+      - type: archive
+        url: https://github.com/PDAL/PDAL/releases/download/1.7.2/PDAL-1.7.2-src.tar.gz
+        sha256: f5dd28c7f25bcd13c460a845860eded67446f3abb6b6a2e2f394a776ad03428a
+        
+  - name: log4cplus
+    buildsystem: cmake
+    config-opts:
+      - -DLOG4CPLUS_BUILD_TESTING=OFF
+      - -DLOG4CPLUS_BUILD_LOGGINGSERVER=OFF
+      - -DWITH_UNIT_TESTS=OFF
+      - -DBUILD_SHARED_LIBS=TRUE
+    sources:
+      - type: archive
+        url: https://github.com/log4cplus/log4cplus/releases/download/REL_2_0_6/log4cplus-2.0.6.tar.gz
+        sha256: 5fb26433b0f200ebfc2e6effb7e2e5131185862a2ea9a621a8e7f3f725a72b08
+        
+  - name: qtExtensions
+    buildsystem: cmake
+    sources:
+      - type: git
+        url: https://github.com/Kitware/qtextensions
+        commit: 38e70b32807c0317cc3804a6dad303f1b0ec2e13
+        
+  - name: VTK
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+    - -DVTK_BUILD_ALL_MODULES=OFF 
+    - -DBUILD_SHARED_LIBS=ON
+    - -DOpenGL_GL_PREFERENCE=GLVND
+    - -DVTK_WRAP_JAVA=OFF
+    - -DVTK_WRAP_PYTHON=ON
+    - -DCMAKE_BUILD_TYPE=Release
+    - -DVTK_PYTHON_VERSION:STRING=3
+    - -DVTK_GROUP_ENABLE_Qt=YES
+    - -DVTK_MODULE_ENABLE_VTK_GUISupportQt=YES
+    - -DModule_vtkGUISupportQtOpenGL:BOOL=ON
+    #cleanup:
+      #- /bin
+    sources:
+      - type: archive
+        url: https://www.vtk.org/files/release/9.0/VTK-9.0.1.tar.gz
+        sha256: 1b39a5e191c282861e7af4101eaa8585969a2de05f5646c9199a161213a622c7    
+        
+  - name: opencv
+    buildsystem: cmake-ninja
+    builddir: true
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DOPENCV_GENERATE_PKGCONFIG=ON
+      - -OPENCV_ENABLE_NONFREE=ON
+      - -DWITH_OPENCL=ON
+      - -DWITH_OPENGL=ON
+      - -DWITH_TBB=ON
+      - -DWITH_VULKAN=ON
+      - -DBUILD_WITH_DEBUG_INFO=OFF
+      - -DBUILD_TESTS=OFF
+      - -DBUILD_PERF_TESTS=OFF
+      - -DBUILD_EXAMPLES=OFF
+      - -DINSTALL_C_EXAMPLES=OFF
+      - -DINSTALL_PYTHON_EXAMPLES=OFF
+      # - -DOPENCV_EXTRA_MODULES_PATH="contrib/modules"
+      - -DWITH_1394=OFF
+      - -DWITH_PROTOBUF=ON
+      # - -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-master/modules ../opencv-master
+      - -DBUILD_LIST=calib3d,core,dnn,features2d,flann,highgui,imgcodecs,imgproc,java_bindings_generator,ml,objdetect,photo,python_bindings_generator,python_tests,stitching,video,videoio
+    # cleanup:
+    #   - "/bin"
+    sources:
+      - type: archive
+        url: https://github.com/opencv/opencv/archive/4.5.1.tar.gz
+        sha256: e27fe5b168918ab60d58d7ace2bd82dd14a4d0bd1d3ae182952c2113f5637513
+      - type: archive
+        url: https://github.com/opencv/opencv_contrib/archive/4.5.1.tar.gz
+        sha256: 12c3b1ddd0b8c1a7da5b743590a288df0934e5cef243e036ca290c2e45e425f5
+        # dest: contrib
+        
+  - name: VXL
+    buildsystem: cmake
+    config-opts:
+      - -DBUILD_TESTING=OFF
+    # cleanup:
+    #   - "/bin"
+    sources:
+      - type: archive
+        url: https://github.com/vxl/vxl/archive/v2.0.2.tar.gz
+        sha256: f0553daa287754e6b5d17bf3466fdab1f94fb4cbd8155ae20a35197090048fe0
+        
+  - name: kwiver
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+      - -DBUILD_SHARED_LIBS:BOOL=ON
+      #- -Dfletch_DIR:PATH=${fletch_DIR}
+      - -DKWIVER_ENABLE_ARROWS:BOOL=ON
+      - -DKWIVER_ENABLE_BURNOUT:BOOL=OFF
+      - -DKWIVER_ENABLE_CERES:BOOL=ON
+      - -DKWIVER_ENABLE_CUDA:BOOL=OFF
+      - -DKWIVER_ENABLE_C_BINDINGS:BOOL=ON
+      - -DKWIVER_ENABLE_DARKNET:BOOL=OFF
+      - -DKWIVER_ENABLE_DLL_WARNINGS:BOOL=OFF
+      - -DKWIVER_ENABLE_DOCS:BOOL=OFF
+      - -DKWIVER_ENABLE_EXAMPLES:BOOL=OFF
+      - -DKWIVER_ENABLE_EXTRAS:BOOL=ON
+      - -DKWIVER_ENABLE_FFMPEG:BOOL=ON
+      - -DKWIVER_ENABLE_KPF:BOOL=OFF
+      - -DKWIVER_ENABLE_GDAL:BOOL=ON
+      - -DKWIVER_ENABLE_LOG4CPLUS:BOOL=ON
+      - -DKWIVER_ENABLE_LOG4CXX:BOOL=OFF
+      - -DKWIVER_ENABLE_MATLAB:BOOL=OFF
+      - -DKWIVER_ENABLE_MVG:BOOL=ON
+      - -DKWIVER_ENABLE_OPENCV:BOOL=ON
+      - -DKWIVER_ENABLE_OPENMP:BOOL=ON
+      - -DKWIVER_ENABLE_PROCESSES:BOOL=ON
+      - -DKWIVER_ENABLE_PROJ:BOOL=ON
+      - -DKWIVER_ENABLE_PYTHON:BOOL=ON
+      - -DKWIVER_ENABLE_QT:BOOL=ON
+      - -DKWIVER_ENABLE_QT_EXT:BOOL=ON
+      - -DKWIVER_ENABLE_RightTrack:BOOL=OFF
+      - -DKWIVER_ENABLE_SPROKIT:BOOL=ON
+      - -DKWIVER_ENABLE_SUPER3D:BOOL=ON
+      - -DKWIVER_ENABLE_TESTS:BOOL=OFF
+      - -DKWIVER_ENABLE_TOOLS:BOOL=ON
+      - -DKWIVER_ENABLE_TRACK_ORACLE:BOOL=OFF
+      - -DKWIVER_ENABLE_UUID:BOOL=OFF
+      - -DKWIVER_ENABLE_VISCL:BOOL=OFF
+      - -DKWIVER_ENABLE_VXL:BOOL=ON
+      - -DKWIVER_INSTALL_SET_UP_SCRIPT:BOOL=ON
+      - -DKWIVER_TEST_ADD_TARGETS:BOOL=OFF
+      - -DKWIVER_USE_BUILD_TREE:BOOL=OFF
+      - -DKWIVER_USE_CONFIGURATION_SUBDIRECTORY:BOOL=OFF
+      - -DCMAKE_BUILD_TYPE:STRING=Release
+      - -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON
+      - -DPYTHON_VERSION_MAJOR:STRING=3
+    sources:
+      - type: git
+        url: https://github.com/Kitware/kwiver
+        commit: 7efe73fd6303a4d2cb1e49f462a89687814d10c1
+        #8b55a9c32aabb4b895f95d01666209d316a877d9 master
+      #- type: archive
+        #url: https://github.com/Kitware/kwiver/archive/v1.5.1.tar.gz
+        #sha256: c9571bdf6c22588c24909f696f9c3553862a92702c08fe0d28370cb4764200b2
+          
+  - name: telesculptor
+    buildsystem: cmake
+    builddir: true
+    config-opts:
+      - -DTELESCULPTOR_SUPERBUILD=OFF
+      #- -DVTK_SELECT_VERSION:STRING=9.0
+      #- -DCMAKE_BUILD_TYPE:STRING=Release
+      #- -DTELESCULPTOR_ENABLE_MANUALS=OFF
+      #- -DTELESCULPTOR_ENABLE_TESTING=OFF
+    sources:
+      - type: git
+        url: https://github.com/Kitware/TeleSculptor.git
+        commit: 09ef885304475ef958c2e1b374aa9dc749dcab9e
