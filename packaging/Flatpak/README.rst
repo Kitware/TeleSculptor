@@ -1,5 +1,5 @@
-TeleSculptor Flatpaking
-=======================
+TeleSculptor Flatpak
+====================
 
 This Flatpak manifest file is work in progress, it still does not build TeleSculptor successfully.
  
@@ -9,10 +9,10 @@ Building and running com.github.Kitware.TeleSculptor
 ----------------------------------------------------
 
 #. Install flatpak-builder
-   * Ubuntu, Debian, sudo apt install flatpak-builder
-   * Arch, sudo pacman -Syu flatpak-builder
-   * CentOS, Fedora, dnf install flatpak-builder
-   * openSUSE, sudo zypper in flatpak-builder
+Ubuntu, Debian, sudo apt install flatpak-builder
+Arch, sudo pacman -Syu flatpak-builder
+CentOS, Fedora, dnf install flatpak-builder
+openSUSE, sudo zypper in flatpak-builder
 #. git clone git://github.com/flathub/shared-modules.git
 #. Download com.github.Kitware.TeleSculptor.yaml
 #. flatpak-builder --install --user build com.github.Kitware.TeleSculptor.yaml --force-clean
