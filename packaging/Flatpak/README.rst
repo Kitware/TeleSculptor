@@ -10,6 +10,7 @@ Building and running com.github.Kitware.TeleSculptor
 
 #. Create new working folder.
 #. Install flatpak-builder, for Ubuntu, ``sudo apt install flatpak-builder``
+#. Install KDE Sdk, choose version 5.15 (system), ``flatpak install org.kde.Platform org.kde.Sdk``
 #. ``git clone git://github.com/flathub/shared-modules.git``
 #. Download com.github.Kitware.TeleSculptor.yaml
 #. ``flatpak-builder --install --user build com.github.Kitware.TeleSculptor.yaml --force-clean``
