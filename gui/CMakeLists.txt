@@ -354,9 +354,6 @@ if (TELESCULPTOR_FIXUP_BUNDLE_ON_PACKAGE)
   if(${TELESCULPTOR_ENABLE_TOOLS})
     set(kwiver_tools
         kwiver
-        pipe_config
-        pipe_to_dot
-        pipeline_runner
         plugin_explorer)
 
     set(KWIVER_BIN_DIR "${KWIVER_DIR}/bin")
