@@ -55,7 +55,7 @@ modules:
         url: https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz
         sha256: aeb26f80e80945e82ee93e5939baebdca47b9dee80a07d3144be1e1a6a66dd6a        
         
-  - name: PROJ4
+  - name: PROJ8
     buildsystem: cmake
     builddir: true
     config-opts:
@@ -69,8 +69,8 @@ modules:
       #- -DPROJ_TESTS=OFF
     sources:
       - type: archive
-        url: https://download.osgeo.org/proj/proj-6.0.0.tar.gz
-        sha256: 4510a2c1c8f9056374708a867c51b1192e8d6f9a5198dd320bf6a168e44a3657
+        url: https://download.osgeo.org/proj/proj-8.0.0.tar.gz
+        sha256: aa5d4b934450149a350aed7e5fbac880e2f7d3fa2f251c26cb64228f96a2109e
         
   - name: GDAL
     buildsystem: autotools
@@ -89,8 +89,8 @@ modules:
       - make install -j
     sources:
       - type: archive
-        url: https://download.osgeo.org/geotiff/libgeotiff/libgeotiff-1.4.3.tar.gz
-        sha256: b8510d9b968b5ee899282cdd5bef13fd02d5a4c19f664553f81e31127bc47265
+        url: https://download.osgeo.org/geotiff/libgeotiff/libgeotiff-1.6.0.tar.gz
+        sha256: 9311017e5284cffb86f2c7b7a9df1fb5ebcdc61c30468fb2e6bca36e4272ebca
  
   - name: PDAL
     buildsystem: cmake
@@ -99,8 +99,8 @@ modules:
       - -DWITH_TESTS=OFF
     sources:
       - type: archive
-        url: https://github.com/PDAL/PDAL/releases/download/1.7.2/PDAL-1.7.2-src.tar.gz
-        sha256: f5dd28c7f25bcd13c460a845860eded67446f3abb6b6a2e2f394a776ad03428a
+        url: https://github.com/PDAL/PDAL/releases/download/2.2.0/PDAL-2.2.0-src.tar.gz
+        sha256: 421e94beafbfda6db642e61199bc4605eade5cab5d2e54585e08f4b27438e568
         
   - name: log4cplus
     buildsystem: cmake
@@ -186,6 +186,38 @@ modules:
         url: https://github.com/vxl/vxl/archive/v2.0.2.tar.gz
         sha256: f0553daa287754e6b5d17bf3466fdab1f94fb4cbd8155ae20a35197090048fe0
         
+    # ceres-solver dependency   
+  - name: google-glog
+    buildsystem: cmake
+    config-opts:
+      - -DWITH_GFLAGS=ON
+    sources:        
+      - type: archive
+        url: https://github.com/google/glog/archive/v0.4.0.tar.gz
+        sha256: f28359aeba12f30d73d9e4711ef356dc842886968112162bc73002645139c39c        
+        
+    # kwiver use ceres 1.10.0    
+  - name: ceres-solver
+    buildsystem: cmake
+    config-opts:
+      - -DCXSPARSE=ON 
+      - -DSUITESPARSE=ON 
+      - -DEIGENSPARSE=ON 
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DGFLAGS=OFF 
+      - -DMINIGLOG=OFF 
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_TESTING=OFF
+      - -DBUILD_EXAMPLES=OFF
+      - -DBUILD_BENCHMARKS=OFF
+      - -DEIGEN_INCLUDE_DIR=/app/include/eigen3
+    # cleanup:
+    #   - "/bin"
+    sources:
+      - type: archive
+        url: https://github.com/ceres-solver/ceres-solver/archive/1.10.0.tar.gz
+        sha256: fa68c38bb77273b83ae8d5a1969f576b4236762b1e823f3285b8927e15846dd6
+
   - name: kwiver
     buildsystem: cmake
     builddir: true
@@ -232,14 +264,17 @@ modules:
       - -DCMAKE_BUILD_TYPE:STRING=Release
       - -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON
       - -DPYTHON_VERSION_MAJOR:STRING=3
+      - -DPROJ_INCLUDE_DIR:PATH=/app/include/proj
+      - -DPROJ_LIBRARY:PATH=/app/lib
+      - -Dpybind11_DIR:PATH=/app/lib/python3.8/site-packages/pybind11-2.6.2-py3.8.egg/pybind11/share/cmake/pybind11
     sources:
       - type: git
         url: https://github.com/Kitware/kwiver
         commit: 7efe73fd6303a4d2cb1e49f462a89687814d10c1
         #8b55a9c32aabb4b895f95d01666209d316a877d9 master
-      #- type: archive
-        #url: https://github.com/Kitware/kwiver/archive/v1.5.1.tar.gz
-        #sha256: c9571bdf6c22588c24909f696f9c3553862a92702c08fe0d28370cb4764200b2
+      #- type: git
+        #url: https://github.com/kevinsmia1939/kwiver
+        #sha256: 51301b7ef5ff16262cab421509c90d480ab4bc2a
           
   - name: telesculptor
     buildsystem: cmake
