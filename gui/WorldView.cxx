@@ -75,6 +75,7 @@
 #include <vtkMetaImageReader.h>
 #include <vtkNew.h>
 #include <vtkOBJWriter.h>
+#include <vtkPLYReader.h>
 #include <vtkPLYWriter.h>
 #include <vtkPlaneSource.h>
 #include <vtkPointData.h>
@@ -197,6 +198,7 @@ public:
 
   vtkNew<vtkActor> volumeActor;
   vtkSmartPointer<vtkImageData> volume;
+  vtkSmartPointer<vtkPolyData> mesh;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -865,13 +867,13 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 //-----------------------------------------------------------------------------
 void WorldView::loadVolume(QString const& path)
 {
-  QFileInfo check_file(path);
-  if (!check_file.exists() || !check_file.isFile())
+  QFileInfo fileInfo{path};
+  if (!fileInfo.exists() || !fileInfo.isFile())
   {
     return;
   }
-  // Create the vtk pipeline
-  // Read volume
+
+  // Create the vtk pipeline and read the volume
   vtkNew<vtkMetaImageReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
@@ -974,6 +976,51 @@ void WorldView::computeContour(double threshold)
   {
     d->volumeOptions->forceColorize();
   }
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::loadMesh(QString const& path)
+{
+  QFileInfo fileInfo{path};
+  if (!fileInfo.exists() || !fileInfo.isFile())
+  {
+    return;
+  }
+
+  // Create the vtk pipeline and read the mesh
+  vtkNew<vtkPLYReader> reader;
+  reader->SetFileName(qPrintable(path));
+  reader->Update();
+
+  this->setMesh(reader->GetOutput());
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
+{
+  QTE_D();
+
+  mesh->GetPointData()->SetActiveScalars("RGB");
+
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> meshMapper;
+  meshMapper->SetInputData(mesh);
+  meshMapper->ScalarVisibilityOn();
+  meshMapper->SetScalarModeToUsePointFieldData();
+  meshMapper->SelectColorArray("RGB");
+  meshMapper->Update();
+
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(meshMapper);
+  d->volumeActor->SetVisibility(true);
+  d->volumeOptions->setActor(d->volumeActor);
+  d->volumeOptions->setEnabled(true);
+
+  this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
+
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor);
+  emit contourChanged();
 }
 
 //-----------------------------------------------------------------------------

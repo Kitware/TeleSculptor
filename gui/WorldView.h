@@ -80,6 +80,10 @@ public:
 
   void resetVolume();
 
+  void loadMesh(QString const& path);
+
+  void setMesh(vtkSmartPointer<vtkPolyData> mesh);
+
   void setVideoConfig(QString const& path,
                       kwiver::vital::config_block_sptr config);
   void setMaskConfig(QString const& path,

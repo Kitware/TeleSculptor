@@ -1517,6 +1517,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::openLandmarks);
   connect(d->UI.actionImportGroundControlPoints, &QAction::triggered,
           this, &MainWindow::openGroundControlPoints);
+  connect(d->UI.actionImportMesh, &QAction::triggered,
+          this, &MainWindow::openMesh);
 
   connect(d->UI.actionShowWorldAxes, &QAction::toggled,
           d->UI.worldView, &WorldView::setAxesVisible);
@@ -1767,6 +1769,20 @@ void MainWindow::openGroundControlPoints()
   for (auto const& path : paths)
   {
     this->loadGroundControlPoints(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openMesh()
+{
+  auto const path = QFileDialog::getOpenFileName(
+    this, "Open Mesh File", QString(),
+    "PLY Files (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->loadMesh(path);
   }
 }
 
@@ -2216,6 +2232,14 @@ void MainWindow::loadGroundControlPoints(QString const& path)
     d->UI.actionExportGroundControlPoints->setEnabled(
       d->groundControlPointsHelper->groundControlPoints().size());
   }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::loadMesh(QString const& path)
+{
+  QTE_D();
+
+  d->UI.worldView->loadMesh(path);
 }
 
 //-----------------------------------------------------------------------------
