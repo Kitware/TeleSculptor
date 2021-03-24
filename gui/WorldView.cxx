@@ -894,7 +894,6 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
 
   d->volume = volume;
 
-
   // Apply contour
   d->contourFilter->SetInputData(volume);
   d->contourFilter->SetNumberOfContours(1);
@@ -918,14 +917,7 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
-  if (d->UI.actionShowVolume->isChecked())
-  {
-    this->fusedMeshEnabled(true);
-  }
-  connect(d->UI.actionShowVolume, &QAction::triggered,
-          this, &WorldView::fusedMeshEnabled);
-  connect(d->UI.actionShowVolume, &QAction::toggled,
-          this, &WorldView::fusedMeshEnabled);
+  this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
@@ -941,7 +933,7 @@ void WorldView::resetVolume()
 
   d->renderer->RemoveActor(d->volumeActor);
 
-  this->fusedMeshEnabled(false);
+  emit this->fusedMeshEnabled(false);
   d->volumeOptions->setEnabled(false);
 }
 
@@ -950,9 +942,17 @@ void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();
 
-  d->volumeActor->SetVisibility(state);
-  d->volumeOptions->setEnabled(state);
-  this->render();
+  if (d->volume)
+  {
+    if (d->volumeActor->GetVisibility() != state)
+    {
+      d->volumeActor->SetVisibility(state);
+      d->volumeOptions->setEnabled(state);
+      this->render();
+
+      emit this->fusedMeshEnabled(state);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
