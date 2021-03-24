@@ -944,7 +944,7 @@ void WorldView::setVolumeVisible(bool state)
 
   if (d->volume)
   {
-    if (d->volumeActor->GetVisibility() != state)
+    if (static_cast<bool>(d->volumeActor->GetVisibility()) != state)
     {
       d->volumeActor->SetVisibility(state);
       d->volumeOptions->setEnabled(state);
