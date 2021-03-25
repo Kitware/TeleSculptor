@@ -1000,15 +1000,9 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 {
   QTE_D();
 
-  mesh->GetPointData()->SetActiveScalars("RGB");
-
   // Create mapper
   vtkNew<vtkPolyDataMapper> meshMapper;
   meshMapper->SetInputData(mesh);
-  meshMapper->ScalarVisibilityOn();
-  meshMapper->SetScalarModeToUsePointFieldData();
-  meshMapper->SelectColorArray("RGB");
-  meshMapper->Update();
 
   // Set the actor's mapper
   d->volumeActor->SetMapper(meshMapper);
@@ -1017,9 +1011,18 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   d->volumeOptions->setEnabled(true);
 
   this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
+  d->volumeOptions->showColorizeSurfaceMenu(true);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
+
+  if (mesh->GetPointData()->HasArray("RGB"))
+  {
+    meshMapper->ScalarVisibilityOn();
+    meshMapper->SelectColorArray("RGB");
+    d->volumeOptions->setSurfaceColored(true);
+  }
+
   emit contourChanged();
 }
 

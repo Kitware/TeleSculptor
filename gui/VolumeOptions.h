@@ -74,6 +74,7 @@ public:
 
   void setCurrentFrame(int);
 
+  void setSurfaceColored(bool enabled);
   bool isColorOptionsEnabled();
 
 signals:
