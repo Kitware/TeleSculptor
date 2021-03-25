@@ -206,6 +206,9 @@ public:
   GroundControlPointsHelperPrivate(GroundControlPointsHelper* q) : q_ptr{q} {}
 
   MainWindow* mainWindow = nullptr;
+  GroundControlPointsWidget* worldWidget = nullptr;
+  GroundControlPointsWidget* cameraWidget = nullptr;
+
   id_t nextId = 0;
   kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleToIdMap;
@@ -245,13 +248,12 @@ void GroundControlPointsHelperPrivate::addPoint(
 
   // Add point to VTK widgets
   auto const& pos = point->loc();
-  this->mainWindow->worldView()->groundControlPointsWidget()->addPoint(pos);
+  this->worldWidget->addPoint(pos);
   this->addCameraViewPoint();
 
   // Add handle to handle map
-  auto* const worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  auto* const handle = worldWidget->handleWidget(worldWidget->activeHandle());
+  auto* const handle =
+    this->worldWidget->handleWidget(this->worldWidget->activeHandle());
   this->gcpHandleToIdMap[handle] = id;
   this->gcpIdToHandleMap[id] = handle;
 }
@@ -299,9 +301,7 @@ void GroundControlPointsHelperPrivate::resetPoint(
 void GroundControlPointsHelperPrivate::updatePoint(int handleId)
 {
   // Find the corresponding GCP ID
-  GroundControlPointsWidget* const worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  vtkHandleWidget* const handle = worldWidget->handleWidget(handleId);
+  auto* const handle = this->worldWidget->handleWidget(handleId);
 
   if (auto const gcpIdIter = qtGet(this->gcpHandleToIdMap, handle))
   {
@@ -313,7 +313,7 @@ void GroundControlPointsHelperPrivate::updatePoint(int handleId)
     if (gcp)
     {
       // Update the GCP's scene location
-      gcp->set_loc(worldWidget->point(handleId));
+      gcp->set_loc(this->worldWidget->point(handleId));
 
       // (Possibly) reset the point's geodetic location and signal the change
       this->resetPoint(gcpId);
@@ -368,13 +368,11 @@ void GroundControlPointsHelperPrivate::removePoint(
 //-----------------------------------------------------------------------------
 id_t GroundControlPointsHelperPrivate::addPoint()
 {
-  GroundControlPointsWidget* worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  auto const pt = worldWidget->activePoint();
+  auto const pt = this->worldWidget->activePoint();
   this->groundControlPoints[nextId] =
     std::make_shared<kv::ground_control_point>(pt);
   vtkHandleWidget* const handle =
-    worldWidget->handleWidget(worldWidget->activeHandle());
+    this->worldWidget->handleWidget(this->worldWidget->activeHandle());
 
   this->gcpHandleToIdMap[handle] = nextId;
   this->gcpIdToHandleMap[nextId] = handle;
@@ -390,9 +388,7 @@ void GroundControlPointsHelperPrivate::updateActivePoint(int handleId)
   QTE_Q();
 
   // Find the corresponding GCP ID
-  GroundControlPointsWidget* const worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  vtkHandleWidget* const handle = worldWidget->handleWidget(handleId);
+  vtkHandleWidget* const handle = this->worldWidget->handleWidget(handleId);
 
   // Signal that the point changed, or report error if ID was not found
   try
@@ -409,22 +405,18 @@ void GroundControlPointsHelperPrivate::updateActivePoint(int handleId)
 //-----------------------------------------------------------------------------
 bool GroundControlPointsHelperPrivate::addCameraViewPoint()
 {
-  kwiver::arrows::vtk::vtkKwiverCamera* camera = this->mainWindow->activeCamera();
+  auto* const camera = this->mainWindow->activeCamera();
   if (!camera)
   {
     return false;
   }
 
-  GroundControlPointsWidget* worldWidget =
-    this->mainWindow->worldView()->groundControlPointsWidget();
-  kv::vector_3d p = worldWidget->activePoint();
+  kv::vector_3d p = this->worldWidget->activePoint();
 
   double cameraPt[2];
   bool valid = camera->ProjectPoint(p, cameraPt);
-  GroundControlPointsWidget* cameraWidget =
-    this->mainWindow->cameraView()->groundControlPointsWidget();
-  cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
-  cameraWidget->render();
+  this->cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+  this->cameraWidget->render();
   return valid;
 }
 
@@ -437,39 +429,37 @@ GroundControlPointsHelper::GroundControlPointsHelper(QObject* parent)
   d->mainWindow = qobject_cast<MainWindow*>(parent);
   Q_ASSERT(d->mainWindow);
 
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
+  d->worldWidget = d->mainWindow->worldView()->groundControlPointsWidget();
+  d->cameraWidget = d->mainWindow->cameraView()->groundControlPointsWidget();
 
   // Set a point placer on the world widget.
   // This has to be set before the widget is enabled.
-  worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
+  d->worldWidget->setPointPlacer(vtkNew<vtkMaptkPointPlacer>());
 
   // connections
-  connect(worldWidget, &GroundControlPointsWidget::pointPlaced,
+  connect(d->worldWidget, &GroundControlPointsWidget::pointPlaced,
           this, &GroundControlPointsHelper::addCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointPlaced,
+  connect(d->cameraWidget, &GroundControlPointsWidget::pointPlaced,
           this, &GroundControlPointsHelper::addWorldViewPoint);
-  connect(worldWidget, &GroundControlPointsWidget::pointMoved,
+  connect(d->worldWidget, &GroundControlPointsWidget::pointMoved,
           this, &GroundControlPointsHelper::moveCameraViewPoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointMoved,
+  connect(d->cameraWidget, &GroundControlPointsWidget::pointMoved,
           this, &GroundControlPointsHelper::moveWorldViewPoint);
-  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
+  connect(d->worldWidget, &GroundControlPointsWidget::pointDeleted,
           this, &GroundControlPointsHelper::removePointByHandle);
-  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
+  connect(d->cameraWidget, &GroundControlPointsWidget::pointDeleted,
           this, &GroundControlPointsHelper::removePointByHandle);
-  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
+  connect(d->worldWidget, &GroundControlPointsWidget::activePointChanged,
           this, [d](int handleId){ d->updateActivePoint(handleId); });
 
-  connect(worldWidget, &GroundControlPointsWidget::pointDeleted,
-          cameraWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::pointDeleted,
-          worldWidget, &GroundControlPointsWidget::deletePoint);
-  connect(cameraWidget, &GroundControlPointsWidget::activePointChanged,
-          worldWidget, &GroundControlPointsWidget::setActivePoint);
-  connect(worldWidget, &GroundControlPointsWidget::activePointChanged,
-          cameraWidget, &GroundControlPointsWidget::setActivePoint);
+  connect(d->worldWidget, &GroundControlPointsWidget::pointDeleted,
+          d->cameraWidget, &GroundControlPointsWidget::deletePoint);
+  connect(d->cameraWidget, &GroundControlPointsWidget::pointDeleted,
+          d->worldWidget, &GroundControlPointsWidget::deletePoint);
+  connect(d->cameraWidget, &GroundControlPointsWidget::activePointChanged,
+          d->worldWidget, &GroundControlPointsWidget::setActivePoint);
+  connect(d->worldWidget, &GroundControlPointsWidget::activePointChanged,
+          d->cameraWidget, &GroundControlPointsWidget::setActivePoint);
 }
 
 //-----------------------------------------------------------------------------
@@ -499,9 +489,7 @@ void GroundControlPointsHelper::addWorldViewPoint()
     return;
   }
 
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-  kv::vector_3d cameraPt = cameraWidget->activePoint();
+  kv::vector_3d cameraPt = d->cameraWidget->activePoint();
   // Use an arbitarily value for depth to ensure that the landmarks would
   // be between the camera center and the back-projected point.
   kv::vector_3d p =
@@ -509,14 +497,12 @@ void GroundControlPointsHelper::addWorldViewPoint()
 
   // Pick a point along the active camera direction and use the depth of the
   // point to back-project the camera view ground control point.
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
   vtkNew<vtkMaptkPointPicker> pointPicker;
   double distance = 0;
   double gOrigin[3] = { 0, 0, 0 };
   double gNormal[3] = { 0, 0, 1 };
   if (pointPicker->Pick3DPoint(
-        camera->GetPosition(), p.data(), worldWidget->renderer()))
+        camera->GetPosition(), p.data(), d->worldWidget->renderer()))
   {
     p = kwiver::vital::vector_3d(pointPicker->GetPickPosition());
     p = camera->UnprojectPoint(cameraPt.data(), camera->Depth(p));
@@ -532,8 +518,8 @@ void GroundControlPointsHelper::addWorldViewPoint()
     // camera origin point
     p = camera->UnprojectPoint(cameraPt.data());
   }
-  worldWidget->addPoint(p);
-  worldWidget->render();
+  d->worldWidget->addPoint(p);
+  d->worldWidget->render();
 
   emit this->pointAdded(d->addPoint());
   emit this->pointCountChanged(d->groundControlPoints.size());
@@ -544,10 +530,7 @@ void GroundControlPointsHelper::removePointByHandle(int handleId)
 {
   QTE_D();
 
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-
-  vtkHandleWidget* const handleWidget = worldWidget->handleWidget(handleId);
+  auto* const handleWidget = d->worldWidget->handleWidget(handleId);
   if (!handleWidget)
   {
     qWarning() << "Failed to find the VTK handle widget with VTK ID"
@@ -563,9 +546,7 @@ void GroundControlPointsHelper::moveCameraViewPoint()
 {
   QTE_D();
 
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-  int handleId = worldWidget->activeHandle();
+  auto const handleId = d->worldWidget->activeHandle();
 
   kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
@@ -574,13 +555,11 @@ void GroundControlPointsHelper::moveCameraViewPoint()
     return;
   }
 
-  kv::vector_3d p = worldWidget->activePoint();
+  kv::vector_3d p = d->worldWidget->activePoint();
 
   double cameraPt[2];
   camera->ProjectPoint(p, cameraPt);
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-  d->movePoint(handleId, cameraWidget, { cameraPt[0], cameraPt[1], 0.0 });
+  d->movePoint(handleId, d->cameraWidget, { cameraPt[0], cameraPt[1], 0.0 });
 }
 
 //-----------------------------------------------------------------------------
@@ -594,19 +573,14 @@ void GroundControlPointsHelper::moveWorldViewPoint()
     return;
   }
 
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
+  auto const handleId = d->cameraWidget->activeHandle();
 
-  int handleId = cameraWidget->activeHandle();
-
-  kv::vector_3d cameraPt = cameraWidget->activePoint();
-  kv::vector_3d pt = worldWidget->point(handleId);
+  kv::vector_3d cameraPt = d->cameraWidget->activePoint();
+  kv::vector_3d pt = d->worldWidget->point(handleId);
   double depth = d->mainWindow->activeCamera()->Depth(pt);
 
   kv::vector_3d p = camera->UnprojectPoint(cameraPt.data(), depth);
-  d->movePoint(handleId, worldWidget, p);
+  d->movePoint(handleId, d->worldWidget, p);
 }
 
 //-----------------------------------------------------------------------------
@@ -620,39 +594,33 @@ void GroundControlPointsHelper::updateCameraViewPoints()
     return;
   }
 
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
-
-  with_expr (qtScopedBlockSignals{cameraWidget})
+  with_expr (qtScopedBlockSignals{d->cameraWidget})
   {
-    auto const activeHandle = worldWidget->activeHandle();
+    auto const activeHandle = d->worldWidget->activeHandle();
 
-    int numCameraPts = cameraWidget->numberOfPoints();
-    int numWorldPts = worldWidget->numberOfPoints();
+    int numCameraPts = d->cameraWidget->numberOfPoints();
+    int numWorldPts = d->worldWidget->numberOfPoints();
     while (numCameraPts > numWorldPts)
     {
-      cameraWidget->deletePoint(--numCameraPts);
+      d->cameraWidget->deletePoint(--numCameraPts);
     }
 
     for (int i = 0; i < numWorldPts; ++i)
     {
-      kv::vector_3d worldPt = worldWidget->point(i);
+      kv::vector_3d worldPt = d->worldWidget->point(i);
       double cameraPt[2];
       camera->ProjectPoint(worldPt, cameraPt);
       if (i >= numCameraPts)
       {
-        cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
+        d->cameraWidget->addPoint(cameraPt[0], cameraPt[1], 0.0);
       }
       else
       {
-        cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
+        d->cameraWidget->movePoint(i, cameraPt[0], cameraPt[1], 0.0);
       }
     }
 
-    cameraWidget->setActivePoint(activeHandle);
+    d->cameraWidget->setActivePoint(activeHandle);
   }
 }
 
@@ -661,12 +629,6 @@ void GroundControlPointsHelper::updateCameraViewPoints()
 void GroundControlPointsHelper::updateViewsFromGCPs()
 {
   QTE_D();
-
-  GroundControlPointsWidget* worldWidget =
-    d->mainWindow->worldView()->groundControlPointsWidget();
-
-  GroundControlPointsWidget* cameraWidget =
-    d->mainWindow->cameraView()->groundControlPointsWidget();
 
   kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
 
@@ -677,20 +639,20 @@ void GroundControlPointsHelper::updateViewsFromGCPs()
 
     if (handleWidget)
     {
-      auto const handleId = worldWidget->findHandleWidget(handleWidget);
+      auto const handleId = d->worldWidget->findHandleWidget(handleWidget);
       kwiver::vital::vector_3d loc = i.second->loc();
-      worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
+      d->worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
 
       if (camera)
       {
         double cameraPt[2];
         camera->ProjectPoint(loc, cameraPt);
-        cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
+        d->cameraWidget->movePoint(handleId, cameraPt[0], cameraPt[1], 0.0);
       }
     }
   }
-  worldWidget->render();
-  cameraWidget->render();
+  d->worldWidget->render();
+  d->cameraWidget->render();
 }
 
 //-----------------------------------------------------------------------------
@@ -723,9 +685,7 @@ void GroundControlPointsHelper::removePoint(id_t gcpId)
 
   if (handleWidget)
   {
-    auto* const worldWidget =
-      d->mainWindow->worldView()->groundControlPointsWidget();
-    auto const handleId = worldWidget->findHandleWidget(handleWidget);
+    auto const handleId = d->worldWidget->findHandleWidget(handleWidget);
 
     if (handleId < 0)
     {
@@ -735,11 +695,8 @@ void GroundControlPointsHelper::removePoint(id_t gcpId)
     }
     else
     {
-      auto* const cameraWidget =
-        d->mainWindow->cameraView()->groundControlPointsWidget();
-
-      worldWidget->deletePoint(handleId);
-      cameraWidget->deletePoint(handleId);
+      d->worldWidget->deletePoint(handleId);
+      d->cameraWidget->deletePoint(handleId);
       d->removePoint(handleId, handleWidget);
     }
   }
@@ -760,9 +717,7 @@ void GroundControlPointsHelper::setActivePoint(id_t gcpId)
 
   if (handleWidget)
   {
-    auto* const worldWidget =
-      d->mainWindow->worldView()->groundControlPointsWidget();
-    auto const handleId = worldWidget->findHandleWidget(handleWidget);
+    auto const handleId = d->worldWidget->findHandleWidget(handleWidget);
 
     if (handleId < 0)
     {
@@ -772,11 +727,8 @@ void GroundControlPointsHelper::setActivePoint(id_t gcpId)
     }
     else
     {
-      auto* const cameraWidget =
-        d->mainWindow->cameraView()->groundControlPointsWidget();
-
-      worldWidget->setActivePoint(handleId);
-      cameraWidget->setActivePoint(handleId);
+      d->worldWidget->setActivePoint(handleId);
+      d->cameraWidget->setActivePoint(handleId);
     }
   }
   else
@@ -804,12 +756,8 @@ void GroundControlPointsHelper::setGroundControlPoints(
   with_expr (qtScopedBlockSignals{this})
   {
     // Clear all existing ground control points before adding new ones.
-    GroundControlPointsWidget* cameraWidget =
-      d->mainWindow->cameraView()->groundControlPointsWidget();
-    cameraWidget->clearPoints();
-    GroundControlPointsWidget* worldWidget =
-      d->mainWindow->worldView()->groundControlPointsWidget();
-    worldWidget->clearPoints();
+    d->cameraWidget->clearPoints();
+    d->worldWidget->clearPoints();
     d->groundControlPoints.clear();
     d->nextId = 0;
 
@@ -972,10 +920,8 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
 void GroundControlPointsHelper::enableWidgets(bool enable)
 {
   QTE_D();
-  d->mainWindow->worldView()->groundControlPointsWidget()->enableWidget(
-    enable);
-  d->mainWindow->cameraView()->groundControlPointsWidget()->enableWidget(
-    enable);
+  d->worldWidget->enableWidget(enable);
+  d->cameraWidget->enableWidget(enable);
 }
 
 //-----------------------------------------------------------------------------
