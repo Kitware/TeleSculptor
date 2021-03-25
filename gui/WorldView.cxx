@@ -66,7 +66,6 @@
 #include <vtkEventQtSlotConnect.h>
 #include <vtkFlyingEdges3D.h>
 #include <vtkGenericOpenGLRenderWindow.h>
-#include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>

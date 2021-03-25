@@ -38,7 +38,6 @@
 
 #include <vtkCamera.h>
 #include <vtkGenericOpenGLRenderWindow.h>
-#include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
