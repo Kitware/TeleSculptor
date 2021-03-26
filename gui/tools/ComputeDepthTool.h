@@ -40,7 +40,7 @@ class ComputeDepthTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit ComputeDepthTool(QObject* parent = 0);
+  explicit ComputeDepthTool(QObject* parent = nullptr);
   ~ComputeDepthTool() override;
 
   Outputs outputs() const override;
@@ -48,7 +48,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
   bool callback_handler(kwiver::vital::image_container_sptr depth,
                         std::string const& status,

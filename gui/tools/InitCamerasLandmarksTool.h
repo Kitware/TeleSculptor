@@ -40,7 +40,7 @@ class InitCamerasLandmarksTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit InitCamerasLandmarksTool(QObject* parent = 0);
+  explicit InitCamerasLandmarksTool(QObject* parent = nullptr);
   ~InitCamerasLandmarksTool() override;
 
   Outputs outputs() const override;
@@ -48,7 +48,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
   bool callback_handler(camera_map_sptr cameras, landmark_map_sptr landmarks,
                         feature_track_set_changes_sptr track_changes);

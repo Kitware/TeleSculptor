@@ -141,7 +141,7 @@ public:
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
-  explicit AbstractTool(QObject* parent = 0);
+  explicit AbstractTool(QObject* parent = nullptr);
   ~AbstractTool() override;
 
   /// Get the types of output produced by the tool.
@@ -212,7 +212,7 @@ public:
   ///
   /// \return \c true if tool execution was started successfully, otherwise
   ///         \c false.
-  virtual bool execute(QWidget* window = 0);
+  virtual bool execute(QWidget* window = nullptr);
 
   /// Block until the tool has finished executing
   void wait();

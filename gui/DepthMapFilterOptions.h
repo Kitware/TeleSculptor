@@ -42,9 +42,9 @@ class DepthMapFilterOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapFilterOptions(const QString& settingsGroup,
-                                 QWidget* parent = 0,
-                                 Qt::WindowFlags flags = 0);
+  explicit DepthMapFilterOptions(QString const& settingsGroup,
+                                 QWidget* parent = nullptr,
+                                 Qt::WindowFlags flags = {});
   ~DepthMapFilterOptions() override;
 
   double weightMinimum() const;

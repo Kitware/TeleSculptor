@@ -272,7 +272,7 @@ void DepthMapView::setDepthGeometryFilter(
   {
     d->inputDepthGeometryFilter = geometryFilter;
     d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter ?
-      d->inputDepthGeometryFilter->GetOutputPort() : 0);
+      d->inputDepthGeometryFilter->GetOutputPort() : nullptr);
   }
 }
 

@@ -49,8 +49,9 @@ public:
   };
   Q_DECLARE_FLAGS(ActiveFilters, ActiveFilter)
 
-  explicit DataFilterOptions(QString const& settingsGroup, QWidget* parent = 0,
-                             Qt::WindowFlags flags = 0);
+  explicit DataFilterOptions(QString const& settingsGroup,
+                             QWidget* parent = nullptr,
+                             Qt::WindowFlags flags = {});
   ~DataFilterOptions() override;
 
   double minimum() const;

@@ -46,8 +46,9 @@ class DataColorOptions : public QWidget
   Q_OBJECT
 
 public:
-  explicit DataColorOptions(QString const& settingsGroup, QWidget* parent = 0,
-                            Qt::WindowFlags flags = 0);
+  explicit DataColorOptions(QString const& settingsGroup,
+                            QWidget* parent = nullptr,
+                            Qt::WindowFlags flags = {});
   ~DataColorOptions() override;
 
   QIcon icon() const;

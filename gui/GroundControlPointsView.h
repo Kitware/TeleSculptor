@@ -45,7 +45,7 @@ class GroundControlPointsView : public QWidget
 
 public:
   explicit GroundControlPointsView(
-    QWidget* parent = 0, Qt::WindowFlags flags = 0);
+    QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~GroundControlPointsView();
 
   void setHelper(GroundControlPointsHelper*);

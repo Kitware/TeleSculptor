@@ -38,7 +38,7 @@ class NeckerReversalTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit NeckerReversalTool(QObject* parent = 0);
+  explicit NeckerReversalTool(QObject* parent = nullptr);
   ~NeckerReversalTool() override;
 
   Outputs outputs() const override;
@@ -46,7 +46,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return false; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
 protected:
   void run() override;

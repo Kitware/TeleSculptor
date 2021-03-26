@@ -46,21 +46,21 @@ vtkCxxSetObjectMacro(vtkMaptkImageUnprojectDepth,
 //-----------------------------------------------------------------------------
 vtkMaptkImageUnprojectDepth::vtkMaptkImageUnprojectDepth()
 {
-  this->Camera = 0;
+  this->Camera = nullptr;
 
-  this->DepthArrayName = 0;
+  this->DepthArrayName = nullptr;
   this->SetDepthArrayName("Depths");
 
-  this->UnprojectedPointArrayName = 0;
+  this->UnprojectedPointArrayName = nullptr;
   this->SetUnprojectedPointArrayName("Points");
 }
 
 //-----------------------------------------------------------------------------
 vtkMaptkImageUnprojectDepth::~vtkMaptkImageUnprojectDepth()
 {
-  this->SetCamera(0);
-  this->SetDepthArrayName(0);
-  this->SetUnprojectedPointArrayName(0);
+  this->SetCamera(nullptr);
+  this->SetDepthArrayName(nullptr);
+  this->SetUnprojectedPointArrayName(nullptr);
 }
 
 //-----------------------------------------------------------------------------

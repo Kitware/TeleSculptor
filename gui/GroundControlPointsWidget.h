@@ -58,7 +58,7 @@ class GroundControlPointsWidget : public QObject
   Q_OBJECT
 
 public:
-  GroundControlPointsWidget(QObject* parent = 0);
+  GroundControlPointsWidget(QObject* parent = nullptr);
   ~GroundControlPointsWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);

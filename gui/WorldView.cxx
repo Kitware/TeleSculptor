@@ -586,7 +586,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->setImageData(0, QSize(1, 1));
+  this->setImageData(nullptr, QSize{1, 1});
 
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
@@ -719,7 +719,7 @@ void WorldView::connectDepthPipeline()
 
   if (!d->inputDepthGeometryFilter)
   {
-    d->depthScalarFilter->SetInputConnection(0);
+    d->depthScalarFilter->SetInputConnection(nullptr);
     return;
   }
 
