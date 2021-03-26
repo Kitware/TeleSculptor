@@ -320,6 +320,10 @@ public:
                       const QString& description = QString(""),
                       int value = 0);
 
+  // If a project is active, prefix this string with the project name
+  // and underscore, otherwise just return the name.
+  QString addProjectPrefx(QString const& name) const;
+
   void saveGeoOrigin(QString const& path);
   kv::vector_3d centerLandmarks() const;
   void shiftGeoOrigin(kv::vector_3d const& offset);
@@ -500,6 +504,18 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     gcp.second->set_loc(gcp.second->loc() - offset);
   }
   this->groundControlPointsHelper->updateViewsFromGCPs();
+}
+
+//-----------------------------------------------------------------------------
+// If a project is active, prefix this string with the project name
+// and underscore, otherwise just return the name.
+QString MainWindowPrivate::addProjectPrefx(QString const& name) const
+{
+  if (this->project)
+  {
+    return this->project->workingDir.dirName() + "_" + name;
+  }
+  return name;
 }
 
 //-----------------------------------------------------------------------------
@@ -2637,22 +2653,23 @@ void MainWindow::saveVolume()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", name + QString("_volume.mha"),
+    this, "Export Volume", d->addProjectPrefx("volume.mha"),
     "MetaImage (*.mha);;"
     "All Files (*)");
 
   if (!path.isEmpty())
   {
     d->UI.worldView->saveVolume(path);
-    d->project->volumePath = d->project->getContingentRelativePath(path);
-    d->project->config->set_value("volume_file",
-                                  kvPath(d->project->volumePath));
-    d->project->write();
+    if (d->project)
+    {
+      d->project->volumePath = d->project->getContingentRelativePath(path);
+      d->project->config->set_value("volume_file",
+                                    kvPath(d->project->volumePath));
+      d->project->config->set_value("ROI", d->roiToString());
+      d->project->write();
+    }
   }
-
-  d->project->config->set_value("ROI", d->roiToString());
 }
 
 //-----------------------------------------------------------------------------
@@ -2660,9 +2677,8 @@ void MainWindow::saveFusedMesh()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
+    this, "Export Fused Mesh", d->addProjectPrefx("fused_mesh.ply"),
     "PLY File (*.ply);;"
     "OBJ File (*.obj);;"
     "LAS File (*.las);;"
@@ -2691,9 +2707,9 @@ void MainWindow::saveFusedMeshFrameColors()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Fused Mesh Frame Colors", name + QString("_fused_mesh_frame_colors.vtp"),
+    this, "Export Fused Mesh Frame Colors",
+    d->addProjectPrefx("fused_mesh_frame_colors.vtp"),
     "VTK Polydata (*.vtp);;"
     "All Files (*)");
 
