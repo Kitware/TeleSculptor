@@ -905,6 +905,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
     vtkDataObject::FIELD_ASSOCIATION_POINTS,
     "reconstruction_scalar");
 
+  d->contourFilter->Update();
+  d->mesh = d->contourFilter->GetOutput();
+
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
   contourMapper->SetInputConnection(d->contourFilter->GetOutputPort());
@@ -932,6 +935,7 @@ void WorldView::resetVolume()
   QTE_D();
 
   d->volume = nullptr;
+  d->mesh = nullptr;
 
   d->renderer->RemoveActor(d->volumeActor);
 
@@ -944,7 +948,7 @@ void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();
 
-  if (d->volume)
+  if (d->volume || d->mesh)
   {
     if (static_cast<bool>(d->volumeActor->GetVisibility()) != state)
     {
@@ -972,9 +976,14 @@ void WorldView::computeContour(double threshold)
 
   d->contourFilter->SetValue(0, threshold);
   d->contourFilter->Update();
-  if(d->volumeOptions->isColorOptionsEnabled())
+  if (d->volumeOptions->isColorOptionsEnabled())
   {
     d->volumeOptions->forceColorize();
+  }
+  vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+  if (mesh)
+  {
+    d->mesh = mesh;
   }
 }
 
@@ -999,6 +1008,8 @@ void WorldView::loadMesh(QString const& path)
 void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 {
   QTE_D();
+
+  d->mesh = mesh;
 
   // Create mapper
   vtkNew<vtkPolyDataMapper> meshMapper;
@@ -1587,35 +1598,39 @@ void WorldView::saveFusedMesh(const QString &path,
 {
   QTE_D();
   namespace kv = kwiver::vital;
+
+  if (!d->mesh)
+  {
+    LOG_ERROR(d->logger, "No mesh available to save");
+    return;
+  }
+
   const QString ext = QFileInfo(path).suffix().toLower();
   if (ext == "ply")
   {
     vtkNew<vtkPLYWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetColorMode(0);
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     if (d->volumeOptions->isColorOptionsEnabled())
     {
-      writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
+      writer->SetArrayName(d->mesh->GetPointData()->GetScalars()->GetName());
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
-    writer->AddInputDataObject(mesh);
+    writer->AddInputDataObject(d->mesh);
     writer->Write();
   }
   else if (ext == "obj")
   {
     vtkNew<vtkOBJWriter> writer;
     writer->SetFileName(qPrintable(path));
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
-    writer->AddInputDataObject(mesh);
+    writer->AddInputDataObject(d->mesh);
     writer->Write();
   }
   else if (ext == "las")
   {
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     std::vector<kv::vector_3d> points;
     std::vector<kv::rgb_color> colors;
-    d->vtkToPointList(mesh, mesh->GetPointData()->GetScalars()->GetName(),
+    d->vtkToPointList(d->mesh, d->mesh->GetPointData()->GetScalars()->GetName(),
                       points, colors);
     kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
   }
@@ -1624,7 +1639,7 @@ void WorldView::saveFusedMesh(const QString &path,
     vtkNew<vtkXMLPolyDataWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
-    writer->AddInputDataObject(d->contourFilter->GetOutput());
+    writer->AddInputDataObject(d->mesh);
     writer->Write();
   }
 
@@ -1635,25 +1650,43 @@ void WorldView::saveFusedMesh(const QString &path,
 void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
 {
   QTE_D();
+
+  if (!d->mesh)
+  {
+    LOG_ERROR(d->logger, "No mesh available to save");
+    return;
+  }
+
   QEventLoop loop;
-  vtkPolyData* mesh = d->contourFilter->GetOutput();
   std::string videoPath = d->volumeOptions->getVideoPath();
   kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
+  if (!videoConfig || videoPath.empty())
+  {
+    LOG_ERROR(d->logger, "Unable to extract colors, no video loaded");
+    return;
+  }
+
   std::string maskPath = d->volumeOptions->getMaskPath();
   kwiver::vital::config_block_sptr maskConfig =  d->volumeOptions->getMaskConfig();
   kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
+  if (!cameras || cameras->size() == 0)
+  {
+    LOG_ERROR(d->logger, "Unable to extract colors, no camera models available");
+    return;
+  }
+
   MeshColoration* coloration =
     new MeshColoration(videoConfig, videoPath,
                        maskConfig, maskPath,
                        cameras);
   coloration->setProperty("mesh_output_path", path);
-  coloration->set_input(mesh);
+  coloration->set_input(d->mesh);
   coloration->set_frame_sampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->set_occlusion_threshold(occlusionThreshold);
   coloration->set_remove_occluded(occlusion);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
-  meshFrameColors->CopyStructure(mesh);
+  meshFrameColors->CopyStructure(d->mesh);
   coloration->set_output(meshFrameColors);
   coloration->set_frame(-1);
   coloration->set_all_frames(true);
