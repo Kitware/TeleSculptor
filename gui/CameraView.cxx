@@ -235,6 +235,7 @@ public:
 
   PointOptions* landmarkOptions;
   ResidualsOptions* residualsOptions;
+  GroundControlPointsWidget* registrationPointsWidget;
   GroundControlPointsWidget* groundControlPointsWidget;
   RulerWidget* rulerWidget;
 
@@ -470,6 +471,13 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, &PointOptions::modified,
           this, &CameraView::render);
 
+  d->registrationPointsWidget = new GroundControlPointsWidget(this);
+  d->registrationPointsWidget->setTransformMatrix(d->transformMatrix);
+
+  connect(d->UI.actionPlaceEditCRP, &QAction::toggled,
+          d->registrationPointsWidget,
+          &GroundControlPointsWidget::enableWidget);
+
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
 
@@ -542,6 +550,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 #endif
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   renderInteractor->SetInteractorStyle(is);
+  d->registrationPointsWidget->setInteractor(renderInteractor);
   d->groundControlPointsWidget->setInteractor(renderInteractor);
   d->rulerWidget->setInteractor(renderInteractor);
 
@@ -854,6 +863,14 @@ GroundControlPointsWidget* CameraView::groundControlPointsWidget() const
 }
 
 //-----------------------------------------------------------------------------
+GroundControlPointsWidget* CameraView::registrationPointsWidget() const
+{
+  QTE_D();
+
+  return d->registrationPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
 RulerWidget* CameraView::rulerWidget() const
 {
   QTE_D();
@@ -885,11 +902,26 @@ void CameraView::enableAntiAliasing(bool enable)
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setRegistrationPointEditingEnabled(bool state)
+{
+  QTE_D();
+
+  d->UI.actionPlaceEditCRP->setEnabled(state);
+
+  if (!state)
+  {
+    d->UI.actionPlaceEditCRP->setChecked(false);
+    d->registrationPointsWidget->enableWidget(false);
+  }
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::clearGroundControlPoints()
 {
   QTE_D();
 
   d->groundControlPointsWidget->clearPoints();
+  d->registrationPointsWidget->clearPoints();
   this->render();
 }
 

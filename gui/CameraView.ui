@@ -28,15 +28,14 @@
    </property>
    <item>
     <widget class="QToolBar" name="toolBar">
-     <property name="toolButtonStyle">
-      <enum>Qt::ToolButtonFollowStyle</enum>
-     </property>
      <addaction name="actionViewReset"/>
      <addaction name="separator"/>
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowFeatures"/>
      <addaction name="actionShowLandmarks"/>
      <addaction name="actionShowResiduals"/>
+     <addaction name="separator"/>
+     <addaction name="actionPlaceEditCRP"/>
     </widget>
    </item>
    <item>
@@ -201,6 +200,30 @@
    </property>
    <property name="shortcut">
     <string>I</string>
+   </property>
+  </action>
+  <action name="actionPlaceEditCRP">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons/icons.qrc">
+     <normaloff>:/icons/22x22/location</normaloff>:/icons/22x22/location</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Registration Points</string>
+   </property>
+   <property name="iconText">
+    <string>Registration Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Place/edit camera registration points in the view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

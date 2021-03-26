@@ -1622,9 +1622,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, [d](size_t count) {
             d->UI.actionExportGroundControlPoints->setEnabled(count > 0);
           });
-  connect(d->UI.worldView, &WorldView::pointPlacementEnabled,
-          d->groundControlPointsHelper,
-          &GroundControlPointsHelper::enableWidgets);
+  connect(d->UI.worldView, &WorldView::pointPlacementEnabled, this,
+          [d](bool state) {
+            d->UI.cameraView->setRegistrationPointEditingEnabled(!state);
+            d->groundControlPointsHelper->enableWidgets(state);
+          });
   d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
 
   // Ruler widget
