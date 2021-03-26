@@ -102,7 +102,8 @@ signals:
   void depthMapEnabled(bool);
 
   void contourChanged();
-  void updateThresholds(double,double,double,double);
+  void updateThresholds(double, double, double, double);
+  void volumeEnabled(bool);
   void fusedMeshEnabled(bool);
   void pointPlacementEnabled(bool);
   void rulerEnabled(bool);

@@ -922,6 +922,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
+  emit this->volumeEnabled(true);
+  emit this->fusedMeshEnabled(true);
+
   this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
 
   // Add this actor to the renderer
@@ -939,6 +942,7 @@ void WorldView::resetVolume()
 
   d->renderer->RemoveActor(d->volumeActor);
 
+  emit this->volumeEnabled(false);
   emit this->fusedMeshEnabled(false);
   d->volumeOptions->setEnabled(false);
 }
@@ -956,7 +960,14 @@ void WorldView::setVolumeVisible(bool state)
       d->volumeOptions->setEnabled(state);
       this->render();
 
-      emit this->fusedMeshEnabled(state);
+      if (d->volume)
+      {
+        emit this->volumeEnabled(state);
+      }
+      if (d->mesh)
+      {
+        emit this->fusedMeshEnabled(state);
+      }
     }
   }
 }
@@ -1018,6 +1029,7 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   // Set the actor's mapper
   d->volumeActor->SetMapper(meshMapper);
   d->volumeActor->SetVisibility(true);
+  emit this->fusedMeshEnabled(true);
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 

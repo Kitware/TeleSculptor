@@ -110,6 +110,7 @@ public slots:
   void saveWebGLScene();
 
   void saveVolume();
+  void enableSaveVolume(bool);
   void enableSaveFusedMesh(bool);
   void saveFusedMesh();
   void saveFusedMeshFrameColors();

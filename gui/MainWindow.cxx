@@ -1572,6 +1572,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, &QAbstractSlider::valueChanged,
           this, &MainWindow::setActiveCamera);
 
+  connect(d->UI.worldView, &WorldView::volumeEnabled,
+          this, &MainWindow::enableSaveVolume);
   connect(d->UI.worldView, &WorldView::fusedMeshEnabled,
           this, &MainWindow::enableSaveFusedMesh);
 
@@ -2614,11 +2616,18 @@ void MainWindow::saveWebGLScene()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::enableSaveFusedMesh(bool state)
+void MainWindow::enableSaveVolume(bool state)
 {
   QTE_D();
 
   d->UI.actionExportVolume->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableSaveFusedMesh(bool state)
+{
+  QTE_D();
+
   d->UI.actionExportFusedMesh->setEnabled(state);
   d->UI.actionExportFusedMeshFrameColors->setEnabled(state);
 }
