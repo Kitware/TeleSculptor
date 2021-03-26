@@ -51,13 +51,8 @@
 class RunAllToolPrivate
 {
 public:
-  RunAllToolPrivate()
-    : output(0), failed(false)
-  {
-  }
-
   AbstractTool::Outputs output;
-  bool failed;
+  bool failed = false;
 
   std::unique_ptr<TrackFeaturesTool> tracker;
   std::unique_ptr<InitCamerasLandmarksTool> initializer;

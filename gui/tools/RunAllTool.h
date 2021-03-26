@@ -40,7 +40,7 @@ class RunAllTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit RunAllTool(QObject* parent = 0);
+  explicit RunAllTool(QObject* parent = nullptr);
   ~RunAllTool() override;
 
   Outputs outputs() const override;
@@ -48,7 +48,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
 public slots:
   void cancel() override;

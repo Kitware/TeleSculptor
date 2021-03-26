@@ -1010,7 +1010,7 @@ void MainWindowPrivate::updateCameraView()
 {
   if (this->activeCameraIndex < 1)
   {
-    this->loadEmptyImage(0);
+    this->loadEmptyImage(nullptr);
     this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearGroundControlPoints();
@@ -1025,7 +1025,7 @@ void MainWindowPrivate::updateCameraView()
 
   if (!activeFrame)
   {
-    this->loadEmptyImage(0);
+    this->loadEmptyImage(nullptr);
     this->UI.cameraView->clearLandmarks();
     return;
   }
@@ -1159,8 +1159,8 @@ void MainWindowPrivate::loadEmptyImage(kwiver::arrows::vtk::vtkKwiverCamera* cam
     imageDimensions = QSize(w, h);
   }
 
-  this->UI.cameraView->setImageData(0, imageDimensions);
-  this->UI.worldView->setImageData(0, imageDimensions);
+  this->UI.cameraView->setImageData(nullptr, imageDimensions);
+  this->UI.worldView->setImageData(nullptr, imageDimensions);
 }
 
 //-----------------------------------------------------------------------------
@@ -2806,7 +2806,7 @@ void MainWindow::executeTool(QObject* object)
 
     if (!tool->execute())
     {
-      d->setActiveTool(0);
+      d->setActiveTool(nullptr);
     }
     else
     {
@@ -2843,7 +2843,7 @@ void MainWindow::acceptToolFinalResults()
                       d->activeTool->description(),
                       100);
   }
-  d->setActiveTool(0);
+  d->setActiveTool(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -2894,13 +2894,13 @@ void MainWindow::acceptToolResults(
 
     auto const outputs = d->activeTool->outputs();
 
-    d->toolUpdateCameras = NULL;
-    d->toolUpdateLandmarks = NULL;
-    d->toolUpdateTracks = NULL;
-    d->toolUpdateTrackChanges = NULL;
+    d->toolUpdateCameras = nullptr;
+    d->toolUpdateLandmarks = nullptr;
+    d->toolUpdateTracks = nullptr;
+    d->toolUpdateTrackChanges = nullptr;
     d->toolUpdateActiveFrame = -1;
-    d->toolUpdateDepth = NULL;
-    d->toolUpdateVolume = NULL;
+    d->toolUpdateDepth = nullptr;
+    d->toolUpdateVolume = nullptr;
     if (outputs.testFlag(AbstractTool::Cameras))
     {
       d->toolUpdateCameras = data->cameras;

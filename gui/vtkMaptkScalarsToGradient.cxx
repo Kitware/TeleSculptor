@@ -66,7 +66,7 @@ GetValue typedGetValue(int type)
   {
     vtkTemplateAliasMacro(return &getValue<VTK_TT>);
     default:
-      return 0;
+      return nullptr;
   }
 }
 

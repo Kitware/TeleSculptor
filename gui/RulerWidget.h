@@ -58,7 +58,7 @@ class RulerWidget : public QObject
   Q_OBJECT
 
 public:
-  RulerWidget(QObject* parent = 0);
+  RulerWidget(QObject* parent = nullptr);
   ~RulerWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);

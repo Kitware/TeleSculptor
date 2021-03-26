@@ -45,7 +45,8 @@ class CameraOptions : public QWidget
 
 public:
   explicit CameraOptions(vtkMaptkCameraRepresentation*,
-                         QWidget* parent = 0, Qt::WindowFlags flags = 0);
+                         QWidget* parent = nullptr,
+                         Qt::WindowFlags flags = {});
   ~CameraOptions() override;
 
 signals:

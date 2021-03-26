@@ -46,7 +46,8 @@ class MatchMatrixWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit MatchMatrixWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit MatchMatrixWindow(QWidget* parent = nullptr,
+                             Qt::WindowFlags flags = {});
   ~MatchMatrixWindow() override;
 
 public slots:

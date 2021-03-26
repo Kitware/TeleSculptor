@@ -180,9 +180,9 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveCameraRepLength = 4.0;
   this->DisplayDensity = 1;
 
-  this->ActiveCamera = 0;
+  this->ActiveCamera = nullptr;
 
-  this->Internal->LastActiveCamera = 0;
+  this->Internal->LastActiveCamera = nullptr;
   this->Internal->LastNonActiveCameraRepLength = -1.0;
   this->Internal->PathNeedsUpdate = false;
 
@@ -270,7 +270,7 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 
   if (this->ActiveCamera == camIter->second)
   {
-    this->ActiveCamera = 0;
+    this->ActiveCamera = nullptr;
   }
 
   camIter->second->UnRegister(this);

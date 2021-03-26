@@ -44,7 +44,7 @@ class ActorColorButton : public qtColorButton
   Q_OBJECT
 
 public:
-  explicit ActorColorButton(QWidget* parent = 0);
+  explicit ActorColorButton(QWidget* parent = nullptr);
   ~ActorColorButton() override;
 
   void addActor(vtkActor*);

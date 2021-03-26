@@ -61,8 +61,6 @@ public:
   };
 
 public:
-  DepthMapViewOptionsPrivate() : actor(0), rangeInitialized(false) {}
-
   void setPopup(QToolButton* button, QWidget* widget);
 
   void addMode(QAbstractButton* button, char const* arrayName,
@@ -77,9 +75,9 @@ public:
   QButtonGroup* modeButtons;
   QList<ModeInformation> modes;
 
-  vtkActor* actor;
+  vtkActor* actor = nullptr;
 
-  bool rangeInitialized;
+  bool rangeInitialized = false;
 };
 
 //-----------------------------------------------------------------------------
@@ -135,7 +133,7 @@ DepthMapViewOptions::DepthMapViewOptions(
           this, &DepthMapViewOptions::setUncertaintyIcon);
 
   d->modeButtons = new QButtonGroup(this);
-  d->addMode(d->UI.color, DepthMapArrays::TrueColor, 0);
+  d->addMode(d->UI.color, DepthMapArrays::TrueColor, nullptr);
   d->addMode(d->UI.depth, DepthMapArrays::Depth,
              d->depthOptions);
   d->addMode(d->UI.weight, DepthMapArrays::Weight,
