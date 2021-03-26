@@ -1655,7 +1655,7 @@ void WorldView::saveFusedMesh(const QString &path,
     writer->Write();
   }
 
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+  LOG_INFO(d->logger, "Saved : " << qPrintable(path));
 }
 
 //-----------------------------------------------------------------------------
