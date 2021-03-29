@@ -497,7 +497,7 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
   // shift the GCPs
   for (auto gcp : this->groundControlPointsHelper->groundControlPoints())
   {
-    gcp.second->set_loc(gcp.second->loc() - offset);
+    gcp->set_loc(gcp->loc() - offset);
   }
   this->groundControlPointsHelper->updateViewsFromGCPs();
 }
@@ -2214,7 +2214,7 @@ void MainWindow::loadGroundControlPoints(QString const& path)
   if (d->groundControlPointsHelper->readGroundControlPoints(path))
   {
     d->UI.actionExportGroundControlPoints->setEnabled(
-      d->groundControlPointsHelper->groundControlPoints().size());
+      !d->groundControlPointsHelper->isEmpty());
   }
 }
 
@@ -3195,12 +3195,12 @@ void MainWindow::applySimilarityTransform()
   QTE_D();
 
   std::vector<kwiver::vital::ground_control_point_sptr> gcps;
-  auto gcp_map = d->groundControlPointsHelper->groundControlPoints();
-  for (auto gcp : gcp_map)
+  auto const& allGcps = d->groundControlPointsHelper->groundControlPoints();
+  for (auto const& gcp : allGcps)
   {
-    if (gcp.second->is_geo_loc_user_provided())
+    if (gcp->is_geo_loc_user_provided())
     {
-      gcps.push_back(gcp.second);
+      gcps.push_back(gcp);
     }
   }
 
@@ -3294,10 +3294,10 @@ void MainWindow::applySimilarityTransform()
   d->updateCameras(camera_map);
 
   // Transform GCP's
-  for (auto gcp : gcp_map)
+  for (auto gcp : allGcps)
   {
-    auto gcp_loc = gcp.second->loc();
-    gcp.second->set_loc(sim_transform * gcp_loc);
+    auto gcp_loc = gcp->loc();
+    gcp->set_loc(sim_transform * gcp_loc);
   }
   d->groundControlPointsHelper->updateViewsFromGCPs();
 

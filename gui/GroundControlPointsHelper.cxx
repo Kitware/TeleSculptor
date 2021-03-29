@@ -57,8 +57,6 @@
 
 namespace kv = kwiver::vital;
 
-using id_t = kv::ground_control_point_id_t;
-
 namespace
 {
 
@@ -88,6 +86,9 @@ enum class Reset
 Q_DECLARE_FLAGS(ResetFlags, Reset)
 Q_DECLARE_OPERATORS_FOR_FLAGS(ResetFlags)
 
+using id_t = GroundControlPointsHelper::id_t;
+using gcp_sptr = GroundControlPointsHelper::gcp_sptr;
+
 //-----------------------------------------------------------------------------
 bool isDoubleArray(QJsonArray const& a)
 {
@@ -102,7 +103,7 @@ bool isDoubleArray(QJsonArray const& a)
 }
 
 //-----------------------------------------------------------------------------
-kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
+gcp_sptr extractGroundControlPoint(QJsonObject const& f)
 {
   // Check for geometry
   auto const& geom = f.value(TAG_GEOMETRY).toObject();
@@ -161,7 +162,7 @@ kv::ground_control_point_sptr extractGroundControlPoint(QJsonObject const& f)
 }
 
 //-----------------------------------------------------------------------------
-QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
+QJsonValue buildFeature(gcp_sptr const& gcpp)
 {
   if (!gcpp)
   {
@@ -197,6 +198,14 @@ QJsonValue buildFeature(kv::ground_control_point_sptr const& gcpp)
   return f;
 }
 
+//-----------------------------------------------------------------------------
+struct GroundControlPoint
+{
+  kv::ground_control_point_id_t id;
+  kv::ground_control_point_sptr gcp;
+  // type_tbd feature;
+};
+
 } // namespace (anonymous)
 
 //-----------------------------------------------------------------------------
@@ -210,19 +219,18 @@ public:
   GroundControlPointsWidget* cameraWidget = nullptr;
 
   id_t nextId = 0;
-  kv::ground_control_point_map::ground_control_point_map_t groundControlPoints;
+  std::map<id_t, GroundControlPoint> groundControlPoints;
   std::map<vtkHandleWidget*, id_t> gcpHandleToIdMap;
   std::map<id_t, vtkHandleWidget*> gcpIdToHandleMap;
 
-  void addPoint(id_t id, kv::ground_control_point_sptr const& point);
+  void addPoint(id_t id, gcp_sptr const& point);
 
   void updatePoint(int handleId);
   void movePoint(int handleId, GroundControlPointsWidget* widget,
                  kv::vector_3d const& newPosition);
 
   void resetPoint(id_t gcpId, ResetFlags options = {});
-  void resetPoint(kv::ground_control_point_sptr const& gcp,
-                  id_t gcpId, ResetFlags options = {});
+  void resetPoint(gcp_sptr const& gcp, id_t gcpId, ResetFlags options = {});
 
   void removePoint(int handleId, vtkHandleWidget* handleWidget);
 
@@ -240,11 +248,10 @@ private:
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsHelper)
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsHelperPrivate::addPoint(
-  id_t id, kv::ground_control_point_sptr const& point)
+void GroundControlPointsHelperPrivate::addPoint(id_t id, gcp_sptr const& point)
 {
   // Add point to internal map
-  this->groundControlPoints[id] = point;
+  this->groundControlPoints[id].gcp = point;
 
   // Add point to VTK widgets
   auto const& pos = point->loc();
@@ -263,7 +270,7 @@ void GroundControlPointsHelperPrivate::resetPoint(
   id_t gcpId, ResetFlags options)
 {
   auto const gcpp = qtGet(this->groundControlPoints, gcpId);
-  auto const gcp = (gcpp ? gcpp->second : nullptr);
+  auto const gcp = (gcpp ? gcpp->second.gcp : nullptr);
 
   if (!gcp)
   {
@@ -276,7 +283,7 @@ void GroundControlPointsHelperPrivate::resetPoint(
 
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelperPrivate::resetPoint(
-  kv::ground_control_point_sptr const& gcp, id_t gcpId, ResetFlags options)
+  gcp_sptr const& gcp, id_t gcpId, ResetFlags options)
 {
   if ((options & Reset::Force) || !gcp->is_geo_loc_user_provided())
   {
@@ -308,7 +315,7 @@ void GroundControlPointsHelperPrivate::updatePoint(int handleId)
     // Find the corresponding GCP
     auto const gcpId = gcpIdIter->second;
     auto const gcpIter = qtGet(this->groundControlPoints, gcpId);
-    auto const gcp = (gcpIter ? gcpIter->second : nullptr);
+    auto const gcp = (gcpIter ? gcpIter->second.gcp : nullptr);
 
     if (gcp)
     {
@@ -369,7 +376,7 @@ void GroundControlPointsHelperPrivate::removePoint(
 id_t GroundControlPointsHelperPrivate::addPoint()
 {
   auto const pt = this->worldWidget->activePoint();
-  this->groundControlPoints[nextId] =
+  this->groundControlPoints[nextId].gcp =
     std::make_shared<kv::ground_control_point>(pt);
   vtkHandleWidget* const handle =
     this->worldWidget->handleWidget(this->worldWidget->activeHandle());
@@ -640,7 +647,7 @@ void GroundControlPointsHelper::updateViewsFromGCPs()
     if (handleWidget)
     {
       auto const handleId = d->worldWidget->findHandleWidget(handleWidget);
-      kwiver::vital::vector_3d loc = i.second->loc();
+      kwiver::vital::vector_3d loc = i.second.gcp->loc();
       d->worldWidget->movePoint(handleId, loc.x(), loc.y(), loc.z());
 
       if (camera)
@@ -662,7 +669,7 @@ void GroundControlPointsHelper::recomputePoints()
 
   for (auto const& i : d->groundControlPoints)
   {
-    d->resetPoint(i.second, i.first, Reset::Silent);
+    d->resetPoint(i.second.gcp, i.first, Reset::Silent);
   }
 
   emit this->pointsRecomputed();
@@ -774,11 +781,46 @@ void GroundControlPointsHelper::setGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
-kv::ground_control_point_map::ground_control_point_map_t const&
-GroundControlPointsHelper::groundControlPoints() const
+bool GroundControlPointsHelper::isEmpty() const
 {
   QTE_D();
-  return d->groundControlPoints;
+
+  return d->groundControlPoints.empty();
+}
+
+//-----------------------------------------------------------------------------
+std::vector<id_t> GroundControlPointsHelper::identifiers() const
+{
+  QTE_D();
+
+  auto out = std::vector<id_t>{};
+  out.reserve(d->groundControlPoints.size());
+
+  for (auto const& iter : d->groundControlPoints)
+  {
+    out.emplace_back(iter.first);
+  }
+
+  return out;
+}
+
+//-----------------------------------------------------------------------------
+std::vector<gcp_sptr> GroundControlPointsHelper::groundControlPoints() const
+{
+  QTE_D();
+
+  auto out = std::vector<gcp_sptr>{};
+  out.reserve(d->groundControlPoints.size());
+
+  for (auto const& iter : d->groundControlPoints)
+  {
+    if (iter.second.gcp)
+    {
+      out.emplace_back(iter.second.gcp);
+    }
+  }
+
+  return out;
 }
 
 //-----------------------------------------------------------------------------
@@ -869,7 +911,7 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
   {
     try
     {
-      auto const& f = buildFeature(gcpi.second);
+      auto const& f = buildFeature(gcpi.second.gcp);
       if (f.isObject())
       {
         features.append(f);
@@ -925,10 +967,9 @@ void GroundControlPointsHelper::enableWidgets(bool enable)
 }
 
 //-----------------------------------------------------------------------------
-kv::ground_control_point_sptr GroundControlPointsHelper::groundControlPoint(
-  id_t pointId)
+gcp_sptr GroundControlPointsHelper::groundControlPoint(id_t pointId)
 {
   QTE_D();
   auto it = d->groundControlPoints.find(pointId);
-  return it == d->groundControlPoints.end() ? nullptr : it->second;
+  return it == d->groundControlPoints.end() ? nullptr : it->second.gcp;
 }

@@ -30,6 +30,8 @@
 
 #include "GroundControlPointsModel.h"
 
+#include "GroundControlPointsHelper.h"
+
 #include <qtGet.h>
 #include <qtStlUtil.h>
 
@@ -40,14 +42,15 @@
 
 namespace kv = kwiver::vital;
 
-using id_t = kv::ground_control_point_id_t;
-
 namespace
 {
+
+using id_t = kv::ground_control_point_id_t;
 
 constexpr auto IndexIsValid =
   QAbstractItemModel::CheckIndexOption::IndexIsValid;
 
+//-----------------------------------------------------------------------------
 enum
 {
   COLUMN_ID,
@@ -55,6 +58,7 @@ enum
   COLUMNS
 };
 
+//-----------------------------------------------------------------------------
 struct gcp_ref
 {
   id_t id;
@@ -76,7 +80,7 @@ struct gcp_ref
 class GroundControlPointsModelPrivate
 {
 public:
-  std::map<id_t, kv::ground_control_point_sptr> const* data = nullptr;
+  GroundControlPointsHelper* helper = nullptr;
   QVector<gcp_ref> points;
 
   QIcon registeredIcon;
@@ -305,8 +309,8 @@ void GroundControlPointsModel::addPoint(id_t id)
     return;
   }
 
-  auto const gcpi = qtGet(*d->data, id);
-  if (!gcpi)
+  auto const& gcp = d->helper->groundControlPoint(id);
+  if (!gcp)
   {
     qDebug() << "GroundControlPointsModel::addPoint: point with ID" << id
              << "was not found?!";
@@ -315,7 +319,7 @@ void GroundControlPointsModel::addPoint(id_t id)
 
   auto const r = static_cast<int>(i - begin);
   this->beginInsertRows({}, r, r);
-  d->points.insert(i, {id, gcpi->second});
+  d->points.insert(i, {id, gcp});
   this->endInsertRows();
 }
 
@@ -355,11 +359,11 @@ void GroundControlPointsModel::resetPoints()
   this->beginResetModel();
 
   d->points.clear();
-  if (d->data)
+  if (d->helper)
   {
-    for (auto const& i : *d->data)
+    for (auto const& i : d->helper->identifiers())
     {
-      d->points.append({i.first, i.second});
+      d->points.append({i, d->helper->groundControlPoint(i)});
     }
   }
 
@@ -367,12 +371,11 @@ void GroundControlPointsModel::resetPoints()
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsModel::setPointData(
-  std::map<id_t, kv::ground_control_point_sptr> const& data)
+void GroundControlPointsModel::setDataSource(GroundControlPointsHelper* helper)
 {
   QTE_D();
 
-  d->data = &data;
+  d->helper = helper;
   this->resetPoints();
 }
 

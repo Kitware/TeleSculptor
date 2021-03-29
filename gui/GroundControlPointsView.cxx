@@ -447,7 +447,7 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
   connect(helper, &GroundControlPointsHelper::pointsReloaded,
           &d->model, &GroundControlPointsModel::resetPoints);
 
-  d->model.setPointData(helper->groundControlPoints());
+  d->model.setDataSource(helper);
 }
 
 //-----------------------------------------------------------------------------
