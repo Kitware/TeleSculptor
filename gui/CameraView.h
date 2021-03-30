@@ -68,7 +68,7 @@ public slots:
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
 
-  void setActiveFrame(unsigned);
+  void setActiveFrame(kwiver::vital::frame_id_t);
 
   void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);
   void addResidual(kwiver::vital::track_id_t id,

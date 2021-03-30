@@ -73,7 +73,7 @@ public:
   void colorize();
   void forceColorize();
 
-  void setCurrentFrame(int);
+  void setCurrentFrame(kwiver::vital::frame_id_t);
 
   bool isColorOptionsEnabled();
 

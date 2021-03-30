@@ -234,7 +234,7 @@ void VolumeOptions::forceColorize()
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setCurrentFrame(int frame)
+void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 

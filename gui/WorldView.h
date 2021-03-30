@@ -106,8 +106,9 @@ signals:
 public slots:
   void setBackgroundColor(QColor const&);
 
-  void addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera);
-  void removeCamera(int id);
+  void addCamera(kwiver::vital::frame_id_t id,
+                 kwiver::arrows::vtk::vtkKwiverCamera* camera);
+  void removeCamera(kwiver::vital::frame_id_t id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
   void setValidDepthInput(bool);
@@ -128,7 +129,7 @@ public slots:
 
   void setPerspective(bool);
 
-  void setActiveCamera(int id);
+  void setActiveCamera(kwiver::vital::frame_id_t id);
 
   void queueResetView();
   void resetView();
@@ -154,7 +155,7 @@ public slots:
   void invalidateGeometry();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentFrame(int);
+  void setVolumeCurrentFrame(kwiver::vital::frame_id_t);
 
   void computeContour(double threshold);
   void render();

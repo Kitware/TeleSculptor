@@ -48,9 +48,9 @@ typedef vtkMaptkFeatureTrackRepresentation::TrailStyleEnum TrailStyleEnum;
 class vtkMaptkFeatureTrackRepresentation::vtkInternal
 {
 public:
-  void UpdateActivePoints(unsigned activeFrame);
-  void UpdateTrails(unsigned activeFrame, unsigned trailLength,
-                    TrailStyleEnum style);
+  void UpdateActivePoints(kwiver::vital::frame_id_t activeFrame);
+  void UpdateTrails(kwiver::vital::frame_id_t activeFrame,
+                    unsigned trailLength, TrailStyleEnum style);
 
   vtkNew<vtkPoints> PointsWithDesc;
   vtkNew<vtkPoints> PointsWithoutDesc;
@@ -66,8 +66,8 @@ public:
   vtkNew<vtkPolyData> TrailsWithDescPolyData;
   vtkNew<vtkPolyData> TrailsWithoutDescPolyData;
 
-  typedef std::map<unsigned, vtkIdType> TrackType;
-  typedef std::map<unsigned, TrackType> TrackMapType;
+  using TrackType    = std::map<kwiver::vital::frame_id_t, vtkIdType>;
+  using TrackMapType = std::map<kwiver::vital::track_id_t, TrackType>;
 
   TrackMapType TracksWithDesc;
   TrackMapType TracksWithoutDesc;
@@ -75,7 +75,7 @@ public:
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
-  unsigned activeFrame)
+  kwiver::vital::frame_id_t activeFrame)
 {
   this->PointsWithDescCells->Reset();
 
@@ -112,7 +112,8 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
-  unsigned activeFrame, unsigned trailLength, TrailStyleEnum style)
+  kwiver::vital::frame_id_t activeFrame, unsigned trailLength,
+  TrailStyleEnum style)
 {
   this->TrailsWithDescCells->Reset();
   this->TrailsWithoutDescCells->Reset();
@@ -262,7 +263,8 @@ vtkMaptkFeatureTrackRepresentation::~vtkMaptkFeatureTrackRepresentation()
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::AddTrackWithDescPoint(
-  unsigned trackId, unsigned frameId, double x, double y)
+  kwiver::vital::track_id_t trackId, kwiver::vital::frame_id_t frameId,
+  double x, double y)
 {
   auto const id = this->Internal->PointsWithDesc->InsertNextPoint(x, y, 0.0);
   this->Internal->TracksWithDesc[trackId][frameId] = id;
@@ -270,7 +272,8 @@ void vtkMaptkFeatureTrackRepresentation::AddTrackWithDescPoint(
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::AddTrackWithoutDescPoint(
-  unsigned trackId, unsigned frameId, double x, double y)
+  kwiver::vital::track_id_t trackId, kwiver::vital::frame_id_t frameId,
+  double x, double y)
 {
   auto const id = this->Internal->PointsWithoutDesc->InsertNextPoint(x, y, 0.0);
   this->Internal->TracksWithoutDesc[trackId][frameId] = id;
@@ -290,7 +293,8 @@ void vtkMaptkFeatureTrackRepresentation::ClearTrackData()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkFeatureTrackRepresentation::SetActiveFrame(unsigned frame)
+void vtkMaptkFeatureTrackRepresentation::SetActiveFrame(
+  kwiver::vital::frame_id_t frame)
 {
   if (this->ActiveFrame == frame)
   {

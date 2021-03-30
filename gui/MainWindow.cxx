@@ -106,6 +106,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QQueue>
+#include <QSignalBlocker>
 #include <QSignalMapper>
 #include <QTimer>
 #include <QUrl>
@@ -273,7 +274,7 @@ public:
   // Data structures
   struct FrameData
   {
-    int id;
+    kv::frame_id_t id;
     vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera> camera;
 
     QString depthMapPath; // Full path to depth map data
@@ -291,7 +292,7 @@ public:
   void addMaskSource(kv::config_block_sptr const& config,
                      QString const& maskPath);
 
-  void addFrame(kv::camera_perspective_sptr const& camera, int id);
+  void addFrame(kv::camera_perspective_sptr const& camera, kv::frame_id_t id);
   void updateFrames(std::shared_ptr<kv::metadata_map::map_metadata_t>);
 
   kv::camera_map_sptr cameraMap() const;
@@ -302,7 +303,7 @@ public:
   std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string>>
   depthLookup() const;
 
-  void setActiveCamera(int);
+  void setActiveCamera(kv::frame_id_t);
   void updateCameraView();
 
   std::string getFrameName(kv::frame_id_t frame);
@@ -325,7 +326,7 @@ public:
   void shiftGeoOrigin(kv::vector_3d const& offset);
   std::string roiToString();
   void loadroi(const std::string& roistr);
-  void resetActiveDepthMap(int);
+  void resetActiveDepthMap(kv::frame_id_t);
   void handleLogMessage(kv::kwiver_logger::log_level_t level,
                         std::string const& name,
                         std::string const& msg,
@@ -347,7 +348,7 @@ public:
   QMenu* toolMenu = nullptr;
   AbstractTool* activeTool = nullptr;
   QList<AbstractTool*> tools;
-  int toolUpdateActiveFrame = -1;
+  kv::frame_id_t toolUpdateActiveFrame = -1;
   kv::camera_map_sptr toolUpdateCameras;
   kv::landmark_map_sptr toolUpdateLandmarks;
   kv::feature_track_set_sptr toolUpdateTracks;
@@ -369,17 +370,17 @@ public:
   kv::feature_track_set_sptr tracks;
   kv::landmark_map_sptr landmarks;
   vtkSmartPointer<vtkImageData> activeDepth;
-  int activeDepthFrame = -1;
-  int currentDepthFrame = -1;
+  kv::frame_id_t activeDepthFrame = -1;
+  kv::frame_id_t currentDepthFrame = -1;
 
   kv::sfm_constraints_sptr sfmConstraints;
 
-  int activeCameraIndex = -1;
+  kv::frame_id_t activeCameraIndex = -1;
 
   VideoImport videoImporter;
 
   // Frames without a camera
-  QQueue<int> orphanFrames;
+  QQueue<kv::frame_id_t> orphanFrames;
 
   vtkNew<vtkXMLImageDataReader> depthReader;
   vtkNew<vtkMaptkImageUnprojectDepth> depthFilter;
@@ -531,7 +532,7 @@ void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
 {
   if (!this->orphanFrames.isEmpty())
   {
-    auto orphanIndex = this->orphanFrames.dequeue();
+    auto const orphanIndex = this->orphanFrames.dequeue();
 
     if (auto* const fd = qtGet(this->frames, orphanIndex))
     {
@@ -551,8 +552,7 @@ void MainWindowPrivate::addCamera(kv::camera_perspective_sptr const& camera)
   }
 
   // Add the camera to the end
-  unsigned int lastFrameId =
-    this->frames.isEmpty() ? 0 : this->frames.lastKey();
+  auto const lastFrameId = this->frames.isEmpty() ? 0 : this->frames.lastKey();
   this->addFrame(camera, lastFrameId + 1);
 }
 
@@ -630,9 +630,9 @@ void MainWindowPrivate::addMaskSource(
 
 //-----------------------------------------------------------------------------
 void MainWindowPrivate::addFrame(
-  kv::camera_perspective_sptr const& camera, int id)
+  kv::camera_perspective_sptr const& camera, kv::frame_id_t id)
 {
-  if (this->frames.find(id) != this->frames.end())
+  if (this->frames.contains(id))
   {
     qWarning() << "Frame " << id << " already exists.";
     return;
@@ -672,8 +672,8 @@ void MainWindowPrivate::addFrame(
     this->UI.cameraView->resetView();
   }
 
-  unsigned int lastFrameId =
-    this->frames.isEmpty() ? 1 : this->frames.lastKey();
+  auto const lastFrameId =
+    this->frames.isEmpty() ? 1 : static_cast<int>(this->frames.lastKey());
   this->UI.camera->setRange(1, lastFrameId);
   this->UI.cameraSpin->setRange(1, lastFrameId);
 }
@@ -904,11 +904,7 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
   fr->camera->Update();
 
   // Remove from orphanFrames if needed.
-  auto orphanIndex = orphanFrames.indexOf(frame);
-  if (orphanIndex >= 0)
-  {
-    orphanFrames.removeAt(orphanIndex);
-  }
+  orphanFrames.removeOne(frame);
 
   if (fr->id == this->activeCameraIndex)
   {
@@ -920,21 +916,24 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::setActiveCamera(int id)
+void MainWindowPrivate::setActiveCamera(kv::frame_id_t id)
 {
-  // collect the set of frames to select from
+  // Collect the set of frames from which to select
   // TODO compute this set of frames only when it changes,
   // not every time the active camera changes.
-  auto all_frames = this->frames.keys();
-  std::set<kwiver::vital::frame_id_t> select_frames(all_frames.begin(),
-                                                    all_frames.end());
-  if (this->UI.actionTrackedFramesOnly->isChecked())
-  {
-    select_frames = tracks->all_frame_ids();
-  }
+  auto select_frames = std::set<kwiver::vital::frame_id_t>{};
   if (this->UI.actionKeyframesOnly->isChecked())
   {
     select_frames = tracks->keyframes();
+  }
+  else if (this->UI.actionTrackedFramesOnly->isChecked())
+  {
+    select_frames = tracks->all_frame_ids();
+  }
+  else
+  {
+    auto all_frames = this->frames.keys();
+    select_frames = {all_frames.begin(), all_frames.end()};
   }
 
   bool next_frame_found = false;
@@ -959,8 +958,7 @@ void MainWindowPrivate::setActiveCamera(int id)
     {
       if (this->UI.actionSlideshowLoop->isChecked())
       {
-        this->UI.camera->setValue(*select_frames.begin());
-        this->UI.cameraSpin->setValue(*select_frames.begin());
+        this->UI.camera->setValue(static_cast<int>(*select_frames.begin()));
         return;
       }
       else
@@ -969,15 +967,15 @@ void MainWindowPrivate::setActiveCamera(int id)
       }
     }
     // Set the active camera back to what it was.
-    this->UI.camera->setValue(this->activeCameraIndex);
-    this->UI.cameraSpin->setValue(this->activeCameraIndex);
+    this->UI.camera->setValue(static_cast<int>(this->activeCameraIndex));
     return;
   }
 
-  auto oldSignalState = this->UI.camera->blockSignals(true);
-  this->UI.camera->setValue(id);
-  this->UI.camera->blockSignals(oldSignalState);
-  this->UI.cameraSpin->setValue(id);
+  with_expr (QSignalBlocker{this->UI.camera})
+  {
+    this->UI.camera->setValue(static_cast<int>(id));
+    this->UI.cameraSpin->setValue(static_cast<int>(id));
+  }
 
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
@@ -1017,8 +1015,7 @@ void MainWindowPrivate::updateCameraView()
     return;
   }
 
-  this->UI.cameraView->setActiveFrame(
-    static_cast<unsigned>(this->activeCameraIndex));
+  this->UI.cameraView->setActiveFrame(this->activeCameraIndex);
 
   auto* const activeFrame =
     qtGet(qAsConst(this->frames), this->activeCameraIndex);
@@ -1397,7 +1394,7 @@ void MainWindowPrivate::loadroi(const std::string& roistr)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::resetActiveDepthMap(int frame)
+void MainWindowPrivate::resetActiveDepthMap(kv::frame_id_t frame)
 {
   this->depthReader->SetFileName("");
   this->depthFilter->RemoveAllInputConnections(0);
@@ -1568,7 +1565,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::setSlideSpeed);
 
   connect(d->UI.camera, &QAbstractSlider::valueChanged,
-          this, &MainWindow::setActiveCamera);
+          this, &MainWindow::setActiveFrame);
 
   connect(d->UI.worldView, &WorldView::fusedMeshEnabled,
           this, &MainWindow::enableSaveFusedMesh);
@@ -2744,11 +2741,11 @@ void MainWindow::nextSlide()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::setActiveCamera(int id)
+void MainWindow::setActiveFrame(kwiver::vital::frame_id_t id)
 {
   QTE_D();
 
-  int lastFrameId = d->frames.isEmpty() ? 1 : d->frames.lastKey();
+  auto const lastFrameId = d->frames.isEmpty() ? 0 : d->frames.lastKey();
   if (id < 1 || id > lastFrameId)
   {
     qDebug() << "MainWindow::setActiveCamera:"
@@ -2885,8 +2882,7 @@ void MainWindow::acceptToolResults(
                       d->activeTool->description(),
                       d->activeTool->progress());
 
-    if (data->isProgressOnly() &&
-        static_cast<int>(data->activeFrame) == d->activeCameraIndex)
+    if (data->isProgressOnly() && data->activeFrame == d->activeCameraIndex)
     {
       // nothing else to update
       return;
@@ -2923,7 +2919,7 @@ void MainWindow::acceptToolResults(
     }
     if (outputs.testFlag(AbstractTool::ActiveFrame))
     {
-      d->toolUpdateActiveFrame = static_cast<int>(data->activeFrame);
+      d->toolUpdateActiveFrame = data->activeFrame;
     }
     if (outputs.testFlag(AbstractTool::Fusion))
     {
@@ -3076,8 +3072,8 @@ void MainWindow::updateToolResults()
   {
     if (d->toolUpdateActiveFrame != d->activeCameraIndex)
     {
-      d->UI.camera->setValue(d->toolUpdateActiveFrame);
-      this->setActiveCamera(d->toolUpdateActiveFrame);
+      d->UI.camera->setValue(static_cast<int>(d->toolUpdateActiveFrame));
+      this->setActiveFrame(d->toolUpdateActiveFrame);
     }
     d->toolUpdateActiveFrame = -1;
   }
@@ -3429,7 +3425,7 @@ kwiver::arrows::vtk::vtkKwiverCamera* MainWindow::activeCamera()
     return nullptr;
   }
 
-  auto* const activeFrame = qtGet(d->frames, d->activeCameraIndex);
+  auto* const activeFrame = qtGet(qAsConst(d->frames), d->activeCameraIndex);
   return (activeFrame ? activeFrame->camera : nullptr);
 }
 
