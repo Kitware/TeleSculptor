@@ -619,7 +619,7 @@ void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setActiveFrame(unsigned frame)
+void CameraView::setActiveFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 

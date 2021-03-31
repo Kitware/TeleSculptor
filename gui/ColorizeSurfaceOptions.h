@@ -58,7 +58,7 @@ public:
   void initFrameSampling(int nbFrames);
   int getFrameSampling() const;
 
-  void setCurrentFrame(int frame);
+  void setCurrentFrame(kwiver::vital::frame_id_t frame);
   void setOcclusionThreshold(double occlusionThreshold)
   {
     this->OcclusionThreshold = occlusionThreshold;
@@ -111,7 +111,7 @@ protected:
   bool RemoveMasked;
   bool InsideColorize;
   const int INVALID_FRAME = -2;
-  int LastColorizedFrame;
+  kwiver::vital::frame_id_t LastColorizedFrame;
 
 private:
 

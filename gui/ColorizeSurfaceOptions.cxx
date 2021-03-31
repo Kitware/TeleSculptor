@@ -71,7 +71,7 @@ public:
   QString krtdFile;
   QString frameFile;
 
-  int currentFrame;
+  kwiver::vital::frame_id_t currentFrame;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -163,7 +163,7 @@ int ColorizeSurfaceOptions::getFrameSampling() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCurrentFrame(int frame)
+void ColorizeSurfaceOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 
@@ -317,8 +317,8 @@ void ColorizeSurfaceOptions::colorize()
   if (! this->InsideColorize)
   {
     this->InsideColorize = true;
-    int colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ?
-      d->currentFrame : -1;
+    auto colorizedFrame =
+      (d->UI.radioButtonCurrentFrame->isChecked() ? d->currentFrame : -1);
     while (this->LastColorizedFrame != colorizedFrame)
     {
       this->LastColorizedFrame = colorizedFrame;

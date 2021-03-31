@@ -955,7 +955,7 @@ void WorldView::setVolumeVisible(bool state)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVolumeCurrentFrame(int frame)
+void WorldView::setVolumeCurrentFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 
@@ -976,7 +976,8 @@ void WorldView::computeContour(double threshold)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
+void WorldView::addCamera(
+  kwiver::vital::frame_id_t id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
   Q_UNUSED(id)
 
@@ -989,17 +990,15 @@ void WorldView::addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::removeCamera(int id)
+void WorldView::removeCamera(kwiver::vital::frame_id_t id)
 {
-  Q_UNUSED(id)
-
-    QTE_D();
+  QTE_D();
 
   d->cameraRep->RemoveCamera(id);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setActiveCamera(int id)
+void WorldView::setActiveCamera(kwiver::vital::frame_id_t id)
 {
   static auto const plane = kwiver::vital::vector_4d(0.0, 0.0, 1.0, 0.0);
 

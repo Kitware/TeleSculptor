@@ -195,7 +195,7 @@ std::shared_ptr<ToolData> AbstractTool::data()
 }
 
 //-----------------------------------------------------------------------------
-unsigned int AbstractTool::activeFrame() const
+kwiver::vital::frame_id_t AbstractTool::activeFrame() const
 {
   QTE_D();
   return d->data->activeFrame;
@@ -272,14 +272,14 @@ AbstractTool::fusion_sptr AbstractTool::volume() const
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setActiveFrame(unsigned int frame)
+void AbstractTool::setActiveFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
   d->data->activeFrame = frame;
 }
 
 //-----------------------------------------------------------------------------
-void AbstractTool::setLastFrame(int count)
+void AbstractTool::setLastFrame(kwiver::vital::frame_id_t count)
 {
   QTE_D();
   d->data->maxFrame = count;
