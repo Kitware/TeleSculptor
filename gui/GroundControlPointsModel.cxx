@@ -184,6 +184,13 @@ QVariant GroundControlPointsModel::data(
       switch (role)
       {
         case Qt::DisplayRole:
+          if (!item.gcp)
+          {
+            static const auto t = QStringLiteral("(%1)");
+            return t.arg(item.id);
+          }
+          return QString::number(item.id);
+
         case Qt::EditRole:
           return item.id;
 
@@ -202,22 +209,19 @@ QVariant GroundControlPointsModel::data(
       }
 
     case COLUMN_NAME:
-      if (!item.gcp)
+      if (item.gcp)
       {
-      qDebug() << "Eek! Missing ground control point for index"
-               << index << "with ID" << item.id << "?!?!";
-        return {};
-      }
+        switch (role)
+        {
+          case Qt::DisplayRole:
+          case Qt::EditRole:
+            return qtString(item.gcp->name());
 
-      switch (role)
-      {
-        case Qt::DisplayRole:
-        case Qt::EditRole:
-          return qtString(item.gcp->name());
-
-        default:
-          return {};
+          default:
+            return {};
+        }
       }
+      return {};
 
     default:
       return {};
@@ -304,18 +308,11 @@ void GroundControlPointsModel::addPoint(id_t id)
   auto const i = std::upper_bound(begin, end, id);
   if (i != begin && (i - 1)->id == id)
   {
-    qDebug() << "GroundControlPointsModel::addPoint: ID" << id
-             << "already exists?!";
+    this->modifyPoint(id);
     return;
   }
 
   auto const& gcp = d->helper->groundControlPoint(id);
-  if (!gcp)
-  {
-    qDebug() << "GroundControlPointsModel::addPoint: point with ID" << id
-             << "was not found?!";
-    return;
-  }
 
   auto const r = static_cast<int>(i - begin);
   this->beginInsertRows({}, r, r);
@@ -347,7 +344,12 @@ void GroundControlPointsModel::modifyPoint(id_t id)
   auto const& index = this->find(id, COLUMN_ID);
   if (index.isValid())
   {
-    emit this->dataChanged(index, index, {Qt::DecorationRole});
+    QTE_D();
+
+    auto& item = d->points[index.row()];
+    item.gcp = d->helper->groundControlPoint(id);
+
+    emit this->dataChanged(index, index);
   }
 }
 

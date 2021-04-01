@@ -99,11 +99,14 @@ signals:
   void activePointChanged(id_t);
 
 protected slots:
+  void addRegistrationPoint();
   void addCameraViewPoint();
   void addWorldViewPoint();
 
-  void removePointByHandle(int handleId);
+  void removeCrpByHandle(int handleId);
+  void removeGcpByHandle(int handleId);
 
+  void moveRegistrationPoint();
   void moveCameraViewPoint();
   void moveWorldViewPoint();
 

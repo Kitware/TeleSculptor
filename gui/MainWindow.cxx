@@ -1009,7 +1009,7 @@ void MainWindowPrivate::updateCameraView()
   if (this->activeCameraIndex < 1)
   {
     this->loadEmptyImage(nullptr);
-    this->UI.cameraView->setActiveFrame(static_cast<unsigned>(-1));
+    this->UI.cameraView->setActiveFrame(-1);
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearGroundControlPoints();
     return;
@@ -2743,14 +2743,22 @@ void MainWindow::nextSlide()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::setActiveFrame(kwiver::vital::frame_id_t id)
+kv::frame_id_t MainWindow::activeFrame() const
+{
+  QTE_D();
+
+  return d->activeCameraIndex;
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setActiveFrame(kv::frame_id_t id)
 {
   QTE_D();
 
   auto const lastFrameId = d->frames.isEmpty() ? 0 : d->frames.lastKey();
   if (id < 1 || id > lastFrameId)
   {
-    qDebug() << "MainWindow::setActiveCamera:"
+    qDebug() << "MainWindow::setActiveFrame:"
              << " requested ID" << id << "is invalid";
     return;
   }
@@ -3394,7 +3402,7 @@ void MainWindow::updateToolProgress(QString const& desc, int progress)
 }
 
 //-----------------------------------------------------------------------------
-WorldView* MainWindow::worldView()
+WorldView* MainWindow::worldView() const
 {
   QTE_D();
 
@@ -3402,7 +3410,7 @@ WorldView* MainWindow::worldView()
 }
 
 //-----------------------------------------------------------------------------
-CameraView* MainWindow::cameraView()
+CameraView* MainWindow::cameraView() const
 {
   QTE_D();
 
@@ -3418,7 +3426,7 @@ kwiver::vital::local_geo_cs MainWindow::localGeoCoordinateSystem() const
 }
 
 //-----------------------------------------------------------------------------
-kwiver::arrows::vtk::vtkKwiverCamera* MainWindow::activeCamera()
+kwiver::arrows::vtk::vtkKwiverCamera* MainWindow::activeCamera() const
 {
   QTE_D();
 
@@ -3427,7 +3435,7 @@ kwiver::arrows::vtk::vtkKwiverCamera* MainWindow::activeCamera()
     return nullptr;
   }
 
-  auto* const activeFrame = qtGet(qAsConst(d->frames), d->activeCameraIndex);
+  auto* const activeFrame = qtGet(d->frames, d->activeCameraIndex);
   return (activeFrame ? activeFrame->camera : nullptr);
 }
 

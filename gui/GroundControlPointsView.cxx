@@ -416,6 +416,7 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
             {
               d->showPoint(id);
             }
+            d->model.modifyPoint(id);
           });
   connect(helper, &GroundControlPointsHelper::pointsRecomputed,
           this, [d](){
