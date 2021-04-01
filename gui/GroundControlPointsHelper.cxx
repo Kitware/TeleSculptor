@@ -466,7 +466,7 @@ id_t GroundControlPointsHelperPrivate::addGroundControlPoint()
     this->worldWidget->handleWidget(this->worldWidget->activeHandle());
 
   this->gcpHandleToIdMap[handle] = id;
-  this->gcpIdToHandleMap[this->nextId] = handle;
+  this->gcpIdToHandleMap[id] = handle;
 
   this->resetPoint(id, Reset::Silent);
 
@@ -1027,6 +1027,44 @@ std::vector<gcp_sptr> GroundControlPointsHelper::groundControlPoints() const
   }
 
   return out;
+}
+
+//-----------------------------------------------------------------------------
+kv::feature_track_set_sptr
+GroundControlPointsHelper::registrationTracks() const
+{
+  QTE_D();
+
+  auto out = std::make_shared<kv::feature_track_set>();
+
+  for (auto const& iter : d->groundControlPoints)
+  {
+    if (iter.second.feature)
+    {
+      out->insert(iter.second.feature);
+    }
+  }
+
+  return out;
+}
+
+//-----------------------------------------------------------------------------
+kv::landmark_map_sptr GroundControlPointsHelper::registrationLandmarks() const
+{
+  QTE_D();
+
+  auto landmarks = kv::landmark_map::map_landmark_t{};
+
+  for (auto const& iter : d->groundControlPoints)
+  {
+    if (iter.second.gcp)
+    {
+      auto lm = std::make_shared<kv::landmark_d>(iter.second.gcp->loc());
+      landmarks.emplace(iter.first, lm);
+    }
+  }
+
+  return std::make_shared<kv::simple_landmark_map>(landmarks);
 }
 
 //-----------------------------------------------------------------------------

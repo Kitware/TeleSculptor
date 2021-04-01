@@ -31,13 +31,13 @@
 #ifndef TELESCULPTOR_GROUNDCONTROLPOINTSHELPER_H_
 #define TELESCULPTOR_GROUNDCONTROLPOINTSHELPER_H_
 
-// maptk includes
 #include <maptk/ground_control_point.h>
 
-// qtExtensions includes
+#include <vital/types/feature_track_set.h>
+#include <vital/types/landmark_map.h>
+
 #include <qtGlobal.h>
 
-// Qt declarations
 #include <QObject>
 
 // Forward declarations
@@ -65,8 +65,14 @@ public:
   // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
 
-  // Get access to the ground control points
+  // Get ground control points
   std::vector<gcp_sptr> groundControlPoints() const;
+
+  // Get camera registration points
+  kwiver::vital::feature_track_set_sptr registrationTracks() const;
+
+  // Get ground control points as landmarks
+  kwiver::vital::landmark_map_sptr registrationLandmarks() const;
 
   // Get access to a single ground control point
   gcp_sptr groundControlPoint(id_t pointId);
