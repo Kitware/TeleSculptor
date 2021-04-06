@@ -1,0 +1,775 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TeleSculptor &#8212; TeleSculptor  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="telesculptor">
+<h1><a class="toc-backref" href="#id159">TeleSculptor</a><a class="headerlink" href="#telesculptor" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#telesculptor" id="id159">TeleSculptor</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id160">Overview</a></p></li>
+<li><p><a class="reference internal" href="#world-view" id="id161">World View</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tool-bar" id="id162">Tool Bar</a></p></li>
+<li><p><a class="reference internal" href="#camera-options" id="id163">Camera Options</a></p></li>
+<li><p><a class="reference internal" href="#point-options" id="id164">Point Options</a></p></li>
+<li><p><a class="reference internal" href="#d-depth-map-options" id="id165">3D Depth Map Options</a></p></li>
+<li><p><a class="reference internal" href="#volume-surface-options" id="id166">Volume Surface Options</a></p></li>
+<li><p><a class="reference internal" href="#editing-ground-control-points" id="id167">Editing Ground Control Points</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#camera-view" id="id168">Camera View</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id53" id="id169">Tool Bar</a></p></li>
+<li><p><a class="reference internal" href="#feature-options" id="id170">Feature Options</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#depth-map-view" id="id171">Depth Map View</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id70" id="id172">Tool Bar</a></p></li>
+<li><p><a class="reference internal" href="#color-map-options" id="id173">Color Map Options</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#camera-selection" id="id174">Camera Selection</a></p></li>
+<li><p><a class="reference internal" href="#metadata" id="id175">Metadata</a></p></li>
+<li><p><a class="reference internal" href="#ground-control-points" id="id176">Ground Control Points</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id82" id="id177">Tool Bar</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#match-matrix-view" id="id178">Match Matrix View</a></p></li>
+<li><p><a class="reference internal" href="#data-files" id="id179">Data Files</a></p></li>
+<li><p><a class="reference internal" href="#menu" id="id180">Menu</a></p>
+<ul>
+<li><p><a class="reference internal" href="#file-menu" id="id181">File Menu</a></p></li>
+<li><p><a class="reference internal" href="#compute-menu" id="id182">Compute Menu</a></p></li>
+<li><p><a class="reference internal" href="#compute-menu-advanced" id="id183">Compute Menu → Advanced</a></p></li>
+<li><p><a class="reference internal" href="#compute-menu-options" id="id184">Compute Menu → Options</a></p></li>
+<li><p><a class="reference internal" href="#view-menu" id="id185">View Menu</a></p></li>
+<li><p><a class="reference internal" href="#help-menu" id="id186">Help Menu</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#glossary" id="id187">Glossary</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id160">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The TeleSculptor graphical application provides a means of computing
+3D models from video, especially aerial video. It includes tools for
+computing structure-from-motion to recover camera trajectory and internal
+camera parameters while estimating 3D scene points. It also has tools for
+multi-view stereo estimation of dense depth maps and tools for fusion of
+multiple depth maps into a full 3D surface. TeleSculptor also provides
+interactive visualization of these various products including tools for
+editting ground control points and measuring 3D distances. Entities available
+for display include the video frames (or image sequence), tracked 2D feature
+points, cameras frustums, 3D landmark points, dense depth maps, and surfaces
+extracted from the volumetric fusion of depth map data.</p>
+<p>The GUI consists of a primary (world) view, secondary (camera and depth) views,
+a frame selection panel, and various other ancillary views and panels. The
+world view is a three dimensional view that shows the cameras and landmarks in
+the computed world coordinate system. The camera view shows the imagery from a
+single camera along with corresponding feature points, projected landmarks, and
+estimation residuals. The depth map view shows an estimated depth image for the
+current frame, if one is available. The frame selection panel provides controls
+to select the active camera and to use the slideshow mode. Most of the views
+and panels are dockable and can be rearranged or detached to suit user
+preference.</p>
+</div>
+<div class="section" id="world-view">
+<h2><a class="toc-backref" href="#id161">World View</a><a class="headerlink" href="#world-view" title="Permalink to this headline">¶</a></h2>
+<p>The world view provides a three dimensional view showing all three dimensional
+products in a common coordinate system. It is that is especially useful for
+seeing the spatial relationships between cameras and 3D landmarks, ground
+control points, dense point clouds, or surface meshes.</p>
+<p>Landmarks are displayed as points, while cameras are displayed as frustums of
+semi-arbitrary length, with the active camera highlighted (see
+<a class="reference internal" href="#camera-options">Camera Options</a>). The “camera path”, which is a polyline connecting the camera
+centers, can also be displayed. Ground control points are displayed as “jacks”;
+three short lines meeting at right angles in 3D.  Double clicking in the world
+view re-centers the view of the scene around the closest scene point.</p>
+<p>Additionally, the world view can display a representation of the ground plane
+(i.e. the local coordinate plane <span class="math">z = 0</span>), and can display the frame image
+for the active camera projected to that plane. These projections result in a
+stabilized view of the video if the scene is largely planar and that plane has
+been aligned with <span class="math">z = 0</span>. Products from video with geospatial metadata are
+automatically translated to the <span class="math">z = 0</span> plane. For data without geospatial
+metadata, the Estimate Cameras/Landmarks tool attempts to fit a plane to the
+landmarks as it estimates them to reorient the landmarks to <span class="math">z = 0</span>.</p>
+<p>The world view also supports visualization of the depth image for the current
+frame as either a dense RGB point cloud or a surface mesh. It also can render a
+3D surface mesh extracted from the level set of a volumetric array. The volume
+is typically the result of the fusion of several depth maps using a truncated
+signed distance function or similar operator.</p>
+<div class="section" id="tool-bar">
+<h3><a class="toc-backref" href="#id162">Tool Bar</a><a class="headerlink" href="#tool-bar" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">:icon:`view-reset`</span></a> Reset View</dt><dd><p>Resets the view extents so that the entire scene is visible. The keyboard
+shortcut <strong>R</strong> provides the same effect. Additional actions are available via
+the action’s associated pop-up.</p>
+</dd>
+<dt><a href="#id3"><span class="problematic" id="id4">:icon:`blank`</span></a> Zoom to Landmarks</dt><dd><p>Resets the view extents so that all landmarks are visible. This action is
+available via the <a href="#id5"><span class="problematic" id="id6">:action:`view-reset Reset View`</span></a> button’s associated pop-up
+menu.  The keyboard short cut is <strong>Shift + R</strong>.</p>
+</dd>
+<dt><a href="#id7"><span class="problematic" id="id8">:icon:`blank`</span></a> View to World Top/Left/Right/Front/Back</dt><dd><p>Resets the view rotation to a “standard” rotation, such that the view axes
+are parallel with the world axes. These actions are available via the
+<a href="#id9"><span class="problematic" id="id10">:action:`view-reset Reset View`</span></a> button’s associated pop-up menu.</p>
+</dd>
+<dt><a href="#id11"><span class="problematic" id="id12">:icon:`blank`</span></a> Perspective</dt><dd><p>Toggles the world view between perspective and parallel projection.
+Perspective projection more closely models human vision and is often useful
+for visualizing depth in the scene. Parallel projection can be useful for
+viewing the scene in profile. This action is available via the
+<a href="#id13"><span class="problematic" id="id14">:action:`view-reset Reset View`</span></a> button’s associated pop-up menu.</p>
+</dd>
+<dt><a href="#id15"><span class="problematic" id="id16">:icon:`image`</span></a> Show Camera Frame Image</dt><dd><p>Toggles visibility of the camera frame image projected onto the ground plane.
+The associated pop-up allows the opacity of the same to be adjusted.</p>
+</dd>
+<dt><a href="#id17"><span class="problematic" id="id18">:icon:`camera`</span></a> Show Cameras</dt><dd><p>Toggles visibility of cameras and related visualizations. The associated
+pop-up provides additional options; see <a class="reference internal" href="#camera-options">Camera Options</a>.</p>
+</dd>
+<dt><a href="#id19"><span class="problematic" id="id20">:icon:`landmark`</span></a> Show Landmarks</dt><dd><p>Toggles visibility of landmarks. The associated pop-up provides additional
+options; see <a class="reference internal" href="#point-options">Point Options</a>.</p>
+</dd>
+<dt><a href="#id21"><span class="problematic" id="id22">:icon:`location`</span></a> Edit Ground Control Points</dt><dd><p>Toggles editing of ground control points.
+See <a class="reference internal" href="#editing-ground-control-points">Editing Ground Control Points</a> for details.</p>
+</dd>
+<dt><a href="#id23"><span class="problematic" id="id24">:icon:`grid`</span></a> Show Ground Plane Grid</dt><dd><p>Toggles visibility of the ground plane. The ground plane is the <span class="math">z = 0</span>
+plane in local 3D coordinates. The grid is centered about <span class="math">x = y = 0</span>,
+however the grid lines are otherwise strictly aesthetic and do not correspond
+to any particular values.</p>
+</dd>
+<dt><a href="#id25"><span class="problematic" id="id26">:icon:`roi`</span></a> Show/Edit Region of Interest</dt><dd><p>Toggles visibility of the region of interest selection in the world view.
+While visible, the ROI may be resized by clicking and dragging on any of the
+six handles on the faces of the ROI box.</p>
+</dd>
+<dt><a href="#id27"><span class="problematic" id="id28">:icon:`blank`</span></a> Reset Region of Interest</dt><dd><p>Resets the region of interest to the axis-aligned box containing 80% of the
+landmark points plus an additional 50% padding. This action is available via the
+<a href="#id29"><span class="problematic" id="id30">:action:`roi Show/Edit Region of Interest`</span></a> button’s associated pop-up menu.</p>
+</dd>
+<dt><a href="#id31"><span class="problematic" id="id32">:icon:`depthmap`</span></a> Show 3D Depth Map</dt><dd><p>Toggles visibility of the depth map (if available) rendered as a 3D point
+cloud or mesh; see <a class="reference internal" href="#d-depth-map-options">3D Depth Map Options</a>.</p>
+</dd>
+<dt><a href="#id33"><span class="problematic" id="id34">:icon:`volume`</span></a> Show Surface from Volume</dt><dd><p>Toggles the visibility of the surface mesh extracted from volumetric data;
+see <a class="reference internal" href="#volume-surface-options">Volume Surface Options</a>.</p>
+</dd>
+<dt><a href="#id35"><span class="problematic" id="id36">:icon:`ruler`</span></a> Enable Measurement Tool</dt><dd><p>Toggles placing or editing of the ruler measurement tool. Initially — when
+the ruler has not yet been placed, or after it has been removed using
+<a href="#id37"><span class="problematic" id="id38">:action:`- Reset Measurement Tool`</span></a> — a ruler can be placed by clicking two
+points in the view. The depth of the points is calculated based on landmarks,
+depth map points, or the surface mesh location under the mouse cursor.
+Turn off visibility of objects to avoid selecting them.  The ground plane is
+selected if no nearby geometry is found. Once placed, the ruler’s points may
+be moved freely. Holding down the <strong>z</strong> key constrains the ruler to vertical
+measurements. Holding down the <strong>x</strong> or <strong>y</strong> key constraints the ruler to a
+horizontal plane. Placement of the ruler may be canceled by pressing the
+<strong>Esc</strong> key before placing the second point.</p>
+</dd>
+<dt><a href="#id39"><span class="problematic" id="id40">:icon:`blank`</span></a> Reset Measurement Tool</dt><dd><p>Removes the currently placed ruler. This action is available via the
+<a href="#id41"><span class="problematic" id="id42">:action:`ruler Enable Measurement Tool`</span></a> button’s associated pop-up menu.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="camera-options">
+<h3><a class="toc-backref" href="#id163">Camera Options</a><a class="headerlink" href="#camera-options" title="Permalink to this headline">¶</a></h3>
+<p>The <a href="#id43"><span class="problematic" id="id44">:action:`camera Show Cameras`</span></a> pop-up provides additional controls that can
+be used to control the display of the cameras in the world view. These allow
+changing the color of both the active and inactive cameras as well as the
+camera path, changing the size of the camera frustums, and toggling visibility
+of the inactive cameras and camera path separate from the overall camera
+visibility.</p>
+<p>The camera scale controls are relative to a “base size” that is computed from
+the extents of the scene data. The inactive camera scale is relative to the
+active camera scale, with the maximum allowed value giving active and inactive
+camera frustums the same size.</p>
+</div>
+<div class="section" id="point-options">
+<h3><a class="toc-backref" href="#id164">Point Options</a><a class="headerlink" href="#point-options" title="Permalink to this headline">¶</a></h3>
+<p>The <a href="#id45"><span class="problematic" id="id46">:action:`landmark Show Landmarks`</span></a> pop-up provides additional controls that
+can be used to control the display of the landmarks in the world view. (The
+same controls are also used in the camera view to manipulate the display of
+feature points and landmarks in that view.) These allow the color of the
+items to be changed, as well as their size. Feature items (that is, feature
+points and landmarks) are displayed as dots, with a fixed size-on-screen that
+is independent of the view.</p>
+<p>Several options for color are provided. The simplest is “solid color”, which
+displays all landmarks in the same, user selected color. “True color” displays
+landmarks in the color estimated to correspond to the actual color of the point
+in the real world scene, as computed from the input imagery. “Color by data”
+uses color to visualize other per-point data, such as the number of individual
+frames that contributed to (“observed”) each landmark.</p>
+<p>In addition to coloring by data, points may be filtered (selectively displayed)
+according to their respective values of the currently selected data set.
+Filtering may exclude points above or below selected lower or upper, or that
+are not within said bounds.</p>
+</div>
+<div class="section" id="d-depth-map-options">
+<h3><a class="toc-backref" href="#id165">3D Depth Map Options</a><a class="headerlink" href="#d-depth-map-options" title="Permalink to this headline">¶</a></h3>
+<p>The <a href="#id47"><span class="problematic" id="id48">:action:`depthmap Show 3D Depth Map`</span></a> pop-up provides additional controls on
+the display of depth maps in the world view. The options allow the depth map to
+be rendered either as a 3D point cloud (one point per pixel) or a dense
+triangular mesh (one vertex per pixel). In either case, the rendered depth data
+is colored by the RGB color values of the corresponding video frame. A filter
+option is also available to remove depth points based on thresholds on various
+attributes. Currently these attributes are the Weight and Uncertainty.
+Images of these attributes as well as the depth map itself are also
+shown in the Depth Map View and the filter options selected here apply to that
+view as well. See <a class="reference internal" href="#depth-map-view">Depth Map View</a>.</p>
+</div>
+<div class="section" id="volume-surface-options">
+<h3><a class="toc-backref" href="#id166">Volume Surface Options</a><a class="headerlink" href="#volume-surface-options" title="Permalink to this headline">¶</a></h3>
+<p>The <a href="#id49"><span class="problematic" id="id50">:action:`volume Show Surface from Volume`</span></a> pop-up provides additional
+controls on the extraction and coloring of a surface from volumetric data. The
+“Surface threshold” parameter controls the value of the isosurface at which the
+surface is extracted from the volume. The “Colorize surface” option, if
+checked, allows coloring each vertex of the mesh. The “Current frame” mode
+projects the RGB values from the current frame onto the mesh, while the
+“All frames” mode combines appearance projected from all frames or a subset of
+frame sampled at a regular interval. The “Color display” options determine how
+to color the surface. Options include mean color, median color, surface normal,
+and number of observations.</p>
+</div>
+<div class="section" id="editing-ground-control-points">
+<h3><a class="toc-backref" href="#id167">Editing Ground Control Points</a><a class="headerlink" href="#editing-ground-control-points" title="Permalink to this headline">¶</a></h3>
+<p>The <a href="#id51"><span class="problematic" id="id52">:action:`location Edit Ground Control Points`</span></a> action allows the user to
+enter or leave edit mode for ground control points. When not in edit mode,
+the scene location of ground control points is fixed and cannot be changed,
+nor can ground control points be selected in the world or camera views.</p>
+<p>In edit mode, clicking on a ground control point in either view selects the
+point in both views as well as the <a class="reference internal" href="#ground-control-points">Ground Control Points</a> panel. (Selecting
+a point in the panel also selects it in both views.) Points may be dragged in
+either view to change their scene location. Holding the <strong>Shift</strong> key while
+moving constrains movement to one of the principle axes.</p>
+<p>New points may be added by holding the <strong>Ctrl</strong> key while clicking. When
+placing new ground control points in the view, TeleSculptor projects a ray into
+the scene that corresponds to the location that was clicked and selects a
+location along this ray based on landmarks in the immediate vicinity. If no
+nearby landmark points are found, the new point is placed on the ground plane.</p>
+<p>Pressing the <strong>Del</strong> key while in edit mode when one of the views has keyboard
+focus will delete the currently selected ground control point.</p>
+</div>
+</div>
+<div class="section" id="camera-view">
+<h2><a class="toc-backref" href="#id168">Camera View</a><a class="headerlink" href="#camera-view" title="Permalink to this headline">¶</a></h2>
+<p>The camera view provides a camera space view of detected feature points and
+computed landmarks and ground control points (both projected to the camera
+space), as well as the corresponding input imagery, for the active camera.
+Additionally, the estimation residuals — the difference between landmarks
+and feature points which participated in computing their estimated positions
+— can be displayed as line segments between the feature point location and
+projected landmark location.</p>
+<div class="section" id="id53">
+<h3><a class="toc-backref" href="#id169">Tool Bar</a><a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id54"><span class="problematic" id="id55">:icon:`view-reset`</span></a> Reset View</dt><dd><p>Resets the view to the camera image extents. Additional actions are available
+via the action’s associated pop-up.</p>
+</dd>
+<dt><a href="#id56"><span class="problematic" id="id57">:icon:`blank`</span></a> Zoom Extents</dt><dd><p>Resets the view extents so that the entire scene is visible. This action is
+available via the <a href="#id58"><span class="problematic" id="id59">:action:`view-reset Reset View`</span></a> button’s associated pop-up
+menu.</p>
+</dd>
+<dt><a href="#id60"><span class="problematic" id="id61">:icon:`image`</span></a> Show Camera Frame Image</dt><dd><p>Toggles visibility of the camera frame image. The associated pop-up allows
+the opacity of the same to be adjusted.</p>
+</dd>
+<dt><a href="#id62"><span class="problematic" id="id63">:icon:`feature`</span></a> Show Feature Points</dt><dd><p>Toggles visibility of feature points / trails. The associated pop-up provides
+additional options; see <a class="reference internal" href="#feature-options">Feature Options</a>.</p>
+</dd>
+<dt><a href="#id64"><span class="problematic" id="id65">:icon:`landmark`</span></a> Show Landmarks</dt><dd><p>Toggles visibility of landmarks. The associated pop-up provides additional
+options; see <a class="reference internal" href="#point-options">Point Options</a>.</p>
+</dd>
+<dt><a href="#id66"><span class="problematic" id="id67">:icon:`residual`</span></a> Show Residuals</dt><dd><p>Toggles visibility of the landmark estimation residuals. The associated
+pop-up allows the color of the displayed residuals to be changed.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="feature-options">
+<h3><a class="toc-backref" href="#id170">Feature Options</a><a class="headerlink" href="#feature-options" title="Permalink to this headline">¶</a></h3>
+<p>In addition to active feature points, which have all the options described in
+<a class="reference internal" href="#point-options">Point Options</a>, the position of feature points on adjacent frames may also be
+displayed by enabling <a href="#id68"><span class="problematic" id="id69">:action:`- Trails`</span></a>. For image collections where cameras
+adjacent in the camera list are also spatially similar (especially when using
+consecutive video frames as input), these may be useful as an additional means
+of visualizing camera motion.</p>
+<p>The trail color and length (number of adjacent frames to be used) may be
+changed, as well as whether to show trails only for lower-numbered frames
+(“historic” mode), or for all adjacent frames (“symmetric” mode). In all cases,
+trails are displayed only for active feature points.</p>
+</div>
+</div>
+<div class="section" id="depth-map-view">
+<h2><a class="toc-backref" href="#id171">Depth Map View</a><a class="headerlink" href="#depth-map-view" title="Permalink to this headline">¶</a></h2>
+<p>The Depth Map View provides an image viewer similar to the Camera View but
+specialized to display depth map images. Depth map images are loaded from VTK
+image (<code class="docutils literal notranslate"><span class="pre">.vti</span></code>) files associated with a particular video frame. Often there
+are only depth maps on a subset of frames. The active (or most recent) depth
+map is displayed in this view by mapping depth to color. The Depth Map View can
+also display an image representation of other attributes associated with the
+depth map, such as the image color. Some attributes like uniqueness and best
+cost are associated with the algorithms used to generate the depth values. The
+same depth maps can be rendered in the World View as a point cloud.
+Furthermore, depth map filtering options in the World View also apply to the
+image rendering of the depth map in the Depth Map View.</p>
+<div class="section" id="id70">
+<h3><a class="toc-backref" href="#id172">Tool Bar</a><a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id71"><span class="problematic" id="id72">:icon:`view-reset`</span></a> Reset View</dt><dd><p>Resets the view to the camera image extents.</p>
+</dd>
+<dt><a href="#id73"><span class="problematic" id="id74">:icon:`blank`</span></a> Display Mode</dt><dd><p>Selects which image mode to display in the in the view: Color, Depth,
+Best Cost Value, Uniqueness Ratio; see <a class="reference internal" href="#color-map-options">Color Map Options</a>.
+The depth filters apply regardless of which image is shown.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="color-map-options">
+<h3><a class="toc-backref" href="#id173">Color Map Options</a><a class="headerlink" href="#color-map-options" title="Permalink to this headline">¶</a></h3>
+<p>In addition to selecting the mode under <a href="#id75"><span class="problematic" id="id76">:action:`- Display Mode`</span></a>, there is also
+an option to select the color mapping function for each mode except Color. The
+mapping function describes how the scalar data field (e.g. depth) is mapped to
+color. Below the color map option are the minimum and maximum values from the
+data used in the mapping. The <a href="#id77"><span class="problematic" id="id78">:action:`- Auto`</span></a> checkbox, which is checked by
+default, indicates that the values are determined automatically from the range
+of values in the image data. By unchecking the <a href="#id79"><span class="problematic" id="id80">:action:`- Auto`</span></a> checkbox, the
+minimum and maximum values of the range can be adjusted manually for finer
+control of the visualization.</p>
+</div>
+</div>
+<div class="section" id="camera-selection">
+<h2><a class="toc-backref" href="#id174">Camera Selection</a><a class="headerlink" href="#camera-selection" title="Permalink to this headline">¶</a></h2>
+<p>The camera selection panel contains a large slider used to select the active
+camera. The active camera is highlighted in the world view, and used to control
+which camera’s imagery and feature points are displayed in the camera view. A
+spin box next to the slider shows the active frame number, and can also be
+used to select the active camera. Note that the frame numbers need not be
+consecutive.  Some video readers are configured to only read every <cite>N</cite>-th frame,
+where <cite>N</cite> may be 10, for example.  This help cut down on data redundancy in
+video.  The frame sampling rate can be configured by opening the project
+configuration file (<code class="docutils literal notranslate"><span class="pre">.conf</span></code>) in a text editor.</p>
+<p>The controls to the right of the panel control the application’s slideshow
+mode. Slideshow mode automatically increments through the loaded cameras at a
+fixed rate. This can be used to view the feature points for each camera / input
+image in sequence. Setting the delay between cameras sufficiently low can be
+used to simulate video playback for image sequences taken from a motion imagery
+source.</p>
+<p>The slideshow action controls are also available via the <a class="reference external" href="#view-menu">View</a>
+menu. The small slider controls the delay between slides. The slider response
+is logarithmic, with single steps in one-tenth powers of ten. The slider tool
+tip includes the current delay in human readable units. Several frame filters
+are also available in the <a class="reference external" href="#view-menu">View</a> menu.  These filters allow
+limiting the frames show to a specific subset, such as key frames or frames
+with tracking data.</p>
+</div>
+<div class="section" id="metadata">
+<h2><a class="toc-backref" href="#id175">Metadata</a><a class="headerlink" href="#metadata" title="Permalink to this headline">¶</a></h2>
+<p>The metadata panel displays the collection of video metadata for the current
+frame, if available. The set of fields is selected from the entire data set;
+individual frames may be missing some or all fields. The metadata itself is
+provied by the video reader.  For encoded video files, TeleSculptor supports
+key-length-value (KLV) encoding following the motion imagery standards board
+(MISB) 0104 and 0601 standards.  Customized video readers can read metadata
+from other sources, just as supplimentary text files or EXIF data.</p>
+</div>
+<div class="section" id="ground-control-points">
+<h2><a class="toc-backref" href="#id176">Ground Control Points</a><a class="headerlink" href="#ground-control-points" title="Permalink to this headline">¶</a></h2>
+<p>The ground control points panel displays a list of all ground control points in
+the current data set, as well as detailed information for the selected point.
+Points have an automatically assigned ID (which may change between sessions)
+and an optional user-provided name, which may be assigned or changed by editing
+that column of the point (by double-clicking or pressing the edit key —
+usually <strong>F2</strong>).</p>
+<p>When a point is selected, changing its geodetic location (as described by the
+latitude, longitude, and elevation text fields) automatically promotes the
+point to a “user registered” point. These are points for which the geodetic
+location has been externally measured and is therefore known to be correct.
+The geodetic location of points which are not user registered is computed from
+their scene location and the computed scene to geodetic transformation (if
+available). User registered points are indicated by an icon in the ground
+control point list.</p>
+<p>Selecting a point in the list will select the same point in the world and
+camera views if ground control point editing is active. Similarly, selecting a
+ground control point in either view will select the same point in the list.
+Note that moving a user registered point in the world or camera views (that is,
+changing its scene location) does not change its geodetic location.</p>
+<div class="section" id="id82">
+<h3><a class="toc-backref" href="#id177">Tool Bar</a><a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id83"><span class="problematic" id="id84">:icon:`copy-location`</span></a> Copy Location</dt><dd><p>Copies the geodetic location of the selected point to the clipboard. Several
+options of ordering and whether or not to include the elevation are provided.</p>
+</dd>
+<dt><a href="#id85"><span class="problematic" id="id86">:icon:`apply`</span></a> Apply Constraints to Geo-register</dt><dd><p>Estimates a 3D similarity transformation to best align the ground control
+point (GCP) locations with the specified geodetic locations.  At least three
+“user registered” GCPs are required.  That is, at least three points must
+have manually specified latitude, longitude, and altitude.  The estimated
+transform is applied to all data (cameras, landmarks, depth maps, etc.).</p>
+</dd>
+<dt><a href="#id87"><span class="problematic" id="id88">:icon:`reset`</span></a> Revert Changes</dt><dd><p>Reverts user changes to the active ground control point’s geodetic location,
+such that the point is no longer “user registered”. This has no effect on
+points that are not user registered. Note also that the geodetic location
+will not change if a scene to geodetic transformation is not available.</p>
+</dd>
+<dt><a href="#id89"><span class="problematic" id="id90">:icon:`delete`</span></a> Delete Point</dt><dd><p>Deletes the active ground control point.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="match-matrix-view">
+<h2><a class="toc-backref" href="#id178">Match Matrix View</a><a class="headerlink" href="#match-matrix-view" title="Permalink to this headline">¶</a></h2>
+<p>The match matrix view provides a visualization of the feature point
+associations across camera frames. Pixels in the image correspond to values in
+the “match matrix” representing the number of feature points that feature
+detection has determined correspond to the same real world feature. Several
+options are provided to adjust the visualization:</p>
+<ul class="simple">
+<li><p>Layout controls the position of “identity” values, i.e. values that compare a
+frame to itself rather than a distinct frame. The default, “diagonal”, simply
+maps the frame number directly to both the <span class="math">X</span> and <span class="math">Y</span> axes.
+“Horizontal” skews the image so that the <span class="math">y</span> values are relative to the
+“identity” values, placing them in a horizontal line at <span class="math">y = 0</span>, with
+positive <span class="math">y</span> representing “later” frames, and negative <span class="math">y</span> representing
+“earlier” frames. “Vertical” reverses these axes.</p></li>
+<li><p>Orientation controls which screen direction is considered positive <span class="math">Y</span>.
+The default, “matrix”, uses down for positive <span class="math">Y</span>, as in textual value
+tables (e.g. textual listings of matrices, spreadsheets) or images. “Graph”
+uses up for positive <span class="math">Y</span>, as in most graphical plots.</p></li>
+<li><p>Values controls what values are used for each pixel. The default, “absolute”,
+uses the raw number of feature point correlations (which, for “identity”
+values is equal to the total number of feature points on that frame).
+“Relative (combined)” mode uses the percent of common feature points relative
+to the total number of distinct feature points on each frame being compared.
+The other two “relative” modes give the percent relative to the total number
+of feature points for the frame represented by either the <span class="math">X</span> or <span class="math">Y</span>
+axis.</p></li>
+<li><p>Scale controls the scaling function that is applied to the values produced
+according to the value mode. The choices are “linear”, “logarithmic” and
+“exponential”, and should be self explanatory. In absolute value mode,
+logarithmic scale uses the maximum value as the logarithm base. Otherwise,
+the base can be adjusted with the “range” control, which applies a pre-scale
+to the value before computing the logarithm (thereby allowing the shape of
+the scaling curve to be adjusted). Exponential scale allows the user to
+select the exponent.</p></li>
+<li><p>Color provides the set of colors to which scaled values are mapped. Several
+presets are available according to user taste. Different presets may help
+emphasize different aspects of the data.</p></li>
+</ul>
+<p>Moving the mouse over the image will display which frames are being compared
+and the number or percentage of feature correlations in the status bar. The
+match matrix view also allows the image to be exported to a file.</p>
+</div>
+<div class="section" id="data-files">
+<h2><a class="toc-backref" href="#id179">Data Files</a><a class="headerlink" href="#data-files" title="Permalink to this headline">¶</a></h2>
+<p>TeleSculptor supports visualization of various data files (landmarks, cameras,
+etc.) that are computed in other tools. However the recommended workflow for
+most users is to simply load a video and derive all other product from it.
+Video files are loaded using <cite>File</cite> → <cite>Import</cite> → <cite>Imagery…</cite>.</p>
+<p>Before computing any products from video, a “Project” directory is needed to
+store the results. A project is created with <cite>File</cite> → <cite>New Project</cite> which
+asks the user to provide a path to a working directory.  Inside this directory
+a “Project File” is created (name matching the directory name plus extension
+<code class="docutils literal notranslate"><span class="pre">.conf</span></code>) to store project settings. Various other result files are also
+written to the project directory.  To open an existing project,
+use <cite>File</cite> → <cite>Open Project…</cite> and navigate to an existing <code class="docutils literal notranslate"><span class="pre">.conf</span></code> file.</p>
+</div>
+<div class="section" id="menu">
+<h2><a class="toc-backref" href="#id180">Menu</a><a class="headerlink" href="#menu" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="file-menu">
+<h3><a class="toc-backref" href="#id181">File Menu</a><a class="headerlink" href="#file-menu" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id91"><span class="problematic" id="id92">:icon:`blank`</span></a> New Project</dt><dd><p>Select a working directory for a project. A project directory must be set
+before the tools in the Compute menu can be run. These tool will write files
+into the project working directory. A configuration file with the same name
+as the directory is also created in the directory. The project configuration
+file stores references to the project data such as the source video and
+computed results like cameras, tracks, or landmarks that will be loaded back
+in when a project is opened.</p>
+</dd>
+<dt><a href="#id93"><span class="problematic" id="id94">:icon:`open`</span></a> Open Project</dt><dd><p>Select an existing project configuration. The project configuration will
+often include references to various data files which are frequently stored in
+the same directory as the project configuration.</p>
+</dd>
+<dt><a href="#id95"><span class="problematic" id="id96">:icon:`blank`</span></a> Import</dt><dd><p>Provides options for importing/loading various types of data into the current
+project. The user must select the type of data to be loaded, as some data
+files use the same file extension.</p>
+</dd>
+<dt><a href="#id97"><span class="problematic" id="id98">:icon:`blank`</span></a> Export</dt><dd><p>Provides options for exporting various data.</p>
+</dd>
+<dt><a href="#id99"><span class="problematic" id="id100">:icon:`quit`</span></a> Quit</dt><dd><p>Exits the application.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="compute-menu">
+<h3><a class="toc-backref" href="#id182">Compute Menu</a><a class="headerlink" href="#compute-menu" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id101"><span class="problematic" id="id102">:icon:`blank`</span></a> Run End-to-End</dt><dd><p>Runs the entire processing pipeline from end-to-end.  This tools runs
+Track Features then Estimate Cameras/Landmarks then Batch Compute Depth
+Maps then Fuse Depth Maps.</p>
+</dd>
+<dt><a href="#id103"><span class="problematic" id="id104">:icon:`blank`</span></a> Track Features</dt><dd><p>Run feature tracking on the loaded video starting from the current frame.
+Features and descriptors are detected and each frame and cached into a file
+in the project directory. Features are then matched between adjacent frames
+as well as between the current frame as past keyframes. These feature
+matches form “tracks” through time, and each track has the potential to
+become a landmark.</p>
+</dd>
+<dt><a href="#id105"><span class="problematic" id="id106">:icon:`blank`</span></a> Estimate Cameras/Landmarks</dt><dd><p>Estimates cameras and landmarks starting with tracks and metadata. This also
+runs bundle adjustment (refinement) along the way. The goal is to
+incrementally add cameras and landmarks, while optimizing, to build up a
+consistent solution.</p>
+</dd>
+<dt><a href="#id107"><span class="problematic" id="id108">:icon:`blank`</span></a> Save Frames</dt><dd><p>Iterate through a video and save every frame as an image file in a
+subdirectory of the project directory. This is needed when exporting the data
+to other tools that do not support video files. This option must be run
+before importing a project into SketchUp.</p>
+</dd>
+<dt><a href="#id109"><span class="problematic" id="id110">:icon:`blank`</span></a> Batch Compute Depth Maps</dt><dd><p>Estimates several dense depth maps and corresponding point clouds on several
+frames spaced throughout the video. This requires valid cameras and computes
+the results in the active ROI. The algorithm run on each frame is the same as
+<a class="reference external" href="#compute-menu-advanced">Advanced</a> →
+<a href="#id111"><span class="problematic" id="id112">:action:`- Compute Single Depth Map`</span></a>, but intermediate solutions of each
+depth map are not rendered.</p>
+</dd>
+<dt><a href="#id113"><span class="problematic" id="id114">:icon:`blank`</span></a> Fuse Depth Maps</dt><dd><p>Fuse all computed depth maps into a single mesh surface using an integration
+volume specified by the ROI. Note that this step requires an NVIDIA GPU and
+may not be able to run if the ROI is too large for the GPU memory.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="compute-menu-advanced">
+<h3><a class="toc-backref" href="#id183">Compute Menu → Advanced</a><a class="headerlink" href="#compute-menu-advanced" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id115"><span class="problematic" id="id116">:icon:`blank`</span></a> Filter Tracks</dt><dd><p>Filter the tracks to retain a smaller subset of tracks that is still
+representative of the original set. The intent is to make bundle adjustment
+(<a href="#id117"><span class="problematic" id="id118">:action:`- Refine Solution`</span></a>) faster without loosing critical constraints.
+The filter attempts to remove the shortest tracks that span the same frames
+already covered by longer tracks.</p>
+</dd>
+<dt><a href="#id119"><span class="problematic" id="id120">:icon:`blank`</span></a> Triangulate Landmarks</dt><dd><p>For each available feature track, back project rays from the cameras that
+contain each track state and intersect those rays in 3D to estimate the
+location of a 3D landmark. This requires both feature tracks and a reasonably
+accurate set of cameras.</p>
+</dd>
+<dt><a href="#id121"><span class="problematic" id="id122">:icon:`blank`</span></a> Refine Solution</dt><dd><p>Applies bundle adjustment to the cameras and landmarks in order to refine the
+quality of the 3D reconstruction. It aims to minimize this distance between
+the landmarks projected into each image by the cameras and the observed
+location of the corresponding feature tracks.</p>
+</dd>
+<dt><a href="#id123"><span class="problematic" id="id124">:icon:`blank`</span></a> Reverse (Necker)</dt><dd><p>Transforms the cameras and landmarks in a manner intended to break the
+refinement process out of a degenerate optimization (which can occur due to
+the Necker cube phenomena<a class="footnote-reference brackets" href="#nc" id="id125">1</a>), by computing a best fit plane to the
+landmarks, mirroring the landmarks about said plane, and rotating the cameras
+180° about their respective optical axes and 180° about the best
+fit plane normal where each camera’s optical axis intersects said plane.</p>
+</dd>
+<dt><a href="#id126"><span class="problematic" id="id127">:icon:`blank`</span></a> Align</dt><dd><p>Applies a similarity transformation to the camera and landmark data so that
+the data has a standard (“canonical”) alignment. Particularly, this attempts
+to orient the data so that the ground plane is parallel with the <span class="math">z = 0</span>
+plane (with the cameras in the <span class="math">+Z</span> direction). Additionally, the
+landmarks will be centered about the origin and scaled to an approximate
+variance of <span class="math">1.0</span>.</p>
+</dd>
+<dt><a href="#id128"><span class="problematic" id="id129">:icon:`blank`</span></a> Save Key Frames</dt><dd><p>Iterate through a video and save every key frame as an image file in a
+subdirectory of the project directory. Key frames are marked by the feature
+tracking algorithm.</p>
+</dd>
+<dt><a href="#id130"><span class="problematic" id="id131">:icon:`blank`</span></a> Compute Single Depth Map</dt><dd><p>Estimate a dense depth map and corresponding point cloud for the current
+frame. This requires a valid camera on the current frame as well as cameras
+on other frames for triangulation. It computes the solution within the active
+ROI and shows an incremental visualization of how the solution evolves.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="compute-menu-options">
+<h3><a class="toc-backref" href="#id184">Compute Menu → Options</a><a class="headerlink" href="#compute-menu-options" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id132"><span class="problematic" id="id133">:icon:`blank`</span></a> Ignore Metadata</dt><dd><p>Ignore the metadata fields (e.g. from KLV) that are attached to the imagery
+if this option is set, metadata will not be used in camera estimation or
+in geolocation.  The main reason to use this option is when the metadata
+is known to be invalid.</p>
+</dd>
+<dt><a href="#id134"><span class="problematic" id="id135">:icon:`blank`</span></a> Variable Lens</dt><dd><p>This option allows estimation of camera models in which the lens model
+(e.g. focal length) can change over time.  If this option is off all cameras
+will share the same lens model.  If the lens does not change between frames
+it is best to use a single model.</p>
+</dd>
+<dt><a href="#id136"><span class="problematic" id="id137">:icon:`blank`</span></a> Fix Geo-Origin</dt><dd><p>If checked, this option will prevent TeleSculptor from resetting the
+geospatial origin to a point centered on the data.  Normally TeleSculptor
+automatically chooses an origin, but there are use cases where it is helpful
+to specify an origin and keep it fixed, such as comparing results across
+different data of the same location.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="view-menu">
+<h3><a class="toc-backref" href="#id185">View Menu</a><a class="headerlink" href="#view-menu" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id138"><span class="problematic" id="id139">:icon:`playback-play`</span></a> Play Slideshow</dt><dd><p>Toggles playback of the slideshow.</p>
+</dd>
+<dt><a href="#id140"><span class="problematic" id="id141">:icon:`playback-loop`</span></a> Loop Slideshow</dt><dd><p>Toggles if the slideshow should restart from the beginning after the last
+camera. When disabled, the slideshow ends when the last camera becomes
+active.</p>
+</dd>
+<dt><a href="#id142"><span class="problematic" id="id143">:icon:`blank`</span></a> Match Matrix</dt><dd><p>Opens a new <a class="reference internal" href="#match-matrix-view">Match Matrix View</a>.</p>
+</dd>
+<dt><a href="#id144"><span class="problematic" id="id145">:icon:`blank`</span></a> Background Color</dt><dd><p>Changes the background color of the world and camera views.</p>
+</dd>
+<dt><a href="#id146"><span class="problematic" id="id147">:icon:`blank`</span></a> World Axes</dt><dd><p>Toggles visibility of <cite>X</cite>, <cite>Y</cite>, and <cite>Z</cite> axes in the world view showing
+numerical values for distances at regular intervals on these axes.
+The size of these axes is set to span all visible scene objects, including
+the camera path.  If the axes are too large, hiding scene objects like
+cameras and the ground plane will shrink the coverage to the remaining
+visible data.</p>
+</dd>
+<dt><a href="#id148"><span class="problematic" id="id149">:icon:`blank`</span></a> Keyframes Only</dt><dd><p>Limit frame numbers in the camera selection pane to allow only frames that
+were designated as “keyframes” by the feature tracker.  The number of
+keyframes is typically very small.</p>
+</dd>
+<dt><a href="#id150"><span class="problematic" id="id151">:icon:`blank`</span></a> Tracked Frames Only</dt><dd><p>Limit frame numbers in the camera selection pane to allow only frames that
+contain feature tracking results.  The feature tracker only processes a fixed
+number of frames (default, 500) distributed through the video.  Enabling this
+option skips unprocessed frames during playback, which avoids flicker of the
+display that occurs when unprocessed frames are drawn.</p>
+</dd>
+<dt><a href="#id152"><span class="problematic" id="id153">:icon:`blank`</span></a> Antialias Views</dt><dd><p>Toggles use of an anti-aliasing filter in the world, camera and depth views.
+Anti-aliasing is accomplished via a post-processing filter (FXAA) that may
+produce undesirable artifacts. At this time, anti-aliasing via multi-sampling
+(MSAA) is not supported.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="help-menu">
+<h3><a class="toc-backref" href="#id186">Help Menu</a><a class="headerlink" href="#help-menu" title="Permalink to this headline">¶</a></h3>
+<dl class="simple">
+<dt><a href="#id154"><span class="problematic" id="id155">:icon:`help-manual`</span></a> TeleSculptor User Manual</dt><dd><p>Displays the user manual (i.e. this document) in the default web browser.</p>
+</dd>
+<dt><a href="#id156"><span class="problematic" id="id157">:icon:`telesculptor`</span></a> About TeleSculptor</dt><dd><p>Shows copyright and version information about the application.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="glossary">
+<h2><a class="toc-backref" href="#id187">Glossary</a><a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Camera:</dt><dd><p>A camera in TeleSculptor refers primarily to the model which describes the
+properties of a camera, including attributes such as focal length and world
+position and orientation. In the GUI, cameras are represented as frustums.</p>
+</dd>
+<dt>Feature:</dt><dd><p>A feature is a location that corresponds to an “interesting” point, such as
+the corner of an object or other “notable” point. The term “feature points”
+typically refers to features detected in imagery.</p>
+</dd>
+<dt>Track:</dt><dd><p>A track is a collection of correlated features; that is, detected feature
+points estimated to correspond to the same landmark.</p>
+</dd>
+<dt>Landmark:</dt><dd><p>A landmark is an estimated world location of a “true” feature that is
+computed from a feature track.</p>
+</dd>
+<dt>Residual:</dt><dd><p>A residual, in general, is the difference between an observed value and an
+estimated value<a class="footnote-reference brackets" href="#er" id="id158">2</a>. In TeleSculptor, the observed value is typically a
+detected feature point, and the estimated value is a landmark.</p>
+</dd>
+</dl>
+<dl class="footnote brackets">
+<dt class="label" id="nc"><span class="brackets"><a class="fn-backref" href="#id125">1</a></span></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Necker_cube">https://en.wikipedia.org/wiki/Necker_cube</a></p>
+</dd>
+<dt class="label" id="er"><span class="brackets"><a class="fn-backref" href="#id158">2</a></span></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics">https://en.wikipedia.org/wiki/Errors_and_residuals_in_statistics</a></p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">TeleSculptor</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Kitware, Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/manuals/telesculptor.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
