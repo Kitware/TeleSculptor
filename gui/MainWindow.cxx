@@ -66,6 +66,7 @@
 #include <arrows/mvg/transform.h>
 #include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/algo/estimate_similarity_transform.h>
+#include <vital/algo/resection_camera.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_from_metadata.h>
 #include <vital/io/camera_io.h>
@@ -376,6 +377,7 @@ public:
   kv::sfm_constraints_sptr sfmConstraints;
 
   kv::frame_id_t activeCameraIndex = -1;
+  QSize activeImageSize = {1, 1};
 
   VideoImport videoImporter;
 
@@ -1146,18 +1148,19 @@ std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindowPrivate::loadEmptyImage(kwiver::arrows::vtk::vtkKwiverCamera* camera)
+void MainWindowPrivate::loadEmptyImage(
+  kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
-  auto imageDimensions = QSize(1, 1);
+  this->activeImageSize = {1, 1};
   if (camera)
   {
     int w, h;
     camera->GetImageDimensions(w, h);
-    imageDimensions = QSize(w, h);
+    this->activeImageSize = QSize(w, h);
   }
 
-  this->UI.cameraView->setImageData(nullptr, imageDimensions);
-  this->UI.worldView->setImageData(nullptr, imageDimensions);
+  this->UI.cameraView->setImageData(nullptr, this->activeImageSize);
+  this->UI.worldView->setImageData(nullptr, this->activeImageSize);
 }
 
 //-----------------------------------------------------------------------------
@@ -1185,12 +1188,12 @@ void MainWindowPrivate::loadImage(FrameData frame)
   if (this->videoSource)
   {
     // Advance video source if it hasn't been advanced
-    if (!videoSource->good())
+    if (!this->videoSource->good())
     {
-      videoSource->next_frame(this->currentVideoTimestamp);
+      this->videoSource->next_frame(this->currentVideoTimestamp);
     }
 
-    auto frameImg = videoSource->frame_image();
+    auto frameImg = this->videoSource->frame_image();
     if (!frameImg)
     {
       qWarning() << "Failed to read image for frame " << frame.id;
@@ -1223,9 +1226,9 @@ void MainWindowPrivate::loadImage(FrameData frame)
         qtString(this->getFrameName(frame.id)));
 
       // Set image on views
-      auto const size = QSize(dimensions[0], dimensions[1]);
-      this->UI.cameraView->setImageData(imageData, size);
-      this->UI.worldView->setImageData(imageData, size);
+      this->activeImageSize = {dimensions[0], dimensions[1]};
+      this->UI.cameraView->setImageData(imageData, this->activeImageSize);
+      this->UI.worldView->setImageData(imageData, this->activeImageSize);
 
       // Update metadata view
       this->UI.metadata->updateMetadata(videoSource->frame_metadata());
@@ -1628,6 +1631,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
             d->groundControlPointsHelper->enableWidgets(state);
           });
   d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
+
+  // Camera calculation from user-created registration points
+  connect(d->UI.cameraView, &CameraView::cameraComputationRequested,
+          this, &MainWindow::computeCamera);
 
   // Ruler widget
   d->rulerHelper = new RulerHelper(this);
@@ -3391,6 +3398,52 @@ void MainWindow::applySimilarityTransform()
   saveGroundControlPoints(d->project->groundControlPath);
   d->project->config->set_value("ROI", d->roiToString());
   d->project->write();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::computeCamera()
+{
+  QTE_D();
+
+  // Get inputs
+  auto features = d->groundControlPointsHelper->registrationTracks();
+  auto landmarks = d->groundControlPointsHelper->registrationLandmarks();
+
+  // Set up algorithm
+  auto config = kv::config_block::empty_config();
+  config->set_value("algorithm:type", "ocv");
+
+  try
+  {
+    // Create algorithm to write detections
+    kv::algo::resection_camera_sptr algorithm;
+    kv::algo::resection_camera::set_nested_algo_configuration(
+      "algorithm", config, algorithm);
+
+    if (!algorithm)
+    {
+      QMessageBox::critical(
+        this, QStringLiteral("Algorithm error"),
+        QStringLiteral("Failed to create algorithm for resectioning. "
+                       "Please check your installation."));
+      return;
+    }
+
+    auto camera =
+      algorithm->resection(d->activeCameraIndex, landmarks, features,
+                           static_cast<unsigned>(d->activeImageSize.width()),
+                           static_cast<unsigned>(d->activeImageSize.height()));
+    if (camera)
+    {
+      d->updateCamera(d->activeCameraIndex, camera);
+    }
+  }
+  catch (std::exception const& e)
+  {
+    static auto msg = QStringLiteral("Resectioning failed: %1");
+    QMessageBox::critical(
+      this, QStringLiteral("Algorithm error"), msg.arg(e.what()));
+  }
 }
 
 //-----------------------------------------------------------------------------

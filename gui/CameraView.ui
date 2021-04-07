@@ -226,6 +226,11 @@
     <string>Ctrl+R</string>
    </property>
   </action>
+  <action name="actionComputeCamera">
+   <property name="text">
+    <string>Compute Camera</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

@@ -106,6 +106,7 @@ public slots:
   void acceptToolSaveResults(std::shared_ptr<ToolData> data);
 
   void applySimilarityTransform();
+  void computeCamera();
 
   void saveWebGLScene();
 

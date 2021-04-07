@@ -471,12 +471,20 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, &PointOptions::modified,
           this, &CameraView::render);
 
+  auto const registrationMenu = new QMenu(this);
+  registrationMenu->addAction(d->UI.actionComputeCamera);
+  d->setPopup(d->UI.actionPlaceEditCRP, registrationMenu);
+
   d->registrationPointsWidget = new GroundControlPointsWidget(this);
   d->registrationPointsWidget->setTransformMatrix(d->transformMatrix);
 
   connect(d->UI.actionPlaceEditCRP, &QAction::toggled,
           d->registrationPointsWidget,
           &GroundControlPointsWidget::enableWidget);
+
+  connect(d->UI.actionComputeCamera, &QAction::triggered,
+          this, &CameraView::cameraComputationRequested,
+          Qt::QueuedConnection);
 
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);

@@ -61,6 +61,10 @@ public:
   RulerWidget* rulerWidget() const;
 
   void enableAntiAliasing(bool enable);
+
+signals:
+  void cameraComputationRequested();
+
 public slots:
   void setBackgroundColor(QColor const&);
 
