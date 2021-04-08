@@ -240,23 +240,17 @@ void vtkMaptkSeedWidget::HighlightActiveSeed()
   int activeHandle = rep->GetActiveHandle();
   if (activeHandle < 0 || activeHandle >= rep->GetNumberOfSeeds())
   {
-    activeHandle = rep->GetNumberOfSeeds() - 1;
+    activeHandle = -1;
   }
 
   vtkSeedListIterator iter = this->Seeds->begin();
   for (int n = 0; iter != this->Seeds->end(); ++n, ++iter)
   {
-    if (this->GetEnabled() && n == activeHandle)
-    {
-      (*iter)->GetHandleRepresentation()->Highlight(1);
-      this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
-                        &activeHandle);
-    }
-    else
-    {
-      (*iter)->GetHandleRepresentation()->Highlight(0);
-    }
+    (*iter)->GetHandleRepresentation()->Highlight(
+      this->GetEnabled() && n == activeHandle);
   }
+  this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
+                    &activeHandle);
   this->Render();
 }
 
