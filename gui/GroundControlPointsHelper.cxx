@@ -806,7 +806,44 @@ void GroundControlPointsHelper::moveWorldViewPoint()
 //-----------------------------------------------------------------------------
 void GroundControlPointsHelper::moveRegistrationPoint()
 {
-  // TODO
+  QTE_D();
+
+  auto const handleId = d->crpWidget->activeHandle();
+  auto* const handle = d->crpWidget->handleWidget(handleId);
+
+  if (auto pid = qtGet(d->crpHandleToIdMap, handle))
+  {
+    if (auto p = qtGet(d->groundControlPoints, pid->second))
+    {
+      auto const frame = d->mainWindow->activeFrame();
+      if (auto const& s = getFeature(p->second, frame))
+      {
+        Q_ASSERT(s->feature); // Something went very wrong if this fails...
+
+        auto const& loc = d->crpWidget->activePoint();
+        auto const& feature =
+          std::dynamic_pointer_cast<kv::feature_d>(s->feature);
+
+        Q_ASSERT(feature); // Something went very wrong if this fails...
+        feature->set_loc({loc[0], loc[1]});
+      }
+      else
+      {
+        qWarning() << "No feature for ground control point with id"
+                   << *pid << "at frame" << frame;
+      }
+    }
+    else
+    {
+      qWarning() << "No ground control point with id" << *pid;
+    }
+  }
+  else
+  {
+    qWarning() << "Failed to find the ID associated with the handle widget"
+               << handle << "with VTK ID" << handleId;
+  }
+
 }
 
 //-----------------------------------------------------------------------------
