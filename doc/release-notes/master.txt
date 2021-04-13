@@ -36,6 +36,8 @@ TeleSculptor Application
 
  * Added support for building against VTK 9.0.
 
+ * Added support for opening .ts (MPEG transport stream) video files.
+
 
 Fixes since v1.1.0
 ------------------
