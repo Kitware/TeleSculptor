@@ -202,6 +202,7 @@ QSet<QString> supportedVideoExtensions()
   result.insert("avi");
   result.insert("wmw");
   result.insert("mov");
+  result.insert("ts");
   result.insert("txt"); // image list
 
   return result;
