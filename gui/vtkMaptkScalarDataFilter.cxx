@@ -40,13 +40,13 @@ vtkStandardNewMacro(vtkMaptkScalarDataFilter);
 //----------------------------------------------------------------------------
 vtkMaptkScalarDataFilter::vtkMaptkScalarDataFilter()
 {
-  this->ScalarArrayName = 0;
+  this->ScalarArrayName = nullptr;
 }
 
 //----------------------------------------------------------------------------
 vtkMaptkScalarDataFilter::~vtkMaptkScalarDataFilter()
 {
-  this->SetScalarArrayName(0);
+  this->SetScalarArrayName(nullptr);
 }
 //----------------------------------------------------------------------------
 int vtkMaptkScalarDataFilter::RequestData(

@@ -40,18 +40,18 @@ class FuseDepthTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit FuseDepthTool(QObject* parent = 0);
+  explicit FuseDepthTool(QObject* parent = nullptr);
   virtual ~FuseDepthTool();
 
-  virtual Outputs outputs() const QTE_OVERRIDE;
+  virtual Outputs outputs() const override;
 
   /// Get if the tool can be canceled.
-  virtual bool isCancelable() const QTE_OVERRIDE { return true; }
+  virtual bool isCancelable() const override { return true; }
 
-  virtual bool execute(QWidget* window = 0) QTE_OVERRIDE;
+  virtual bool execute(QWidget* window = nullptr) override;
 
 protected:
-  virtual void run() QTE_OVERRIDE;
+  virtual void run() override;
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(FuseDepthTool)

@@ -31,6 +31,8 @@
 #ifndef TELESCULPTOR_VTKMAPTKFEATURETRACKREPRESENTATION_H_
 #define TELESCULPTOR_VTKMAPTKFEATURETRACKREPRESENTATION_H_
 
+#include <vital/vital_types.h>
+
 #include <vtkCamera.h>
 #include <vtkCollection.h>
 #include <vtkSmartPointer.h>
@@ -53,9 +55,13 @@ public:
 
   static vtkMaptkFeatureTrackRepresentation* New();
 
-  void AddTrackWithDescPoint(unsigned trackId, unsigned frameId, double x, double y);
+  void AddTrackWithDescPoint(kwiver::vital::track_id_t trackId,
+                             kwiver::vital::frame_id_t frameId,
+                             double x, double y);
 
-  void AddTrackWithoutDescPoint(unsigned trackId, unsigned frameId, double x, double y);
+  void AddTrackWithoutDescPoint(kwiver::vital::track_id_t trackId,
+                                kwiver::vital::frame_id_t frameId,
+                                double x, double y);
 
   // Description:
   // Remove all track data
@@ -63,8 +69,8 @@ public:
 
   // Description:
   // Get/Set the active frame
-  void SetActiveFrame(unsigned);
-  vtkGetMacro(ActiveFrame, unsigned);
+  void SetActiveFrame(kwiver::vital::frame_id_t);
+  vtkGetMacro(ActiveFrame, kwiver::vital::frame_id_t);
 
   // Description:
   // Get/Set the maximum number of adjacent feature points to display as
@@ -108,7 +114,7 @@ private:
   vtkMaptkFeatureTrackRepresentation(vtkMaptkFeatureTrackRepresentation const&) = delete;
   void operator=(vtkMaptkFeatureTrackRepresentation const&) = delete;
 
-  unsigned ActiveFrame;
+  kwiver::vital::frame_id_t ActiveFrame;
   unsigned TrailLength;
   TrailStyleEnum TrailStyle;
 

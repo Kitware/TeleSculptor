@@ -44,8 +44,8 @@ class RulerOptions : public QWidget
 
 public:
   explicit RulerOptions(QString const& settingsGroup,
-                        QWidget* parent = 0,
-                        Qt::WindowFlags flags = 0);
+                        QWidget* parent = nullptr,
+                        Qt::WindowFlags flags = {});
   ~RulerOptions() override;
 
   void setRulerHelper(RulerHelper* helper);

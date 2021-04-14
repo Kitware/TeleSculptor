@@ -40,7 +40,7 @@ class SaveKeyFrameTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit SaveKeyFrameTool(QObject* parent = 0);
+  explicit SaveKeyFrameTool(QObject* parent = nullptr);
   ~SaveKeyFrameTool() override;
 
   Outputs outputs() const override;
@@ -48,7 +48,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return true; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
 protected:
   void run() override;

@@ -93,8 +93,8 @@ public:
            !cameras && !landmarks && !volume;
   }
 
-  int maxFrame;
-  unsigned int activeFrame;
+  kwiver::vital::frame_id_t maxFrame;
+  kwiver::vital::frame_id_t activeFrame;
   std::string videoPath;
   std::string maskPath;
   feature_track_set_sptr tracks;
@@ -141,7 +141,7 @@ public:
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
-  explicit AbstractTool(QObject* parent = 0);
+  explicit AbstractTool(QObject* parent = nullptr);
   ~AbstractTool() override;
 
   /// Get the types of output produced by the tool.
@@ -158,7 +158,7 @@ public:
   std::shared_ptr<ToolData> data();
 
   /// Set the active frame to be used by the tool.
-  void setActiveFrame(unsigned int frame);
+  void setActiveFrame(kwiver::vital::frame_id_t frame);
 
   /// Set the frame number of the last frame.
   ///
@@ -167,7 +167,7 @@ public:
   /// progress, since this value is expected to be known by the caller, but may
   /// be expensive for the tool to determine. This does \em not affect how many
   /// frames the tool will actually process.
-  void setLastFrame(int);
+  void setLastFrame(kwiver::vital::frame_id_t);
 
   /// Set the feature tracks to be used as input to the tool.
   void setTracks(feature_track_set_sptr const&);
@@ -212,13 +212,13 @@ public:
   ///
   /// \return \c true if tool execution was started successfully, otherwise
   ///         \c false.
-  virtual bool execute(QWidget* window = 0);
+  virtual bool execute(QWidget* window = nullptr);
 
   /// Block until the tool has finished executing
   void wait();
 
   /// Get the active frame.
-  unsigned int activeFrame() const;
+  kwiver::vital::frame_id_t activeFrame() const;
 
   std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depthLookup() const;
   vtkBox *ROI() const;

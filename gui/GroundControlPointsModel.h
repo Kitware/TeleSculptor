@@ -37,6 +37,8 @@
 
 #include <QAbstractItemModel>
 
+class GroundControlPointsHelper;
+
 class GroundControlPointsModelPrivate;
 
 class GroundControlPointsModel : public QAbstractItemModel
@@ -66,8 +68,7 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role) const override;
 
-  void setPointData(std::map<kwiver::vital::ground_control_point_id_t,
-                             kwiver::vital::ground_control_point_sptr> const&);
+  void setDataSource(GroundControlPointsHelper*);
 
   void setRegisteredIcon(QIcon const& icon);
 

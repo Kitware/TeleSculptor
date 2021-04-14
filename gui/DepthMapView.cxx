@@ -38,7 +38,6 @@
 
 #include <vtkCamera.h>
 #include <vtkGenericOpenGLRenderWindow.h>
-#include <vtkGeometryFilter.h>
 #include <vtkImageData.h>
 #include <vtkInteractorStyleRubberBand2D.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
@@ -273,7 +272,7 @@ void DepthMapView::setDepthGeometryFilter(
   {
     d->inputDepthGeometryFilter = geometryFilter;
     d->scalarFilter->SetInputConnection(d->inputDepthGeometryFilter ?
-      d->inputDepthGeometryFilter->GetOutputPort() : 0);
+      d->inputDepthGeometryFilter->GetOutputPort() : nullptr);
   }
 }
 

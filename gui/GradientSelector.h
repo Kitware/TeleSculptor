@@ -70,7 +70,7 @@ public:
     Rainbow
   };
 
-  explicit GradientSelector(QWidget* parent = 0);
+  explicit GradientSelector(QWidget* parent = nullptr);
   ~GradientSelector() override;
 
   qtGradient currentGradient() const;

@@ -42,9 +42,9 @@ class FeatureOptions : public PointOptions
   Q_OBJECT
 
 public:
-  explicit FeatureOptions(vtkMaptkFeatureTrackRepresentation*,
-                          QString const& settingsGroup,
-                          QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit FeatureOptions(
+    vtkMaptkFeatureTrackRepresentation*, QString const& settingsGroup,
+    QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~FeatureOptions() override;
 
 public slots:

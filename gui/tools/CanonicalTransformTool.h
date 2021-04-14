@@ -40,7 +40,7 @@ class CanonicalTransformTool : public AbstractTool
   Q_OBJECT
 
 public:
-  explicit CanonicalTransformTool(QObject* parent = 0);
+  explicit CanonicalTransformTool(QObject* parent = nullptr);
   ~CanonicalTransformTool() override;
 
   Outputs outputs() const override;
@@ -48,7 +48,7 @@ public:
   /// Get if the tool can be canceled.
   bool isCancelable() const override { return false; }
 
-  bool execute(QWidget* window = 0) override;
+  bool execute(QWidget* window = nullptr) override;
 
 protected:
   void run() override;

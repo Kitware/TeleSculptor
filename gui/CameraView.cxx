@@ -565,7 +565,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->setImageData(0, QSize(1, 1));
+  this->setImageData(nullptr, QSize{1, 1});
 }
 
 //-----------------------------------------------------------------------------
@@ -619,7 +619,7 @@ void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setActiveFrame(unsigned frame)
+void CameraView::setActiveFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 

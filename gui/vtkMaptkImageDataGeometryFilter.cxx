@@ -76,10 +76,10 @@ public:
 vtkMaptkImageDataGeometryFilter::vtkMaptkImageDataGeometryFilter()
   : Internal(new vtkInternal)
 {
-  this->ThresholdCells  = 0;
+  this->ThresholdCells = 0;
   this->GenerateTriangleOutput = 0;
 
-  this->UnprojectedPointArrayName = 0;
+  this->UnprojectedPointArrayName = nullptr;
   this->SetUnprojectedPointArrayName("Points");
 
   this->SetNumberOfOutputPorts(3);
@@ -88,7 +88,7 @@ vtkMaptkImageDataGeometryFilter::vtkMaptkImageDataGeometryFilter()
 //-----------------------------------------------------------------------------
 vtkMaptkImageDataGeometryFilter::~vtkMaptkImageDataGeometryFilter()
 {
-  this->SetUnprojectedPointArrayName(0);
+  this->SetUnprojectedPointArrayName(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -139,7 +139,7 @@ int vtkMaptkImageDataGeometryFilter::RequestData(
   vtkPolyData* outputUnprojected = vtkPolyData::GetData(outputVector, 1);
   vtkPolyData* outputUnprojectedPolys = vtkPolyData::GetData(outputVector, 2);
 
-  vtkPoints *newPts=0;
+  vtkPoints *newPts = nullptr;
   vtkDebugMacro(<< "Extracting structured points geometry");
 
   // Output points are the full set of image points (and retain all PointData);

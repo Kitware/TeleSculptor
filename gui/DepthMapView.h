@@ -43,7 +43,7 @@ class DepthMapView : public QWidget
   Q_OBJECT
 
 public:
-  explicit DepthMapView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit DepthMapView(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~DepthMapView() override;
 
   void enableAntiAliasing(bool enable);

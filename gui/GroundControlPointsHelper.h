@@ -48,6 +48,9 @@ class GroundControlPointsHelper : public QObject
   Q_OBJECT
 
 public:
+  using id_t = kwiver::vital::ground_control_point_id_t;
+  using gcp_sptr = kwiver::vital::ground_control_point_sptr;
+
   GroundControlPointsHelper(QObject* parent = nullptr);
   ~GroundControlPointsHelper();
 
@@ -56,15 +59,17 @@ public:
   // Call this function when the GCP data has been modified
   void updateViewsFromGCPs();
 
+  bool isEmpty() const;
+  std::vector<id_t> identifiers() const;
+
   // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
+
   // Get access to the ground control points
-  kwiver::vital::ground_control_point_map::ground_control_point_map_t const&
-  groundControlPoints() const;
+  std::vector<gcp_sptr> groundControlPoints() const;
 
   // Get access to a single ground control point
-  kwiver::vital::ground_control_point_sptr groundControlPoint(
-    kwiver::vital::ground_control_point_id_t pointId);
+  gcp_sptr groundControlPoint(id_t pointId);
 
   bool readGroundControlPoints(QString const& path);
 
@@ -76,10 +81,10 @@ public slots:
 
   void recomputePoints();
 
-  void resetPoint(kwiver::vital::ground_control_point_id_t);
-  void removePoint(kwiver::vital::ground_control_point_id_t);
+  void resetPoint(id_t);
+  void removePoint(id_t);
 
-  void setActivePoint(kwiver::vital::ground_control_point_id_t);
+  void setActivePoint(id_t);
 
   void applySimilarityTransform();
 
@@ -87,11 +92,11 @@ signals:
   void pointsReloaded();
   void pointsRecomputed();
   void pointCountChanged(size_t);
-  void pointAdded(kwiver::vital::ground_control_point_id_t);
-  void pointRemoved(kwiver::vital::ground_control_point_id_t);
-  void pointChanged(kwiver::vital::ground_control_point_id_t);
+  void pointAdded(id_t);
+  void pointRemoved(id_t);
+  void pointChanged(id_t);
 
-  void activePointChanged(kwiver::vital::ground_control_point_id_t);
+  void activePointChanged(id_t);
 
 protected slots:
   void addCameraViewPoint();

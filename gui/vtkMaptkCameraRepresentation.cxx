@@ -31,8 +31,8 @@
 #include "vtkMaptkCameraRepresentation.h"
 
 #include "arrows/vtk/vtkKwiverCamera.h"
-#include <vital/types/vector.h>
 
+#include <vital/types/vector.h>
 
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
@@ -154,7 +154,7 @@ class vtkMaptkCameraRepresentation::vtkInternal
 public:
   vtkCamera* NextCamera();
 
-  std::map<int, vtkCamera*> Cameras;
+  std::map<kwiver::vital::frame_id_t, vtkCamera*> Cameras;
 
   vtkNew<vtkPolyData> ActivePolyData;
   vtkNew<vtkAppendPolyData> NonActiveAppendPolyData;
@@ -180,9 +180,9 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveCameraRepLength = 4.0;
   this->DisplayDensity = 1;
 
-  this->ActiveCamera = 0;
+  this->ActiveCamera = nullptr;
 
-  this->Internal->LastActiveCamera = 0;
+  this->Internal->LastActiveCamera = nullptr;
   this->Internal->LastNonActiveCameraRepLength = -1.0;
   this->Internal->PathNeedsUpdate = false;
 
@@ -236,7 +236,8 @@ vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::AddCamera(int id, vtkCamera* camera)
+void vtkMaptkCameraRepresentation::AddCamera(
+  kwiver::vital::frame_id_t id, vtkCamera* camera)
 {
   // Don't allow null or duplicate entries
   if (!camera || this->Internal->Cameras.count(id) > 0)
@@ -251,7 +252,7 @@ void vtkMaptkCameraRepresentation::AddCamera(int id, vtkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::RemoveCamera(int id)
+void vtkMaptkCameraRepresentation::RemoveCamera(kwiver::vital::frame_id_t id)
 {
   // If item isn't present, do nothing
   auto camIter = this->Internal->Cameras.find(id);
@@ -270,7 +271,7 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 
   if (this->ActiveCamera == camIter->second)
   {
-    this->ActiveCamera = 0;
+    this->ActiveCamera = nullptr;
   }
 
   camIter->second->UnRegister(this);
@@ -288,7 +289,8 @@ void vtkMaptkCameraRepresentation::CamerasModified()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
+void vtkMaptkCameraRepresentation::SetActiveCamera(
+  kwiver::vital::frame_id_t id)
 {
   auto camIter = this->Internal->Cameras.find(id);
   if (camIter == this->Internal->Cameras.end())

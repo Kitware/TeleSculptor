@@ -56,15 +56,15 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit MainWindow(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~MainWindow() override;
 
   kwiver::arrows::vtk::vtkKwiverCamera* activeCamera();
+
   WorldView* worldView();
   CameraView* cameraView();
-  kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
-  void applySimilarityTransform();
+  kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
 public slots:
   void newProject();
@@ -106,6 +106,7 @@ public slots:
   void saveToolResults();
   void acceptToolSaveResults(std::shared_ptr<ToolData> data);
 
+  void applySimilarityTransform();
 
   void saveWebGLScene();
 
@@ -117,7 +118,7 @@ public slots:
 
   void enableSaveDepthPoints(bool);
 
-  void setActiveCamera(int);
+  void setActiveFrame(kwiver::vital::frame_id_t);
 
   void setViewBackroundColor();
 
