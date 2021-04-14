@@ -476,6 +476,8 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->setPopup(d->UI.actionPlaceEditCRP, registrationMenu);
 
   d->registrationPointsWidget = new GroundControlPointsWidget(this);
+  d->registrationPointsWidget->setColor({128, 224, 255});
+  d->registrationPointsWidget->setSelectedColor({64, 192, 255});
   d->registrationPointsWidget->setTransformMatrix(d->transformMatrix);
 
   connect(d->UI.actionPlaceEditCRP, &QAction::toggled,

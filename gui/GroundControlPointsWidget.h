@@ -31,16 +31,13 @@
 #ifndef TELESCULPTOR_GROUNDCONTROLPOINTSWIDGET_H_
 #define TELESCULPTOR_GROUNDCONTROLPOINTSWIDGET_H_
 
-// qtExtensions includes
-#include <qtGlobal.h>
-
-// kwiver includes
 #include <vital/types/vector.h>
 
-// Qt includes
+#include <qtGlobal.h>
+
+#include <QColor>
 #include <QObject>
 
-// STL includes
 #include <list>
 
 // Forward declarations
@@ -111,6 +108,9 @@ signals:
   void activePointChanged(int id);
 
 public slots:
+  void setColor(QColor);
+  void setSelectedColor(QColor);
+
   /// Delete the point and remove the widget handle
   void deletePoint(int handleId);
   // Set active handle

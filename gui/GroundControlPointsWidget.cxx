@@ -87,12 +87,10 @@ GroundControlPointsWidgetPrivate::GroundControlPointsWidgetPrivate()
   this->widget->ManagesCursorOn();
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
   vtkNew<vtkProperty> property;
-  property->SetColor(1, 1, 1);
   property->SetLineWidth(1.0);
   property->SetRenderLinesAsTubes(false);
   this->pointRepr->SetProperty(property.GetPointer());
   vtkNew<vtkProperty> selectedProperty;
-  selectedProperty->SetColor(0, 1, 0);
   selectedProperty->SetLineWidth(3.0);
   selectedProperty->SetRenderLinesAsTubes(true);
   this->pointRepr->SetSelectedProperty(selectedProperty.GetPointer());
@@ -135,6 +133,9 @@ GroundControlPointsWidget::GroundControlPointsWidget(QObject* parent)
   , d_ptr(new GroundControlPointsWidgetPrivate)
 {
   QTE_D();
+
+  this->setColor(Qt::white);
+  this->setSelectedColor(Qt::green);
 
   d->connections->Connect(d->widget.GetPointer(),
                           vtkCommand::PlacePointEvent,
@@ -189,6 +190,24 @@ void GroundControlPointsWidget::setPointPlacer(vtkPointPlacer* placer)
 {
   QTE_D();
   d->pointRepr->SetPointPlacer(placer);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setSelectedColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetSelectedProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
 }
 
 //-----------------------------------------------------------------------------
