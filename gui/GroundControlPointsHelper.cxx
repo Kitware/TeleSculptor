@@ -566,18 +566,25 @@ void GroundControlPointsHelperPrivate::updateActivePoint(
   int handleId, GroundControlPointsWidget* widget,
   std::map<vtkHandleWidget*, id_t> const& handleToIdMap)
 {
-  QTE_Q();
-
-  // Find the corresponding GCP ID
-  auto* const handle = widget->handleWidget(handleId);
-  if (auto* const iter = qtGet(handleToIdMap, handle))
+  if (handleId >= 0)
   {
-    emit q->activePointChanged(this->activeId = iter->second);
+    QTE_Q();
+
+    // Find the corresponding GCP ID
+    auto* const handle = widget->handleWidget(handleId);
+    if (auto* const iter = qtGet(handleToIdMap, handle))
+    {
+      emit q->activePointChanged(this->activeId = iter->second);
+    }
+    else
+    {
+      qWarning() << "Failed to find the ID associated with the handle widget"
+                << handle << "with VTK ID" << handleId;
+    }
   }
   else
   {
-    qWarning() << "Failed to find the ID associated with the handle widget"
-               << handle << "with VTK ID" << handleId;
+    this->activeId = std::numeric_limits<id_t>::max();
   }
 }
 
