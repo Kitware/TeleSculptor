@@ -323,7 +323,7 @@ void ColorizeSurfaceOptions::colorize()
     {
       this->LastColorizedFrame = colorizedFrame;
 
-      if (d->cameras->size() == 0)
+      if (!d->cameras || d->cameras->size() == 0)
       {
         d->UI.comboBoxColorDisplay->setEnabled(true);
         emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());

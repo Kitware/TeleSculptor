@@ -36,6 +36,9 @@ TeleSculptor Application
 
  * Added support for building against VTK 9.0.
 
+ * Added an option to import PLY mesh files like those exported from
+   TeleSculptor
+
  * Added support for opening .ts (MPEG transport stream) video files.
 
 

@@ -75,6 +75,7 @@ public:
 
   void setCurrentFrame(kwiver::vital::frame_id_t);
 
+  void setSurfaceColored(bool enabled);
   bool isColorOptionsEnabled();
 
 signals:

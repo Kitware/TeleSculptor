@@ -80,6 +80,10 @@ public:
 
   void resetVolume();
 
+  void loadMesh(QString const& path);
+
+  void setMesh(vtkSmartPointer<vtkPolyData> mesh);
+
   void setVideoConfig(QString const& path,
                       kwiver::vital::config_block_sptr config);
   void setMaskConfig(QString const& path,
@@ -98,7 +102,8 @@ signals:
   void depthMapEnabled(bool);
 
   void contourChanged();
-  void updateThresholds(double,double,double,double);
+  void updateThresholds(double, double, double, double);
+  void volumeEnabled(bool);
   void fusedMeshEnabled(bool);
   void pointPlacementEnabled(bool);
   void rulerEnabled(bool);

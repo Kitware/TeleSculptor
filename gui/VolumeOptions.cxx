@@ -242,6 +242,14 @@ void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 }
 
 //-----------------------------------------------------------------------------
+void VolumeOptions::setSurfaceColored(bool enabled)
+{
+  QTE_D();
+
+  d->UI.checkBoxColorizeSurface->setChecked(enabled);
+}
+
+//-----------------------------------------------------------------------------
 bool VolumeOptions::isColorOptionsEnabled()
 {
   QTE_D();

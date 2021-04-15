@@ -76,6 +76,7 @@ public slots:
   void openTracks();
   void openLandmarks();
   void openGroundControlPoints();
+  void openMesh();
 
   void loadProject(QString const& path);
   void loadImagery(QString const& path);
@@ -88,6 +89,7 @@ public slots:
   void loadTracks(QString const& path);
   void loadLandmarks(QString const& path);
   void loadGroundControlPoints(QString const& path);
+  void loadMesh(QString const& path);
 
   void saveCameras();
   void saveCameras(QString const& path, bool writeToProject = true);
@@ -109,6 +111,7 @@ public slots:
   void saveWebGLScene();
 
   void saveVolume();
+  void enableSaveVolume(bool);
   void enableSaveFusedMesh(bool);
   void saveFusedMesh();
   void saveFusedMeshFrameColors();

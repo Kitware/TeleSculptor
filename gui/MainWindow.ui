@@ -72,6 +72,7 @@
      <addaction name="actionImportTracks"/>
      <addaction name="actionImportLandmarks"/>
      <addaction name="actionImportGroundControlPoints"/>
+     <addaction name="actionImportMesh"/>
     </widget>
     <addaction name="actionNewProject"/>
     <addaction name="actionOpenProject"/>
@@ -544,7 +545,7 @@
     <string>&amp;Masks...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O, M</string>
+    <string>Ctrl+O, K</string>
    </property>
   </action>
   <action name="actionImportCameras">
@@ -577,6 +578,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O, G</string>
+   </property>
+  </action>
+  <action name="actionImportMesh">
+   <property name="text">
+    <string>&amp;Mesh...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, M</string>
    </property>
   </action>
   <action name="actionIgnoreMetadata">

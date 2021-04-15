@@ -322,6 +322,10 @@ public:
                       const QString& description = QString(""),
                       int value = 0);
 
+  // If a project is active, prefix this string with the project name
+  // and underscore, otherwise just return the name.
+  QString addProjectPrefx(QString const& name) const;
+
   void saveGeoOrigin(QString const& path);
   kv::vector_3d centerLandmarks() const;
   void shiftGeoOrigin(kv::vector_3d const& offset);
@@ -502,6 +506,18 @@ void MainWindowPrivate::shiftGeoOrigin(kv::vector_3d const& offset)
     gcp->set_loc(gcp->loc() - offset);
   }
   this->groundControlPointsHelper->updateViewsFromGCPs();
+}
+
+//-----------------------------------------------------------------------------
+// If a project is active, prefix this string with the project name
+// and underscore, otherwise just return the name.
+QString MainWindowPrivate::addProjectPrefx(QString const& name) const
+{
+  if (this->project)
+  {
+    return this->project->workingDir.dirName() + "_" + name;
+  }
+  return name;
 }
 
 //-----------------------------------------------------------------------------
@@ -1515,6 +1531,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::openLandmarks);
   connect(d->UI.actionImportGroundControlPoints, &QAction::triggered,
           this, &MainWindow::openGroundControlPoints);
+  connect(d->UI.actionImportMesh, &QAction::triggered,
+          this, &MainWindow::openMesh);
 
   connect(d->UI.actionShowWorldAxes, &QAction::toggled,
           d->UI.worldView, &WorldView::setAxesVisible);
@@ -1568,6 +1586,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   connect(d->UI.camera, &QAbstractSlider::valueChanged,
           this, &MainWindow::setActiveFrame);
 
+  connect(d->UI.worldView, &WorldView::volumeEnabled,
+          this, &MainWindow::enableSaveVolume);
   connect(d->UI.worldView, &WorldView::fusedMeshEnabled,
           this, &MainWindow::enableSaveFusedMesh);
 
@@ -1765,6 +1785,20 @@ void MainWindow::openGroundControlPoints()
   for (auto const& path : paths)
   {
     this->loadGroundControlPoints(path);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::openMesh()
+{
+  auto const path = QFileDialog::getOpenFileName(
+    this, "Open Mesh File", QString(),
+    "PLY Files (*.ply);;"
+    "All Files (*)");
+
+  if (!path.isEmpty())
+  {
+    this->loadMesh(path);
   }
 }
 
@@ -2217,6 +2251,14 @@ void MainWindow::loadGroundControlPoints(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::loadMesh(QString const& path)
+{
+  QTE_D();
+
+  d->UI.worldView->loadMesh(path);
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::saveLandmarks()
 {
   QTE_D();
@@ -2588,11 +2630,18 @@ void MainWindow::saveWebGLScene()
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::enableSaveFusedMesh(bool state)
+void MainWindow::enableSaveVolume(bool state)
 {
   QTE_D();
 
   d->UI.actionExportVolume->setEnabled(state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::enableSaveFusedMesh(bool state)
+{
+  QTE_D();
+
   d->UI.actionExportFusedMesh->setEnabled(state);
   d->UI.actionExportFusedMeshFrameColors->setEnabled(state);
 }
@@ -2602,22 +2651,23 @@ void MainWindow::saveVolume()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Volume", name + QString("_volume.mha"),
+    this, "Export Volume", d->addProjectPrefx("volume.mha"),
     "MetaImage (*.mha);;"
     "All Files (*)");
 
   if (!path.isEmpty())
   {
     d->UI.worldView->saveVolume(path);
-    d->project->volumePath = d->project->getContingentRelativePath(path);
-    d->project->config->set_value("volume_file",
-                                  kvPath(d->project->volumePath));
-    d->project->write();
+    if (d->project)
+    {
+      d->project->volumePath = d->project->getContingentRelativePath(path);
+      d->project->config->set_value("volume_file",
+                                    kvPath(d->project->volumePath));
+      d->project->config->set_value("ROI", d->roiToString());
+      d->project->write();
+    }
   }
-
-  d->project->config->set_value("ROI", d->roiToString());
 }
 
 //-----------------------------------------------------------------------------
@@ -2625,9 +2675,8 @@ void MainWindow::saveFusedMesh()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Fused Mesh", name + QString("_fused_mesh.ply"),
+    this, "Export Fused Mesh", d->addProjectPrefx("fused_mesh.ply"),
     "PLY File (*.ply);;"
     "OBJ File (*.obj);;"
     "LAS File (*.las);;"
@@ -2656,9 +2705,9 @@ void MainWindow::saveFusedMeshFrameColors()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Fused Mesh Frame Colors", name + QString("_fused_mesh_frame_colors.vtp"),
+    this, "Export Fused Mesh Frame Colors",
+    d->addProjectPrefx("fused_mesh_frame_colors.vtp"),
     "VTK Polydata (*.vtp);;"
     "All Files (*)");
 
