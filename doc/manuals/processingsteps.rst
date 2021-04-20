@@ -1,5 +1,7 @@
 .. _processingsteps:
 
+.. include:: version.rst
+
 .. |image_button| image:: /../gui/icons/16x16/image.png
 
 .. |cameras_button| image:: /../gui/icons/16x16/camera.png
@@ -112,7 +114,7 @@ the visibility, size, and color of camera path, camera frustums, and active came
 Run End-to-End
 ================
 
-Run End-to-End is a new feature in TeleSculptor v1.1.0.  Rather than waiting for user input to run each if the primary processing steps, Run End-to-End automatically runs Track 
+Run End-to-End is a new feature in TeleSculptor v |version| .  Rather than waiting for user input to run each if the primary processing steps, Run End-to-End automatically runs Track 
 Features, Estimate Cameras/Landmarks, Batch Compute Depth Maps, and Fuse Depth Maps.  These steps are run sequential in this order.  See details of these steps in their respective 
 sections below.
 

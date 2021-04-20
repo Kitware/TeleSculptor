@@ -1,5 +1,7 @@
 .. _advancedconfig:
 
+.. include:: version.rst
+
 ================================
 Advanced Configuration Options
 ================================
@@ -26,9 +28,9 @@ algorithm without recompiling TeleSculptor by dropping in a new DLL and updating
 file is one example of configuration file, but there are also many default configuration files loaded by TeleSculptor at run time.  The default configuration files for a standard 
 install path are found in these two locations:
 
-**C:\\Program Files\\TeleSculptor 1.1.0\\share\\telesculptor\\1.1.0\\config**
+**C:\\Program Files\\TeleSculptor** |space| |version| **\\share\\telesculptor\\** |version| **\\config**
 
-**C:\\Program Files\\TeleSculptor 1.1.0\\share\\kwiver\\1.5.0\\config**
+**C:\\Program Files\\TeleSculptor** |space| |version| **\\share\\kwiver\\1.5.0\\config**
 
 TeleSculptor specific configurations are found in the first directory and these include configurations for KWIVER algorithms found in the second directory.  It is recommended that 
 you not modify these values, but instead copy some of these files into your project directory and modify the copies.  TeleSculptor will load configuration files from the project 
@@ -86,12 +88,12 @@ Printing all KLV metadata
 The TeleSculptor application loads KLV metadata and display it in a viewer, but there is no way to export this data in batch.  However, the installer does provide the kwiver command 
 line tool that has an applet that will print out all metadata in a video.  This applet is called “dump_klv”. The default installation path is
 
-**C:\\Program Files\\TeleSculptor 1.1.0\\bin\\kwiver.exe**
+**C:\\Program Files\\TeleSculptor** |space| |version| **\\bin\\kwiver.exe**
 
 To run dump_klv, open up a command prompt (search for cmd.exe in the Start Menu).  Then run
 
-**“C:\\Program Files\\TeleSculptor 1.1.0\\bin\\kwiver.exe” dump_klv video_file.mpeg**
+**“C:\\Program Files\\TeleSculptor** |space| |version| **\\bin\\kwiver.exe” dump_klv video_file.mpeg**
 
 and replace “video_file.mpeg” with the path to the video file to process.  This will print out all the metadata.  To redirect the output to a file use:
 
-**“C:\\Program Files\\TeleSculptor 1.1.0\\bin\\kwiver.exe” dump_klv.exe video_file.mpeg > metadata.txt**
+**“C:\\Program Files\\TeleSculptor** |space| |version| **\\bin\\kwiver.exe” dump_klv.exe video_file.mpeg > metadata.txt**

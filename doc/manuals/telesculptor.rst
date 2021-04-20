@@ -1,57 +1,11 @@
-.. _telesculptor:
-
-.. |reset_view| image:: /../gui/icons/16x16/view-reset.png
-
-.. |blank| image:: /../gui/icons/16x16/blank.png
-
-.. |image| image:: /../gui/icons/16x16/image.png
-
-.. |camera| image:: /../gui/icons/16x16/camera.png
-
-.. |landmark| image:: /../gui/icons/16x16/landmark.png
-
-.. |location| image:: /../gui/icons/16x16/location.png
-
-.. |grid| image:: /../gui/icons/16x16/grid.png
-
-.. |roi| image:: /../gui/icons/16x16/roi.png
-
-.. |depthmap| image:: /../gui/icons/16x16/depthmap.png
-
-.. |volume| image:: /../gui/icons/16x16/volume.png
-
-.. |ruler| image:: /../gui/icons/16x16/ruler.png
-
-.. |feature| image:: /../gui/icons/16x16/feature.png
-
-.. |residual| image:: /../gui/icons/16x16/residual.png
-
-.. |copy_location| image:: /../gui/icons/16x16/copy-location.png
-
-.. |apply| image:: /../gui/icons/16x16/apply.png
-
-.. |reset| image:: /../gui/icons/16x16/reset.png
-
-.. |delete| image:: /../gui/icons/16x16/delete.png
-
-.. |open| image:: /../gui/icons/16x16/open.png
-
-.. |quit| image:: /../gui/icons/16x16/quit.png
-
-.. |playback_play| image:: /../gui/icons/16x16/playback-play.png
-
-.. |playback_loop| image:: /../gui/icons/16x16/playback-loop.png
-
-.. |help_manual| image:: /../gui/icons/16x16/help-manual.png
-
-.. |telesculptor| image:: /../gui/icons/16x16/telesculptor.png
-
 ===============================================================================
   TeleSculptor
 ===============================================================================
 
 .. role:: f
    :class: math
+
+.. contents::
 
 Overview
 ========
@@ -112,69 +66,69 @@ signed distance function or similar operator.
 Tool Bar
 --------
 
-|reset_view| Reset View
+:icon:`view-reset` Reset View
   Resets the view extents so that the entire scene is visible. The keyboard
   shortcut **R** provides the same effect. Additional actions are available via
   the action's associated pop-up.
 
-|blank| Zoom to Landmarks
+:icon:`blank` Zoom to Landmarks
   Resets the view extents so that all landmarks are visible. This action is
   available via the :action:`view-reset Reset View` button's associated pop-up
   menu.  The keyboard short cut is **Shift + R**.
 
-|blank| View to World Top/Left/Right/Front/Back
+:icon:`blank` View to World Top/Left/Right/Front/Back
   Resets the view rotation to a "standard" rotation, such that the view axes
   are parallel with the world axes. These actions are available via the
   :action:`view-reset Reset View` button's associated pop-up menu.
 
-|blank| Perspective
+:icon:`blank` Perspective
   Toggles the world view between perspective and parallel projection.
   Perspective projection more closely models human vision and is often useful
   for visualizing depth in the scene. Parallel projection can be useful for
   viewing the scene in profile. This action is available via the
   :action:`view-reset Reset View` button's associated pop-up menu.
 
-|image| Show Camera Frame Image
+:icon:`image` Show Camera Frame Image
   Toggles visibility of the camera frame image projected onto the ground plane.
   The associated pop-up allows the opacity of the same to be adjusted.
 
-|camera| Show Cameras
+:icon:`camera` Show Cameras
   Toggles visibility of cameras and related visualizations. The associated
   pop-up provides additional options; see `Camera Options`_.
 
-|landmark| Show Landmarks
+:icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
   options; see `Point Options`_.
 
-|location| Edit Ground Control Points
+:icon:`location` Edit Ground Control Points
   Toggles editing of ground control points.
   See `Editing Ground Control Points`_ for details.
 
-|grid| Show Ground Plane Grid
+:icon:`grid` Show Ground Plane Grid
   Toggles visibility of the ground plane. The ground plane is the :f:`z = 0`
   plane in local 3D coordinates. The grid is centered about :f:`x = y = 0`,
   however the grid lines are otherwise strictly aesthetic and do not correspond
   to any particular values.
 
-|roi| Show/Edit Region of Interest
+:icon:`roi` Show/Edit Region of Interest
   Toggles visibility of the region of interest selection in the world view.
   While visible, the ROI may be resized by clicking and dragging on any of the
   six handles on the faces of the ROI box.
 
-|blank| Reset Region of Interest
+:icon:`blank` Reset Region of Interest
   Resets the region of interest to the axis-aligned box containing 80% of the
   landmark points plus an additional 50% padding. This action is available via the
   :action:`roi Show/Edit Region of Interest` button's associated pop-up menu.
 
-|depthmap| Show 3D Depth Map
+:icon:`depthmap` Show 3D Depth Map
   Toggles visibility of the depth map (if available) rendered as a 3D point
   cloud or mesh; see `3D Depth Map Options`_.
 
-|volume| Show Surface from Volume
+:icon:`volume` Show Surface from Volume
   Toggles the visibility of the surface mesh extracted from volumetric data;
   see `Volume Surface Options`_.
 
-|ruler| Enable Measurement Tool
+:icon:`ruler` Enable Measurement Tool
   Toggles placing or editing of the ruler measurement tool. Initially |--| when
   the ruler has not yet been placed, or after it has been removed using
   :action:`- Reset Measurement Tool` |--| a ruler can be placed by clicking two
@@ -187,7 +141,7 @@ Tool Bar
   horizontal plane. Placement of the ruler may be canceled by pressing the
   **Esc** key before placing the second point.
 
-|blank| Reset Measurement Tool
+:icon:`blank` Reset Measurement Tool
   Removes the currently placed ruler. This action is available via the
   :action:`ruler Enable Measurement Tool` button's associated pop-up menu.
 
@@ -294,28 +248,28 @@ projected landmark location.
 Tool Bar
 --------
 
-|reset_view| Reset View
+:icon:`view-reset` Reset View
   Resets the view to the camera image extents. Additional actions are available
   via the action's associated pop-up.
 
-|blank| Zoom Extents
+:icon:`blank` Zoom Extents
   Resets the view extents so that the entire scene is visible. This action is
   available via the :action:`view-reset Reset View` button's associated pop-up
   menu.
 
-|image| Show Camera Frame Image
+:icon:`image` Show Camera Frame Image
   Toggles visibility of the camera frame image. The associated pop-up allows
   the opacity of the same to be adjusted.
 
-|feature| Show Feature Points
+:icon:`feature` Show Feature Points
   Toggles visibility of feature points / trails. The associated pop-up provides
   additional options; see `Feature Options`_.
 
-|landmark| Show Landmarks
+:icon:`landmark` Show Landmarks
   Toggles visibility of landmarks. The associated pop-up provides additional
   options; see `Point Options`_.
 
-|residual| Show Residuals
+:icon:`residual` Show Residuals
   Toggles visibility of the landmark estimation residuals. The associated
   pop-up allows the color of the displayed residuals to be changed.
 
@@ -352,10 +306,10 @@ image rendering of the depth map in the Depth Map View.
 Tool Bar
 --------
 
-|reset_view| Reset View
+:icon:`view-reset` Reset View
   Resets the view to the camera image extents.
 
-|blank| Display Mode
+:icon:`blank` Display Mode
   Selects which image mode to display in the in the view: Color, Depth,
   Best Cost Value, Uniqueness Ratio; see `Color Map Options`_.
   The depth filters apply regardless of which image is shown.
@@ -440,24 +394,24 @@ changing its scene location) does not change its geodetic location.
 Tool Bar
 --------
 
-|copy_location| Copy Location
+:icon:`copy-location` Copy Location
   Copies the geodetic location of the selected point to the clipboard. Several
   options of ordering and whether or not to include the elevation are provided.
 
-|apply| Apply Constraints to Geo-register
+:icon:`apply` Apply Constraints to Geo-register
   Estimates a 3D similarity transformation to best align the ground control
   point (GCP) locations with the specified geodetic locations.  At least three
   "user registered" GCPs are required.  That is, at least three points must
   have manually specified latitude, longitude, and altitude.  The estimated
   transform is applied to all data (cameras, landmarks, depth maps, etc.).
 
-|reset| Revert Changes
+:icon:`reset` Revert Changes
   Reverts user changes to the active ground control point's geodetic location,
   such that the point is no longer "user registered". This has no effect on
   points that are not user registered. Note also that the geodetic location
   will not change if a scene to geodetic transformation is not available.
 
-|delete| Delete Point
+:icon:`delete` Delete Point
   Deletes the active ground control point.
 
 Match Matrix View
@@ -541,7 +495,7 @@ Menu
 File Menu
 ---------
 
-|blank| New Project
+:icon:`blank` New Project
   Select a working directory for a project. A project directory must be set
   before the tools in the Compute menu can be run. These tool will write files
   into the project working directory. A configuration file with the same name
@@ -550,31 +504,31 @@ File Menu
   computed results like cameras, tracks, or landmarks that will be loaded back
   in when a project is opened.
 
-|open| Open Project
+:icon:`open` Open Project
   Select an existing project configuration. The project configuration will
   often include references to various data files which are frequently stored in
   the same directory as the project configuration.
 
-|blank| Import
+:icon:`blank` Import
   Provides options for importing/loading various types of data into the current
   project. The user must select the type of data to be loaded, as some data
   files use the same file extension.
 
-|blank| Export
+:icon:`blank` Export
   Provides options for exporting various data.
 
-|quit| Quit
+:icon:`quit` Quit
   Exits the application.
 
 Compute Menu
 ------------
 
-|blank| Run End-to-End
+:icon:`blank` Run End-to-End
   Runs the entire processing pipeline from end-to-end.  This tools runs
   Track Features then Estimate Cameras/Landmarks then Batch Compute Depth
   Maps then Fuse Depth Maps.
 
-|blank| Track Features
+:icon:`blank` Track Features
   Run feature tracking on the loaded video starting from the current frame.
   Features and descriptors are detected and each frame and cached into a file
   in the project directory. Features are then matched between adjacent frames
@@ -582,19 +536,19 @@ Compute Menu
   matches form "tracks" through time, and each track has the potential to
   become a landmark.
 
-|blank| Estimate Cameras/Landmarks
+:icon:`blank` Estimate Cameras/Landmarks
   Estimates cameras and landmarks starting with tracks and metadata. This also
   runs bundle adjustment (refinement) along the way. The goal is to
   incrementally add cameras and landmarks, while optimizing, to build up a
   consistent solution.
 
-|blank| Save Frames
+:icon:`blank` Save Frames
   Iterate through a video and save every frame as an image file in a
   subdirectory of the project directory. This is needed when exporting the data
   to other tools that do not support video files. This option must be run
   before importing a project into SketchUp.
 
-|blank| Batch Compute Depth Maps
+:icon:`blank` Batch Compute Depth Maps
   Estimates several dense depth maps and corresponding point clouds on several
   frames spaced throughout the video. This requires valid cameras and computes
   the results in the active ROI. The algorithm run on each frame is the same as
@@ -602,7 +556,7 @@ Compute Menu
   :action:`- Compute Single Depth Map`, but intermediate solutions of each
   depth map are not rendered.
 
-|blank| Fuse Depth Maps
+:icon:`blank` Fuse Depth Maps
   Fuse all computed depth maps into a single mesh surface using an integration
   volume specified by the ROI. Note that this step requires an NVIDIA GPU and
   may not be able to run if the ROI is too large for the GPU memory.
@@ -610,26 +564,26 @@ Compute Menu
 Compute Menu |->| Advanced
 --------------------------
 
-|blank| Filter Tracks
+:icon:`blank` Filter Tracks
   Filter the tracks to retain a smaller subset of tracks that is still
   representative of the original set. The intent is to make bundle adjustment
   (:action:`- Refine Solution`) faster without loosing critical constraints.
   The filter attempts to remove the shortest tracks that span the same frames
   already covered by longer tracks.
 
-|blank| Triangulate Landmarks
+:icon:`blank` Triangulate Landmarks
   For each available feature track, back project rays from the cameras that
   contain each track state and intersect those rays in 3D to estimate the
   location of a 3D landmark. This requires both feature tracks and a reasonably
   accurate set of cameras.
 
-|blank| Refine Solution
+:icon:`blank` Refine Solution
   Applies bundle adjustment to the cameras and landmarks in order to refine the
   quality of the 3D reconstruction. It aims to minimize this distance between
   the landmarks projected into each image by the cameras and the observed
   location of the corresponding feature tracks.
 
-|blank| Reverse (Necker)
+:icon:`blank` Reverse (Necker)
   Transforms the cameras and landmarks in a manner intended to break the
   refinement process out of a degenerate optimization (which can occur due to
   the Necker cube phenomena\ [#nc]_), by computing a best fit plane to the
@@ -637,7 +591,7 @@ Compute Menu |->| Advanced
   180 |deg| about their respective optical axes and 180 |deg| about the best
   fit plane normal where each camera's optical axis intersects said plane.
 
-|blank| Align
+:icon:`blank` Align
   Applies a similarity transformation to the camera and landmark data so that
   the data has a standard ("canonical") alignment. Particularly, this attempts
   to orient the data so that the ground plane is parallel with the :f:`z = 0`
@@ -645,12 +599,12 @@ Compute Menu |->| Advanced
   landmarks will be centered about the origin and scaled to an approximate
   variance of :f:`1.0`.
 
-|blank| Save Key Frames
+:icon:`blank` Save Key Frames
   Iterate through a video and save every key frame as an image file in a
   subdirectory of the project directory. Key frames are marked by the feature
   tracking algorithm.
 
-|blank| Compute Single Depth Map
+:icon:`blank` Compute Single Depth Map
   Estimate a dense depth map and corresponding point cloud for the current
   frame. This requires a valid camera on the current frame as well as cameras
   on other frames for triangulation. It computes the solution within the active
@@ -659,19 +613,19 @@ Compute Menu |->| Advanced
 Compute Menu |->| Options
 -------------------------
 
-|blank| Ignore Metadata
+:icon:`blank` Ignore Metadata
   Ignore the metadata fields (e.g. from KLV) that are attached to the imagery
   if this option is set, metadata will not be used in camera estimation or
   in geolocation.  The main reason to use this option is when the metadata
   is known to be invalid.
 
-|blank| Variable Lens
+:icon:`blank` Variable Lens
   This option allows estimation of camera models in which the lens model
   (e.g. focal length) can change over time.  If this option is off all cameras
   will share the same lens model.  If the lens does not change between frames
   it is best to use a single model.
 
-|blank| Fix Geo-Origin
+:icon:`blank` Fix Geo-Origin
   If checked, this option will prevent TeleSculptor from resetting the
   geospatial origin to a point centered on the data.  Normally TeleSculptor
   automatically chooses an origin, but there are use cases where it is helpful
@@ -681,21 +635,21 @@ Compute Menu |->| Options
 View Menu
 ---------
 
-|playback_play| Play Slideshow
+:icon:`playback-play` Play Slideshow
   Toggles playback of the slideshow.
 
-|playback_loop| Loop Slideshow
+:icon:`playback-loop` Loop Slideshow
   Toggles if the slideshow should restart from the beginning after the last
   camera. When disabled, the slideshow ends when the last camera becomes
   active.
 
-|blank| Match Matrix
+:icon:`blank` Match Matrix
   Opens a new `Match Matrix View`_.
 
-|blank| Background Color
+:icon:`blank` Background Color
   Changes the background color of the world and camera views.
 
-|blank| World Axes
+:icon:`blank` World Axes
   Toggles visibility of `X`, `Y`, and `Z` axes in the world view showing
   numerical values for distances at regular intervals on these axes.
   The size of these axes is set to span all visible scene objects, including
@@ -703,19 +657,19 @@ View Menu
   cameras and the ground plane will shrink the coverage to the remaining
   visible data.
 
-|blank| Keyframes Only
+:icon:`blank` Keyframes Only
   Limit frame numbers in the camera selection pane to allow only frames that
   were designated as "keyframes" by the feature tracker.  The number of
   keyframes is typically very small.
 
-|blank| Tracked Frames Only
+:icon:`blank` Tracked Frames Only
   Limit frame numbers in the camera selection pane to allow only frames that
   contain feature tracking results.  The feature tracker only processes a fixed
   number of frames (default, 500) distributed through the video.  Enabling this
   option skips unprocessed frames during playback, which avoids flicker of the
   display that occurs when unprocessed frames are drawn.
 
-|blank| Antialias Views
+:icon:`blank` Antialias Views
   Toggles use of an anti-aliasing filter in the world, camera and depth views.
   Anti-aliasing is accomplished via a post-processing filter (FXAA) that may
   produce undesirable artifacts. At this time, anti-aliasing via multi-sampling
@@ -724,10 +678,10 @@ View Menu
 Help Menu
 ---------
 
-|help_manual| TeleSculptor User Manual
+:icon:`help-manual` TeleSculptor User Manual
   Displays the user manual (i.e. this document) in the default web browser.
 
-|telesculptor| About TeleSculptor
+:icon:`telesculptor` About TeleSculptor
   Shows copyright and version information about the application.
 
 Glossary
@@ -762,4 +716,4 @@ Residual:
 .. |->|  unicode:: U+02192 .. rightwards arrow
 .. |--|  unicode:: U+02014 .. em dash
 .. |deg| unicode:: U+000B0 .. degree sign
-   :ltrim:
+   :ltrim:s

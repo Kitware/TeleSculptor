@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. include:: manuals/version.rst
+
 TeleSculptor
 ==============
 
@@ -16,7 +18,7 @@ Welcome to TeleSculptor.  This software is free and open source software develop
 calibrate cameras and extract 3D information from video and images, especially aerial video.  The software is designed to have different workflows that can either improve the manual 
 modelling process in SketchUp or provide fully automatic 3D reconstruction.
 
-TeleSculptor v1.1 marks the second official release of the software. There are several improvements to the application interface and algorithm robustness since the previous v1.0 
+TeleSculptor v |version| |space| marks the second official release of the software. There are several improvements to the application interface and algorithm robustness since the previous v1.0 
 release.  Please refer to the release notes file for details on all the changes.  While TeleSculptor continues to become more broadly useful across imaging scenarios, it is still 
 optimized for the use case of aerial video flying a 360-degree orbit around a target object.  TeleSculptor will give best results on a video clip containing one orbit around an 
 object.  We will improve robustness on more general imaging scenarios in future releases.
@@ -37,15 +39,12 @@ Getting Started
 
 * For instructions on how to install Telesculptor, see :ref:`Installation <installation>`.
 
-* For an introduction to Telesculptor's interface, see :ref:`Telesculptor <telesculptor>`.
-
 * To start a new Telesculptor project, see :ref:`Processing Steps <processingsteps>`.
 
 .. toctree::
    :maxdepth: 2
    :hidden:
    
-   manuals/telesculptor
    manuals/installation
    manuals/views
    manuals/workflows
