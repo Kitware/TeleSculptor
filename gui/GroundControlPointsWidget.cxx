@@ -51,6 +51,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QSignalBlocker>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsWidget)
 
@@ -167,8 +168,12 @@ GroundControlPointsWidget::~GroundControlPointsWidget()
 void GroundControlPointsWidget::enableWidget(bool enable)
 {
   QTE_D();
-  d->widget->SetEnabled(enable);
-  d->widget->GetInteractor()->Render();
+
+  with_expr (QSignalBlocker{this})
+  {
+    d->widget->SetEnabled(enable);
+    d->widget->GetInteractor()->Render();
+  }
 }
 
 //-----------------------------------------------------------------------------
