@@ -481,8 +481,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->registrationPointsWidget->setTransformMatrix(d->transformMatrix);
 
   connect(d->UI.actionPlaceEditCRP, &QAction::toggled,
-          d->registrationPointsWidget,
-          &GroundControlPointsWidget::enableWidget);
+          this, &CameraView::pointPlacementEnabled);
 
   connect(d->UI.actionComputeCamera, &QAction::triggered,
           this, &CameraView::cameraComputationRequested,
@@ -912,17 +911,16 @@ void CameraView::enableAntiAliasing(bool enable)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setRegistrationPointEditingEnabled(bool state)
+void CameraView::setEditMode(EditMode mode)
 {
   QTE_D();
 
-  d->UI.actionPlaceEditCRP->setEnabled(state);
-
-  if (!state)
-  {
-    d->UI.actionPlaceEditCRP->setChecked(false);
-    d->registrationPointsWidget->enableWidget(false);
-  }
+  d->groundControlPointsWidget->enableWidget(
+    mode == EditMode::GroundControlPoints);
+  d->registrationPointsWidget->enableWidget(
+    mode == EditMode::CameraRegistrationPoints);
+  d->UI.actionPlaceEditCRP->setChecked(
+    mode == EditMode::CameraRegistrationPoints);
 }
 
 //-----------------------------------------------------------------------------

@@ -261,6 +261,40 @@ protected:
   T data;
 };
 
+//-----------------------------------------------------------------------------
+class RecursionGuard
+{
+public:
+  RecursionGuard(bool* lock) : lock{lock && !*lock ? lock : nullptr}
+  {
+    if (this->lock) *this->lock = true;
+  }
+
+  RecursionGuard(RecursionGuard&& other) : RecursionGuard{other.take()} {}
+  ~RecursionGuard() { if (this->lock) *this->lock = false; }
+
+  operator bool() const { return this->lock != nullptr; }
+  bool* take()
+  {
+    auto* const old = this->lock;
+    this->lock = nullptr;
+    return old;
+  }
+
+private:
+  bool* lock;
+};
+
+//-----------------------------------------------------------------------------
+class RecursionLock
+{
+public:
+  RecursionGuard acquire() { return RecursionGuard{&this->state}; }
+
+private:
+  bool state = false;
+};
+
 } // namespace
 
 //END miscellaneous helpers
@@ -403,6 +437,7 @@ public:
 
   // Manual landmarks
   GroundControlPointsHelper* groundControlPointsHelper;
+  RecursionLock editModeLock;
 
   // Ruler measurement
   RulerHelper* rulerHelper;
@@ -1648,12 +1683,27 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           });
   connect(d->UI.worldView, &WorldView::pointPlacementEnabled, this,
           [d](bool state) {
-            d->UI.cameraView->setRegistrationPointEditingEnabled(!state);
-            d->groundControlPointsHelper->enableWidgets(state);
+            if (auto lock = d->editModeLock.acquire())
+            {
+              auto const mode =
+                (state ? EditMode::GroundControlPoints : EditMode::None);
+              d->UI.worldView->setEditMode(mode);
+              d->UI.cameraView->setEditMode(mode);
+            }
           });
   d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
 
   // Camera calculation from user-created registration points
+  connect(d->UI.cameraView, &CameraView::pointPlacementEnabled, this,
+          [d](bool state) {
+            if (auto lock = d->editModeLock.acquire())
+            {
+              auto const mode =
+                (state ? EditMode::CameraRegistrationPoints : EditMode::None);
+              d->UI.worldView->setEditMode(mode);
+              d->UI.cameraView->setEditMode(mode);
+            }
+          });
   connect(d->UI.cameraView, &CameraView::cameraComputationRequested,
           this, &MainWindow::computeCamera);
 
