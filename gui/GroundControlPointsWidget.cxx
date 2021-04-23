@@ -454,6 +454,11 @@ void GroundControlPointsWidget::setActivePoint(int id)
 {
   QTE_D();
 
+  if (!d->repr->GetNumberOfSeeds())
+  {
+    return;
+  }
+
   if (d->repr->GetActiveHandle() == id)
   {
     return;
