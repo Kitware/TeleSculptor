@@ -246,8 +246,7 @@ void vtkMaptkSeedWidget::HighlightActiveSeed()
   vtkSeedListIterator iter = this->Seeds->begin();
   for (int n = 0; iter != this->Seeds->end(); ++n, ++iter)
   {
-    (*iter)->GetHandleRepresentation()->Highlight(
-      this->GetEnabled() && n == activeHandle);
+    (*iter)->GetHandleRepresentation()->Highlight(n == activeHandle);
   }
   this->InvokeEvent(vtkMaptkSeedWidget::ActiveSeedChangedEvent,
                     &activeHandle);
