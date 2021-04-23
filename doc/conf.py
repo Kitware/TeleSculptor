@@ -51,5 +51,13 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# The logo to use on the doc page
+html_logo = "images/TeleSculptor_logo_small.png"
+
+html_favicon = "../gui/icons/telesculptor.ico"
+
+html_theme_options = {
+    'logo_only': True,
+}
 # The master toctree document
 master_doc = 'index'
