@@ -57,9 +57,14 @@ public:
 
   void addFeatureTrack(kwiver::vital::track const&);
   GroundControlPointsWidget* groundControlPointsWidget() const;
+  GroundControlPointsWidget* registrationPointsWidget() const;
   RulerWidget* rulerWidget() const;
 
   void enableAntiAliasing(bool enable);
+
+signals:
+  void cameraComputationRequested();
+
 public slots:
   void setBackgroundColor(QColor const&);
 
@@ -67,6 +72,8 @@ public slots:
   void setImageData(vtkImageData* data, QSize dimensions);
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
+
+  void setRegistrationPointEditingEnabled(bool);
 
   void setActiveFrame(kwiver::vital::frame_id_t);
 

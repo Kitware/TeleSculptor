@@ -51,6 +51,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QSignalBlocker>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsWidget)
 
@@ -87,12 +88,10 @@ GroundControlPointsWidgetPrivate::GroundControlPointsWidgetPrivate()
   this->widget->ManagesCursorOn();
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
   vtkNew<vtkProperty> property;
-  property->SetColor(1, 1, 1);
   property->SetLineWidth(1.0);
   property->SetRenderLinesAsTubes(false);
   this->pointRepr->SetProperty(property.GetPointer());
   vtkNew<vtkProperty> selectedProperty;
-  selectedProperty->SetColor(0, 1, 0);
   selectedProperty->SetLineWidth(3.0);
   selectedProperty->SetRenderLinesAsTubes(true);
   this->pointRepr->SetSelectedProperty(selectedProperty.GetPointer());
@@ -136,6 +135,9 @@ GroundControlPointsWidget::GroundControlPointsWidget(QObject* parent)
 {
   QTE_D();
 
+  this->setColor(Qt::white);
+  this->setSelectedColor(Qt::green);
+
   d->connections->Connect(d->widget.GetPointer(),
                           vtkCommand::PlacePointEvent,
                           this,
@@ -166,8 +168,12 @@ GroundControlPointsWidget::~GroundControlPointsWidget()
 void GroundControlPointsWidget::enableWidget(bool enable)
 {
   QTE_D();
-  d->widget->SetEnabled(enable);
-  d->widget->GetInteractor()->Render();
+
+  with_expr (QSignalBlocker{this})
+  {
+    d->widget->SetEnabled(enable);
+    d->widget->GetInteractor()->Render();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -189,6 +195,24 @@ void GroundControlPointsWidget::setPointPlacer(vtkPointPlacer* placer)
 {
   QTE_D();
   d->pointRepr->SetPointPlacer(placer);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setSelectedColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetSelectedProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
 }
 
 //-----------------------------------------------------------------------------
@@ -429,6 +453,11 @@ void GroundControlPointsWidget::activeHandleChangedCallback(
 void GroundControlPointsWidget::setActivePoint(int id)
 {
   QTE_D();
+
+  if (!d->repr->GetNumberOfSeeds())
+  {
+    return;
+  }
 
   if (d->repr->GetActiveHandle() == id)
   {

@@ -237,10 +237,15 @@ void GroundControlPointsViewPrivate::setPointPosition(id_t id)
 //-----------------------------------------------------------------------------
 id_t GroundControlPointsViewPrivate::selectedPoint() const
 {
-  auto const& i = this->UI.pointsList->selectionModel()->currentIndex();
-  auto const& ni = this->model.index(i.row(), 0, i.parent());
-  auto const& id = this->model.data(ni, Qt::EditRole);
-  return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+  auto const& s = this->UI.pointsList->selectionModel()->selectedIndexes();
+  if (!s.isEmpty())
+  {
+    auto const& i = s.first();
+    auto const& ni = this->model.index(i.row(), 0, i.parent());
+    auto const& id = this->model.data(ni, Qt::EditRole);
+    return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+  }
+  return INVALID_POINT;
 }
 
 //-----------------------------------------------------------------------------
@@ -301,7 +306,7 @@ GroundControlPointsView::GroundControlPointsView(
   d->UI.pointsList->setContextMenuPolicy(Qt::CustomContextMenu);
 
   connect(d->UI.pointsList->selectionModel(),
-          &QItemSelectionModel::currentChanged,
+          &QItemSelectionModel::selectionChanged,
           this, [d]{
             auto const id = d->selectedPoint();
 
@@ -416,6 +421,7 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
             {
               d->showPoint(id);
             }
+            d->model.modifyPoint(id);
           });
   connect(helper, &GroundControlPointsHelper::pointsRecomputed,
           this, [d](){

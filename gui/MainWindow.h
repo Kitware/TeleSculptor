@@ -59,10 +59,11 @@ public:
   explicit MainWindow(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~MainWindow() override;
 
-  kwiver::arrows::vtk::vtkKwiverCamera* activeCamera();
+  kwiver::vital::frame_id_t activeFrame() const;
+  kwiver::arrows::vtk::vtkKwiverCamera* activeCamera() const;
 
-  WorldView* worldView();
-  CameraView* cameraView();
+  WorldView* worldView() const;
+  CameraView* cameraView() const;
 
   kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
@@ -107,6 +108,7 @@ public slots:
   void acceptToolSaveResults(std::shared_ptr<ToolData> data);
 
   void applySimilarityTransform();
+  void computeCamera();
 
   void saveWebGLScene();
 
