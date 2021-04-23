@@ -716,4 +716,4 @@ Residual:
 .. |->|  unicode:: U+02192 .. rightwards arrow
 .. |--|  unicode:: U+02014 .. em dash
 .. |deg| unicode:: U+000B0 .. degree sign
-   :ltrim:
+   :ltrim:s
