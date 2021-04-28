@@ -3436,6 +3436,7 @@ void MainWindow::computeCamera()
     if (camera)
     {
       d->updateCamera(d->activeCameraIndex, camera);
+      d->UI.actionExportCameras->setEnabled(true);
     }
   }
   catch (std::exception const& e)
