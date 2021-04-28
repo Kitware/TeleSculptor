@@ -152,11 +152,12 @@ double VolumeOptions::getOcclusionThreshold() const
 
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
+void VolumeOptions::setCamera(
+  kwiver::vital::frame_id_t id, kwiver::vital::camera_sptr const& camera)
 {
   QTE_D();
 
-  d->colorizeSurfaceOptions->setCameras(cameras);
+  d->colorizeSurfaceOptions->setCamera(id, camera);
 }
 
 //-----------------------------------------------------------------------------

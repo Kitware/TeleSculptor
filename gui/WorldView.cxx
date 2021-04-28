@@ -855,12 +855,11 @@ void WorldView::setMaskConfig(QString const& path,
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
+void WorldView::invalidateCameras()
 {
   QTE_D();
 
   d->cameraRep->CamerasModified();
-  d->volumeOptions->setCameras(cameras);
 }
 
 //-----------------------------------------------------------------------------
@@ -1052,11 +1051,23 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 void WorldView::addCamera(
   kwiver::vital::frame_id_t id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
-  Q_UNUSED(id)
-
   QTE_D();
 
   d->cameraRep->AddCamera(id, camera);
+
+  d->volumeOptions->setCamera(id, camera->GetCamera());
+
+  d->updateCameras(this);
+  d->updateAxes(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::updateCamera(
+  kwiver::vital::frame_id_t id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
+{
+  QTE_D();
+
+  d->volumeOptions->setCamera(id, camera->GetCamera());
 
   d->updateCameras(this);
   d->updateAxes(this);
@@ -1068,6 +1079,11 @@ void WorldView::removeCamera(kwiver::vital::frame_id_t id)
   QTE_D();
 
   d->cameraRep->RemoveCamera(id);
+
+  d->volumeOptions->setCamera(id, nullptr);
+
+  d->updateCameras(this);
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -1709,7 +1725,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   loop.exec();
 }
 
-
+//-----------------------------------------------------------------------------
 void WorldView::meshColorationHandleResult(MeshColoration* coloration)
 {
   QTE_D();

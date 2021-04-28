@@ -77,15 +77,18 @@ public:
   }
 
   void setActor(vtkActor* actor);
-  void setVideoConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  void setVideoConfig(std::string const& path,
+                      kwiver::vital::config_block_sptr config);
   kwiver::vital::config_block_sptr getVideoConfig() const;
   std::string getVideoPath() const;
 
-  void setMaskConfig(std::string const& path, kwiver::vital::config_block_sptr config);
+  void setMaskConfig(std::string const& path,
+                     kwiver::vital::config_block_sptr config);
   kwiver::vital::config_block_sptr getMaskConfig() const;
   std::string getMaskPath() const;
 
-  void setCameras(kwiver::vital::camera_map_sptr cameras);
+  void setCamera(kwiver::vital::frame_id_t id,
+                 kwiver::vital::camera_sptr const& camera);
   kwiver::vital::camera_map_sptr getCameras() const;
   void enableMenu(bool);
   void forceColorize();
