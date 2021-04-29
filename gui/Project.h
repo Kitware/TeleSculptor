@@ -65,6 +65,7 @@ public:
   QString cameraPath;
   QString geoOriginFile;
   QString depthPath;
+  QString meshPath;
   QString groundControlPath;
   QString logFilePath;
 

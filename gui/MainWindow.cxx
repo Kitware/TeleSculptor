@@ -1925,6 +1925,12 @@ void MainWindow::loadProject(QString const& path)
     this->loadLandmarks(d->project->landmarksPath);
   }
 
+  // Load mesh
+  if (d->project->config->has_value("mesh_file"))
+  {
+    this->loadMesh(d->project->meshPath);
+  }
+
   // Load the cameras from disk
   int num_cameras = d->loadCameras();
   d->UI.worldView->initFrameSampling(num_cameras);
@@ -2264,7 +2270,17 @@ void MainWindow::loadMesh(QString const& path)
 {
   QTE_D();
 
-  d->UI.worldView->loadMesh(path);
+  if (d->UI.worldView->loadMesh(path))
+  {
+    if (d->project)
+    {
+      d->project->config->set_value(
+        "mesh_file",
+        kvPath(d->project->getContingentRelativePath(path)));
+      d->project->write();
+    }
+    this->enableSaveFusedMesh(true);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -2697,7 +2713,13 @@ void MainWindow::saveFusedMesh()
     if (!path.isEmpty())
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
-      d->UI.worldView->saveFusedMesh(path, lgcs);
+      if (d->UI.worldView->saveFusedMesh(path, lgcs) && d->project)
+      {
+        d->project->config->set_value(
+          "mesh_file",
+          kvPath(d->project->getContingentRelativePath(path)));
+        d->project->write();
+      }
     }
   }
   catch (...)
