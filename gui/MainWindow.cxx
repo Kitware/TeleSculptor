@@ -1800,8 +1800,16 @@ void MainWindow::openGroundControlPoints()
 //-----------------------------------------------------------------------------
 void MainWindow::openMesh()
 {
+  QTE_D();
+
+  auto initialDir = QString{};
+  if (d->project && !d->project->meshPath.isEmpty())
+  {
+    initialDir = QFileInfo{d->project->meshPath}.absolutePath();
+  }
+
   auto const path = QFileDialog::getOpenFileName(
-    this, "Open Mesh File", QString(),
+    this, "Open Mesh File", initialDir,
     "PLY Files (*.ply);;"
     "All Files (*)");
 
