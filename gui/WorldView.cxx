@@ -1017,7 +1017,6 @@ bool WorldView::loadMesh(QString const& path)
   vtkNew<vtkPLYReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
-  
   QGuiApplication::restoreOverrideCursor();
 
   auto mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
