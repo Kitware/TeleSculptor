@@ -104,6 +104,7 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QMenu>
 #include <QTimer>
 #include <QToolButton>
@@ -1010,10 +1011,14 @@ bool WorldView::loadMesh(QString const& path)
     return false;
   }
 
+  QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+
   // Create the vtk pipeline and read the mesh
   vtkNew<vtkPLYReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
+  
+  QGuiApplication::restoreOverrideCursor();
 
   auto mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
   if (mesh->GetPointData()->GetNumberOfArrays() <= 0)
