@@ -1345,14 +1345,6 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsHelper::enableWidgets(bool enable)
-{
-  QTE_D();
-  d->worldWidget->enableWidget(enable);
-  d->cameraWidget->enableWidget(enable);
-}
-
-//-----------------------------------------------------------------------------
 gcp_sptr GroundControlPointsHelper::groundControlPoint(id_t pointId)
 {
   QTE_D();

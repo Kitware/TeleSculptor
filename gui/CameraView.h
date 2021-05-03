@@ -31,6 +31,8 @@
 #ifndef TELESCULPTOR_CAMERAVIEW_H_
 #define TELESCULPTOR_CAMERAVIEW_H_
 
+#include "EditMode.h"
+
 #include <vital/vital_types.h>
 
 #include <qtGlobal.h>
@@ -63,6 +65,7 @@ public:
   void enableAntiAliasing(bool enable);
 
 signals:
+  void pointPlacementEnabled(bool);
   void cameraComputationRequested();
 
 public slots:
@@ -73,7 +76,7 @@ public slots:
 
   void setLandmarksData(kwiver::vital::landmark_map const&);
 
-  void setRegistrationPointEditingEnabled(bool);
+  void setEditMode(EditMode);
 
   void setActiveFrame(kwiver::vital::frame_id_t);
 

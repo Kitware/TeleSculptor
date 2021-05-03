@@ -31,14 +31,17 @@
 #ifndef TELESCULPTOR_WORLDVIEW_H_
 #define TELESCULPTOR_WORLDVIEW_H_
 
+#include "EditMode.h"
+
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/local_geo_cs.h>
 
+#include <vtkSmartPointer.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
-#include <vtkSmartPointer.h>
 
 class vtkBox;
 class vtkImageData;
@@ -146,6 +149,7 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void setEditMode(EditMode);
 
   bool saveDepthPoints(QString const & path,
                        kwiver::vital::local_geo_cs const & lgcs);

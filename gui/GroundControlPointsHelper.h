@@ -83,8 +83,6 @@ public:
     QString const& path, QWidget* dialogParent) const;
 
 public slots:
-  void enableWidgets(bool);
-
   void recomputePoints();
 
   void resetPoint(id_t);

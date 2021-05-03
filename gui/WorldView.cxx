@@ -1905,6 +1905,17 @@ void WorldView::updateROI(vtkObject* caller,
 }
 
 //-----------------------------------------------------------------------------
+void WorldView::setEditMode(EditMode mode)
+{
+  QTE_D();
+
+  d->groundControlPointsWidget->enableWidget(
+    mode == EditMode::GroundControlPoints);
+  d->UI.actionPlaceEditGCP->setChecked(
+    mode == EditMode::GroundControlPoints);
+}
+
+//-----------------------------------------------------------------------------
 GroundControlPointsWidget* WorldView::groundControlPointsWidget() const
 {
   QTE_D();
