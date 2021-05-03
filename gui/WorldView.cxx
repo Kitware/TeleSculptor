@@ -104,6 +104,7 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QMenu>
 #include <QTimer>
 #include <QToolButton>
@@ -1006,10 +1007,14 @@ void WorldView::loadMesh(QString const& path)
     return;
   }
 
+  QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+
   // Create the vtk pipeline and read the mesh
   vtkNew<vtkPLYReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
+
+  QGuiApplication::restoreOverrideCursor();
 
   this->setMesh(reader->GetOutput());
 }
