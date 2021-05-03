@@ -904,7 +904,7 @@ void MainWindowPrivate::updateCameras(
 {
   auto allowExport = false;
 
-  std::set<kv::frame_id_t> updated_frame_ids;
+  auto updated_frame_ids = QSet<kv::frame_id_t>{};
   foreach (auto const& iter, cameras->cameras())
   {
     auto cam_ptr =
@@ -918,18 +918,13 @@ void MainWindowPrivate::updateCameras(
 
   for (auto& f : this->frames)
   {
-    auto fid = f.id;
-    if (updated_frame_ids.find(fid) != updated_frame_ids.end())
+    if (!updated_frame_ids.contains(f.id) && f.camera)
     {
-      continue;
-    }
-    if (f.camera)
-    {
-      f.camera = NULL;
-      this->UI.worldView->removeCamera(fid);
+      f.camera = nullptr;
+      this->UI.worldView->removeCamera(f.id);
     }
   }
-  this->UI.worldView->setCameras(cameras);
+  this->UI.worldView->invalidateCameras();
 
   this->UI.actionExportCameras->setEnabled(allowExport);
 }
@@ -952,9 +947,14 @@ bool MainWindowPrivate::updateCamera(kv::frame_id_t frame,
   if (!fr->camera)
   {
     fr->camera = vtkSmartPointer<kwiver::arrows::vtk::vtkKwiverCamera>::New();
+    fr->camera->SetCamera(cam);
     this->UI.worldView->addCamera(fr->id, fr->camera);
   }
-  fr->camera->SetCamera(cam);
+  else
+  {
+    fr->camera->SetCamera(cam);
+    this->UI.worldView->updateCamera(fr->id, fr->camera);
+  }
   fr->camera->Update();
 
   // Remove from orphanFrames if needed.
@@ -1177,7 +1177,7 @@ int MainWindowPrivate::loadCameras()
         }
       }
     }
-    this->UI.worldView->setCameras(this->cameraMap());
+    this->UI.worldView->invalidateCameras();
   }
   return num_cams_loaded_from_krtd;
 }
@@ -3567,6 +3567,7 @@ void MainWindow::computeCamera()
     {
       d->updateCamera(d->activeCameraIndex, camera);
       d->UI.actionExportCameras->setEnabled(true);
+      d->UI.worldView->invalidateCameras();
     }
   }
   catch (std::exception const& e)

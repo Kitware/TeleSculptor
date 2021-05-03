@@ -91,7 +91,6 @@ public:
                       kwiver::vital::config_block_sptr config);
   void setMaskConfig(QString const& path,
                      kwiver::vital::config_block_sptr config);
-  void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*, bool init = false);
@@ -116,6 +115,8 @@ public slots:
 
   void addCamera(kwiver::vital::frame_id_t id,
                  kwiver::arrows::vtk::vtkKwiverCamera* camera);
+  void updateCamera(kwiver::vital::frame_id_t id,
+                    kwiver::arrows::vtk::vtkKwiverCamera* camera);
   void removeCamera(kwiver::vital::frame_id_t id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
@@ -162,6 +163,7 @@ public slots:
   void meshColorationHandleResult(MeshColoration* coloration);
 
   void invalidateGeometry();
+  void invalidateCameras();
 
   void setVolumeVisible(bool);
   void setVolumeCurrentFrame(kwiver::vital::frame_id_t);

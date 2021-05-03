@@ -30,23 +30,26 @@
 
 #include "MeshColoration.h"
 
-
+// ----------------------------------------------------------------------------
 MeshColoration::MeshColoration(
-    kwiver::vital::config_block_sptr& videoConfig,
-    std::string const& videoPath,
-    kwiver::vital::config_block_sptr& maskConfig,
-    std::string const& maskPath,
-    kwiver::vital::camera_map_sptr& cameras) : kwiver::arrows::vtk::mesh_coloration(
+  kwiver::vital::config_block_sptr const& videoConfig,
+  std::string const& videoPath,
+  kwiver::vital::config_block_sptr const& maskConfig,
+  std::string const& maskPath,
+  kwiver::vital::camera_map_sptr const& cameras)
+  : kwiver::arrows::vtk::mesh_coloration(
       videoConfig, videoPath, maskConfig, maskPath, cameras)
 {
 }
 
+// ----------------------------------------------------------------------------
 void MeshColoration::report_progress_changed(
   const std::string& message, int percentage)
 {
   emit progressChanged(QString::fromStdString(message), percentage);
 }
 
+// ----------------------------------------------------------------------------
 void MeshColoration::run()
 {
   emit resultReady(this->colorize() ? this : nullptr);

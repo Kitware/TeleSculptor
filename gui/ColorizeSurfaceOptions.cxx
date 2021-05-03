@@ -48,30 +48,30 @@
 
 #include <QDebug>
 
+namespace kv = kwiver::vital;
+
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
 {
 public:
-  ColorizeSurfaceOptionsPrivate(): volumeActor(nullptr), currentFrame(-1)
-  {}
-
   MainWindow* mainWindow = nullptr;
 
   Ui::ColorizeSurfaceOptions UI;
   qtUiState uiState;
 
-  vtkActor* volumeActor;
+  vtkActor* volumeActor = nullptr;
 
-  kwiver::vital::config_block_sptr videoConfig;
+  kv::config_block_sptr videoConfig;
   std::string videoPath;
-  kwiver::vital::config_block_sptr maskConfig;
+  kv::config_block_sptr maskConfig;
   std::string maskPath;
-  kwiver::vital::camera_map_sptr cameras;
+  kv::camera_map_of_sptr<kv::camera> cameras =
+    std::make_shared<kv::camera_map_of_<kv::camera>>();
 
   QString krtdFile;
   QString frameFile;
 
-  kwiver::vital::frame_id_t currentFrame;
+  kv::frame_id_t currentFrame = -1;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -163,7 +163,7 @@ int ColorizeSurfaceOptions::getFrameSampling() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
+void ColorizeSurfaceOptions::setCurrentFrame(kv::frame_id_t frame)
 {
   QTE_D();
 
@@ -188,8 +188,8 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setVideoConfig(std::string const& path,
-                                            kwiver::vital::config_block_sptr config)
+void ColorizeSurfaceOptions::setVideoConfig(
+  std::string const& path, kv::config_block_sptr config)
 {
   QTE_D();
 
@@ -198,7 +198,7 @@ void ColorizeSurfaceOptions::setVideoConfig(std::string const& path,
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getVideoConfig() const
+kv::config_block_sptr ColorizeSurfaceOptions::getVideoConfig() const
 {
   QTE_D();
 
@@ -214,8 +214,8 @@ std::string ColorizeSurfaceOptions::getVideoPath() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setMaskConfig(std::string const& path,
-                                           kwiver::vital::config_block_sptr config)
+void ColorizeSurfaceOptions::setMaskConfig(
+  std::string const& path, kv::config_block_sptr config)
 {
   QTE_D();
   d->maskConfig = config;
@@ -228,7 +228,7 @@ void ColorizeSurfaceOptions::setMaskConfig(std::string const& path,
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getMaskConfig() const
+kv::config_block_sptr ColorizeSurfaceOptions::getMaskConfig() const
 {
   QTE_D();
   return d->maskConfig;
@@ -242,11 +242,19 @@ std::string ColorizeSurfaceOptions::getMaskPath() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
+void ColorizeSurfaceOptions::setCamera(
+  kv::frame_id_t id, kv::camera_sptr const& camera)
 {
   QTE_D();
 
-  d->cameras = cameras;
+  if (camera)
+  {
+    d->cameras->insert(id, camera);
+  }
+  else
+  {
+    d->cameras->erase(id);
+  }
 }
 
 //-----------------------------------------------------------------------------
