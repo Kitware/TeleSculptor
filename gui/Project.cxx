@@ -138,6 +138,12 @@ bool Project::read(QString const& path)
       this->volumePath = getPath(this, "volume_file");
     }
 
+    // Read Mesh file
+    if (this->config->has_value("mesh_file"))
+    {
+      this->meshPath = getPath(this, "mesh_file");
+    }
+
     // Read the geo origin file
     if (this->config->has_value("geo_origin_file"))
     {

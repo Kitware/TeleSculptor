@@ -1800,8 +1800,16 @@ void MainWindow::openGroundControlPoints()
 //-----------------------------------------------------------------------------
 void MainWindow::openMesh()
 {
+  QTE_D();
+
+  auto initialDir = QString{};
+  if (d->project && !d->project->meshPath.isEmpty())
+  {
+    initialDir = QFileInfo{d->project->meshPath}.absolutePath();
+  }
+
   auto const path = QFileDialog::getOpenFileName(
-    this, "Open Mesh File", QString(),
+    this, "Open Mesh File", initialDir,
     "PLY Files (*.ply);;"
     "All Files (*)");
 
@@ -1923,6 +1931,12 @@ void MainWindow::loadProject(QString const& path)
   if (d->project->config->has_value("output_ply_file"))
   {
     this->loadLandmarks(d->project->landmarksPath);
+  }
+
+  // Load mesh
+  if (d->project->config->has_value("mesh_file"))
+  {
+    this->loadMesh(d->project->meshPath);
   }
 
   // Load the cameras from disk
@@ -2264,7 +2278,17 @@ void MainWindow::loadMesh(QString const& path)
 {
   QTE_D();
 
-  d->UI.worldView->loadMesh(path);
+  if (d->UI.worldView->loadMesh(path))
+  {
+    if (d->project)
+    {
+      d->project->config->set_value(
+        "mesh_file",
+        kvPath(d->project->getContingentRelativePath(path)));
+      d->project->write();
+    }
+    this->enableSaveFusedMesh(true);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -2697,7 +2721,13 @@ void MainWindow::saveFusedMesh()
     if (!path.isEmpty())
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
-      d->UI.worldView->saveFusedMesh(path, lgcs);
+      if (d->UI.worldView->saveFusedMesh(path, lgcs) && d->project)
+      {
+        d->project->config->set_value(
+          "mesh_file",
+          kvPath(d->project->getContingentRelativePath(path)));
+        d->project->write();
+      }
     }
   }
   catch (...)

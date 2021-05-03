@@ -74,13 +74,13 @@ public:
 
   void initFrameSampling(int nbFrames);
 
-  void loadVolume(QString const& path);
+  bool loadVolume(QString const& path);
 
   void setVolume(vtkSmartPointer<vtkImageData> volume);
 
   void resetVolume();
 
-  void loadMesh(QString const& path);
+  bool loadMesh(QString const& path);
 
   void setMesh(vtkSmartPointer<vtkPolyData> mesh);
 
@@ -147,12 +147,12 @@ public slots:
   void viewToWorldBack();
 
 
-  void saveDepthPoints(QString const & path,
+  bool saveDepthPoints(QString const & path,
                        kwiver::vital::local_geo_cs const & lgcs);
   void exportWebGLScene(QString const& path);
 
-  void saveVolume(QString const& path);
-  void saveFusedMesh(QString const& path,
+  bool saveVolume(QString const& path);
+  bool saveFusedMesh(QString const& path,
                      kwiver::vital::local_geo_cs const & lgcs);
   void saveFusedMeshFrameColors(QString const& path, bool occlusion = true);
   void meshColorationHandleResult(MeshColoration* coloration);

@@ -865,12 +865,12 @@ void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString const& path)
+bool WorldView::loadVolume(QString const& path)
 {
   QFileInfo fileInfo{path};
   if (!fileInfo.exists() || !fileInfo.isFile())
   {
-    return;
+    return false;
   }
 
   // Create the vtk pipeline and read the volume
@@ -878,12 +878,16 @@ void WorldView::loadVolume(QString const& path)
   reader->SetFileName(qPrintable(path));
   reader->Update();
 
-  vtkSmartPointer<vtkImageData> volume = vtkImageData::SafeDownCast(reader->GetOutput());
-  if (volume->GetPointData()->GetNumberOfArrays() > 0)
+  auto volume = vtkImageData::SafeDownCast(reader->GetOutput());
+  if (volume->GetPointData()->GetNumberOfArrays() <= 0)
   {
-    volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
-    this->setVolume(volume);
+    return false;
   }
+
+  volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+  this->setVolume(volume);
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -999,12 +1003,12 @@ void WorldView::computeContour(double threshold)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadMesh(QString const& path)
+bool WorldView::loadMesh(QString const& path)
 {
   QFileInfo fileInfo{path};
   if (!fileInfo.exists() || !fileInfo.isFile())
   {
-    return;
+    return false;
   }
 
   QGuiApplication::setOverrideCursor(Qt::WaitCursor);
@@ -1013,10 +1017,17 @@ void WorldView::loadMesh(QString const& path)
   vtkNew<vtkPLYReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
-
   QGuiApplication::restoreOverrideCursor();
 
+  auto mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  if (mesh->GetPointData()->GetNumberOfArrays() <= 0)
+  {
+    return false;
+  }
+
   this->setMesh(reader->GetOutput());
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1523,7 +1534,7 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveDepthPoints(QString const& path,
+bool WorldView::saveDepthPoints(QString const& path,
                                 kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
@@ -1538,6 +1549,7 @@ void WorldView::saveDepthPoints(QString const& path,
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(data, DepthMapArrays::TrueColor, points, colors);
     kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+    return true;
   }
   else
   {
@@ -1547,7 +1559,8 @@ void WorldView::saveDepthPoints(QString const& path,
     writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
     writer->SetColorMode(0);
     writer->SetArrayName(DepthMapArrays::TrueColor);
-    writer->Write();
+    auto const result = writer->Write();
+    return (result == VTK_OK);
   }
 }
 
@@ -1591,7 +1604,7 @@ void WorldView::exportWebGLScene(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveVolume(const QString &path)
+bool WorldView::saveVolume(const QString &path)
 {
   QTE_D();
 
@@ -1605,10 +1618,11 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->Write();
 
   LOG_INFO(d->logger, "Saved : " << qPrintable(path));
+  return true;
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveFusedMesh(const QString &path,
+bool WorldView::saveFusedMesh(const QString &path,
                               kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
@@ -1617,9 +1631,10 @@ void WorldView::saveFusedMesh(const QString &path,
   if (!d->mesh)
   {
     LOG_ERROR(d->logger, "No mesh available to save");
-    return;
+    return false;
   }
 
+  int result;
   const QString ext = QFileInfo(path).suffix().toLower();
   if (ext == "ply")
   {
@@ -1632,14 +1647,14 @@ void WorldView::saveFusedMesh(const QString &path,
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
     writer->AddInputDataObject(d->mesh);
-    writer->Write();
+    result = writer->Write();
   }
   else if (ext == "obj")
   {
     vtkNew<vtkOBJWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->AddInputDataObject(d->mesh);
-    writer->Write();
+    result = writer->Write();
   }
   else if (ext == "las")
   {
@@ -1648,6 +1663,7 @@ void WorldView::saveFusedMesh(const QString &path,
     d->vtkToPointList(d->mesh, d->mesh->GetPointData()->GetScalars()->GetName(),
                       points, colors);
     kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+    result = VTK_OK;
   }
   else
   {
@@ -1655,10 +1671,11 @@ void WorldView::saveFusedMesh(const QString &path,
     writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
     writer->AddInputDataObject(d->mesh);
-    writer->Write();
+    result = writer->Write();
   }
 
   LOG_INFO(d->logger, "Saved : " << qPrintable(path));
+  return (result == VTK_OK);
 }
 
 //-----------------------------------------------------------------------------
