@@ -65,6 +65,8 @@ public:
   WorldView* worldView() const;
   CameraView* cameraView() const;
 
+  QString frameName(kwiver::vital::frame_id_t) const;
+
   kwiver::vital::local_geo_cs localGeoCoordinateSystem() const;
 
 public slots:
