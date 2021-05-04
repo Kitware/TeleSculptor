@@ -2397,9 +2397,14 @@ void MainWindow::saveGroundControlPoints()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
+  auto name = QStringLiteral("gcps.json");
+  if (d->project)
+  {
+    name = d->project->workingDir.dirName() + '_' + name;
+  }
+
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Ground Control Points", name + QString("_gcps.json"),
+    this, "Export Ground Control Points", name,
     "GeoJSON file (*.json);;"
     "All Files (*)");
 
