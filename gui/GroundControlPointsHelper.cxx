@@ -79,7 +79,10 @@ const auto TAG_POINT              = QStringLiteral("Point");
 
 // Property keys (not part of GeoJSON specification)
 const auto TAG_NAME               = QStringLiteral("name");
+const auto TAG_FRAME              = QStringLiteral("frameId");
+const auto TAG_FRAMES             = QStringLiteral("frames");
 const auto TAG_LOCATION           = QStringLiteral("location");
+const auto TAG_REGISTRATIONS      = QStringLiteral("registrations");
 const auto TAG_USER_REGISTERED    = QStringLiteral("userRegistered");
 
 enum class Reset
@@ -93,6 +96,13 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(ResetFlags)
 
 using id_t = GroundControlPointsHelper::id_t;
 using gcp_sptr = GroundControlPointsHelper::gcp_sptr;
+
+//-----------------------------------------------------------------------------
+struct GroundControlPoint
+{
+  kv::ground_control_point_sptr gcp;
+  kv::track_sptr feature;
+};
 
 //-----------------------------------------------------------------------------
 bool isDoubleArray(QJsonArray const& a)
@@ -167,35 +177,55 @@ gcp_sptr extractGroundControlPoint(QJsonObject const& f)
 }
 
 //-----------------------------------------------------------------------------
-QJsonValue buildFeature(gcp_sptr const& gcpp)
+QJsonValue buildFeature(GroundControlPoint const& item)
 {
-  if (!gcpp)
+  if (!item.gcp && !item.feature)
   {
     return {};
   }
 
-  // Get point and point's locations (scene, world/geodetic)
-  auto const& gcp = *gcpp;
-  auto const& sl = gcp.loc();
-  auto const& wl = gcp.geo_loc();
-
   // Create geometry
-  QJsonObject geom;
+  auto geom = QJsonObject{};
+  auto props = QJsonObject{};
   geom.insert(TAG_TYPE, TAG_POINT);
-  if (!wl.is_empty())
+
+  if (item.gcp)
   {
-    auto const& rwl = wl.location(kv::SRID::lat_lon_WGS84);
-    geom.insert(TAG_COORDINATES, QJsonArray{rwl[0], rwl[1], gcp.elevation()});
+    // Get point and point's locations (scene, world/geodetic)
+    auto const& gcp = *(item.gcp);
+    auto const& sl = gcp.loc();
+    auto const& wl = gcp.geo_loc();
+
+    if (!wl.is_empty())
+    {
+      auto const& rwl = wl.location(kv::SRID::lat_lon_WGS84);
+      geom.insert(TAG_COORDINATES, QJsonArray{rwl[0], rwl[1], gcp.elevation()});
+    }
+
+    // Fill in ground control point properties
+    props.insert(TAG_NAME, qtString(gcp.name()));
+    props.insert(TAG_LOCATION, QJsonArray{sl[0], sl[1], sl[2]});
+    props.insert(TAG_USER_REGISTERED, gcp.is_geo_loc_user_provided());
   }
 
-  // Create properties
-  QJsonObject props;
-  props.insert(TAG_NAME, qtString(gcp.name()));
-  props.insert(TAG_LOCATION, QJsonArray{sl[0], sl[1], sl[2]});
-  props.insert(TAG_USER_REGISTERED, gcp.is_geo_loc_user_provided());
+  if (item.feature)
+  {
+    auto regs = QJsonArray{};
+    for (auto const& s : (*item.feature) | kv::as_feature_track)
+    {
+      auto const& l = s->feature->loc();
+
+      auto reg = QJsonObject{};
+      reg.insert(TAG_FRAME, static_cast<double>(s->frame()));
+      reg.insert(TAG_LOCATION, QJsonArray{l[0], l[1]});
+
+      regs.append(reg);
+    }
+    props.insert(TAG_REGISTRATIONS, regs);
+  }
 
   // Create and return feature
-  QJsonObject f;
+  auto f = QJsonObject{};
   f.insert(TAG_TYPE, TAG_FEATURE);
   f.insert(TAG_GEOMETRY, geom);
   f.insert(TAG_PROPERTIES, props);
@@ -231,15 +261,6 @@ void executeForHandle(
                   "the camera registration point with ID" << id;
   }
 }
-
-//-----------------------------------------------------------------------------
-struct GroundControlPoint
-{
-  kv::ground_control_point_id_t id;
-  kv::ground_control_point_sptr gcp;
-  kv::track_sptr feature;
-  // type_tbd feature;
-};
 
 //-----------------------------------------------------------------------------
 kv::feature_track_state_sptr getFeature(
@@ -1252,7 +1273,6 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
     return fail("invalid FeatureCollection");
   }
 
-
   // Don't signal addition of individual points
   auto pointsAdded = false;
   with_expr (qtScopedBlockSignals{this})
@@ -1291,13 +1311,25 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
 {
   QTE_D();
 
-  QJsonArray features;
-  QStringList errors;
+  // Build feature array
+  auto features = QJsonArray{};
+  auto errors = QStringList{};
+  auto framesUsed = QSet<kv::frame_id_t>{};
   for (auto const& gcpi : d->groundControlPoints)
   {
+    // Extract set of cameras used
+    if (gcpi.second.feature)
+    {
+      for (auto const& s : (*gcpi.second.feature))
+      {
+        framesUsed.insert(s->frame());
+      }
+    }
+
+    // Create feature
     try
     {
-      auto const& f = buildFeature(gcpi.second.gcp);
+      auto const& f = buildFeature(gcpi.second);
       if (f.isObject())
       {
         features.append(f);
@@ -1309,10 +1341,26 @@ bool GroundControlPointsHelper::writeGroundControlPoints(
     }
   }
 
-  QJsonObject root;
+  // Build frame name map
+  auto frames = QJsonArray{};
+  for (auto fi : framesUsed)
+  {
+    auto frame = QJsonObject{};
+    frame.insert(TAG_FRAME, static_cast<double>(fi));
+    frame.insert(TAG_NAME, d->mainWindow->frameName(fi));
+    frames.append(frame);
+  }
+
+  auto props = QJsonObject{};
+  props.insert(TAG_FRAMES, frames);
+
+  // Build feature collection
+  auto root = QJsonObject{};
   root.insert(TAG_TYPE, TAG_FEATURECOLLECTION);
   root.insert(TAG_FEATURES, features);
+  root.insert(TAG_PROPERTIES, props);
 
+  // Write JSON
   QJsonDocument doc{root};
 
   QFile out{path};
