@@ -286,7 +286,7 @@ void executeForHandle(
     {
       qWarning()
         << "Failed to find the VTK ID associated with the VTK handle"
-        << handleWidget << " and the ground control point with ID" << id;
+        << handleWidget << " and the point with ID" << id;
     }
     else
     {
@@ -296,7 +296,7 @@ void executeForHandle(
   else
   {
     qWarning() << "Failed to find the VTK handle associated with "
-                  "the camera registration point with ID" << id;
+                  "the point with ID" << id;
   }
 }
 
@@ -896,12 +896,12 @@ void GroundControlPointsHelper::moveRegistrationPoint()
       else
       {
         qWarning() << "No feature for ground control point with id"
-                   << *pid << "at frame" << frame;
+                   << pid->second << "at frame" << frame;
       }
     }
     else
     {
-      qWarning() << "No ground control point with id" << *pid;
+      qWarning() << "No ground control point with id" << pid->second;
     }
   }
   else
