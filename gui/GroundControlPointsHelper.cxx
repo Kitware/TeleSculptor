@@ -118,7 +118,7 @@ bool isDoubleArray(QJsonArray const& a)
 }
 
 //-----------------------------------------------------------------------------
-gcp_sptr extractGroundControlPoint(QJsonObject const& f)
+GroundControlPoint extractGroundControlPoint(QJsonObject const& f)
 {
   // Check for geometry
   auto const& geom = f.value(TAG_GEOMETRY).toObject();
@@ -126,14 +126,14 @@ gcp_sptr extractGroundControlPoint(QJsonObject const& f)
   {
     qDebug() << "ignoring feature" << f
              << "with bad or missing geometry";
-    return nullptr;
+    return {};
   }
 
   // Check geometry type
   if (geom.value(TAG_TYPE).toString() != TAG_POINT)
   {
     // Non-point features are silently ignored
-    return nullptr;
+    return {};
   }
 
   // Create point
@@ -165,15 +165,53 @@ gcp_sptr extractGroundControlPoint(QJsonObject const& f)
   }
   else if (gcp->geo_loc().is_empty())
   {
-    qDebug() << "ignoring point feature" << f
-             << "with bad or missing coordinate specification "
-                "and bad or missing scene location";
-    return nullptr;
+    gcp = nullptr;
+  }
+  else
+  {
+    gcp->set_geo_loc_user_provided(props.value(TAG_USER_REGISTERED).toBool());
   }
 
-  gcp->set_geo_loc_user_provided(props.value(TAG_USER_REGISTERED).toBool());
+  // Read feature track
+  auto ft = kv::track::create();
+  auto const& regs = props.value(TAG_REGISTRATIONS).toArray();
+  for (auto const& riter : regs)
+  {
+    if (!riter.isObject())
+    {
+      continue;
+    }
 
-  return gcp;
+    auto const& reg = riter.toObject();
+    auto const& frame = reg.value(TAG_FRAME);
+    if (frame.isDouble())
+    {
+      auto const& loc = reg.value(TAG_LOCATION).toArray();
+      if (loc.size() == 2 && isDoubleArray(loc))
+      {
+        auto const t = static_cast<kv::frame_id_t>(frame.toDouble());
+        auto feature = std::make_shared<kv::feature_d>();
+        feature->set_loc({loc[0].toDouble(), loc[1].toDouble()});
+
+        ft->insert(
+          std::make_shared<kv::feature_track_state>(t, std::move(feature)));
+      }
+    }
+  }
+  if (ft->empty())
+  {
+    ft = nullptr;
+  }
+
+  // Check if we read anything usable
+  if (!gcp && !ft)
+  {
+    qDebug() << "ignoring point feature" << f
+             << "with no valid location information";
+    return {};
+  }
+
+  return {gcp, ft};
 }
 
 //-----------------------------------------------------------------------------
@@ -1275,6 +1313,7 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
 
   // Don't signal addition of individual points
   auto pointsAdded = false;
+  auto const activeFrame = d->mainWindow->activeFrame();
   with_expr (qtScopedBlockSignals{this})
   {
     // Read points from feature collection
@@ -1287,9 +1326,31 @@ bool GroundControlPointsHelper::readGroundControlPoints(QString const& path)
                    << "in FeatureCollection";
         continue;
       }
-      if (auto gcp = extractGroundControlPoint(fo))
+      auto const& gcp = extractGroundControlPoint(fo);
+      if (gcp.gcp)
       {
-        d->addPoint(d->nextId++, gcp);
+        d->addPoint(d->nextId, gcp.gcp);
+      }
+      if (gcp.feature)
+      {
+        gcp.feature->set_id(d->nextId);
+        d->groundControlPoints[d->nextId].feature = gcp.feature;
+
+        auto const& si = gcp.feature->find(activeFrame);
+        if (si != gcp.feature->end())
+        {
+          auto const& s = kv::feature_track_state::downcast(*si);
+          auto const& loc = s->feature->loc();
+          auto const k = d->crpWidget->addPoint(loc[0], loc[1], 0.0);
+          auto const h = d->crpWidget->handleWidget(k);
+
+          d->crpHandleToIdMap.emplace(h, d->nextId);
+          d->crpIdToHandleMap.emplace(d->nextId, h);
+        }
+      }
+      if (gcp.gcp || gcp.feature)
+      {
+        ++d->nextId;
         pointsAdded = true;
       }
     }
