@@ -123,5 +123,6 @@
   </qresource>
   <qresource prefix="icons/scalable">
     <file alias="registered">scalable/registered.svg</file>
+    <file alias="surveyed">scalable/surveyed.svg</file>
   </qresource>
 </RCC>

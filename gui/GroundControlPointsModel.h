@@ -33,6 +33,8 @@
 
 #include <maptk/ground_control_point.h>
 
+#include <vital/vital_types.h>
+
 #include <qtGlobal.h>
 
 #include <QAbstractItemModel>
@@ -71,6 +73,7 @@ public:
   void setDataSource(GroundControlPointsHelper*);
 
   void setRegisteredIcon(QIcon const& icon);
+  void setSurveyedIcon(QIcon const& icon);
 
 public slots:
   void addPoint(kwiver::vital::ground_control_point_id_t);
@@ -78,6 +81,8 @@ public slots:
   void modifyPoint(kwiver::vital::ground_control_point_id_t);
 
   void resetPoints();
+
+  void setActiveCamera(kwiver::vital::frame_id_t);
 
 private:
   QTE_DECLARE_PRIVATE_RPTR(GroundControlPointsModel)

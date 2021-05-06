@@ -86,7 +86,7 @@ QPixmap colorize(QByteArray svg, int physicalSize, int logicalSize,
 class GroundControlPointsViewPrivate
 {
 public:
-  void updateRegisteredIcon(QWidget* widget);
+  void updateIcons(QWidget* widget);
 
   void enableControls(bool state, bool haveLocation = true);
 
@@ -113,7 +113,7 @@ public:
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsView)
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
+void GroundControlPointsViewPrivate::updateIcons(QWidget* widget)
 {
   QIcon icon;
 
@@ -125,24 +125,32 @@ void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
   auto const disabledColor =
     palette.color(QPalette::Disabled, QPalette::Text);
 
-  QFile f{QStringLiteral(":/icons/scalable/registered")};
-  f.open(QIODevice::ReadOnly);
-  auto const svg = f.readAll();
-
   auto const dpr = widget->devicePixelRatioF();
-  for (auto const size : {16, 20, 22, 24, 32})
-  {
-    auto const dsize = static_cast<int>(size * dpr);
 
-    icon.addPixmap(colorize(svg, dsize, size, dpr, normalColor),
-                   QIcon::Normal);
-    icon.addPixmap(colorize(svg, dsize, size, dpr, selectedColor),
-                   QIcon::Selected);
-    icon.addPixmap(colorize(svg, dsize, size, dpr, disabledColor),
-                   QIcon::Disabled);
-  }
+  auto buildIcon = [&](QString const& resource){
+    QFile f{resource};
+    f.open(QIODevice::ReadOnly);
+    auto const svg = f.readAll();
 
-  this->model.setRegisteredIcon(icon);
+    for (auto const size : {16, 20, 22, 24, 32})
+    {
+      auto const dsize = static_cast<int>(size * dpr);
+
+      icon.addPixmap(colorize(svg, dsize, size, dpr, normalColor),
+                     QIcon::Normal);
+      icon.addPixmap(colorize(svg, dsize, size, dpr, selectedColor),
+                     QIcon::Selected);
+      icon.addPixmap(colorize(svg, dsize, size, dpr, disabledColor),
+                     QIcon::Disabled);
+    }
+
+    return icon;
+  };
+
+  this->model.setSurveyedIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/surveyed")));
+  this->model.setRegisteredIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/registered")));
 }
 
 //-----------------------------------------------------------------------------
@@ -318,7 +326,7 @@ GroundControlPointsView::GroundControlPointsView(
             }
           });
 
-  d->updateRegisteredIcon(this);
+  d->updateIcons(this);
 
   auto const clText = QStringLiteral("Copy Location");
 
@@ -457,12 +465,19 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsView::setActiveCamera(qint64 id)
+{
+  QTE_D();
+  d->model.setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsView::changeEvent(QEvent* e)
 {
   if (e && e->type() == QEvent::PaletteChange)
   {
     QTE_D();
-    d->updateRegisteredIcon(this);
+    d->updateIcons(this);
   }
 
   QWidget::changeEvent(e);
@@ -476,7 +491,7 @@ void GroundControlPointsView::showEvent(QShowEvent* e)
   disconnect(d->screenChanged);
   d->screenChanged =
     connect(this->window()->windowHandle(), &QWindow::screenChanged,
-            this, [d, this] { d->updateRegisteredIcon(this); });
+            this, [d, this] { d->updateIcons(this); });
 
   QWidget::showEvent(e);
 }

@@ -63,6 +63,7 @@ struct gcp_ref
 {
   id_t id;
   kv::ground_control_point_sptr gcp;
+  kv::track_sptr crp;
 
   bool operator<(gcp_ref const& other) const
   { return this->id < other.id; }
@@ -84,7 +85,10 @@ public:
   QVector<gcp_ref> points;
 
   QIcon registeredIcon;
+  QIcon surveyedIcon;
   QIcon emptyIcon;
+
+  kv::frame_id_t activeCamera = -1;
 };
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsModel)
@@ -198,7 +202,7 @@ QVariant GroundControlPointsModel::data(
           return int{Qt::AlignRight | Qt::AlignVCenter};
 
         case Qt::DecorationRole:
-          if (item.gcp && item.gcp->is_geo_loc_user_provided())
+          if (item.crp && item.crp->contains(d->activeCamera))
           {
             return d->registeredIcon;
           }
@@ -216,6 +220,13 @@ QVariant GroundControlPointsModel::data(
           case Qt::DisplayRole:
           case Qt::EditRole:
             return qtString(item.gcp->name());
+
+          case Qt::DecorationRole:
+            if (item.gcp->is_geo_loc_user_provided())
+            {
+              return d->surveyedIcon;
+            }
+            return d->emptyIcon;
 
           default:
             return {};
@@ -313,10 +324,11 @@ void GroundControlPointsModel::addPoint(id_t id)
   }
 
   auto const& gcp = d->helper->groundControlPoint(id);
+  auto const& crp = d->helper->registrationTrack(id);
 
   auto const r = static_cast<int>(i - begin);
   this->beginInsertRows({}, r, r);
-  d->points.insert(i, {id, gcp});
+  d->points.insert(i, {id, gcp, crp});
   this->endInsertRows();
 }
 
@@ -348,6 +360,7 @@ void GroundControlPointsModel::modifyPoint(id_t id)
 
     auto& item = d->points[index.row()];
     item.gcp = d->helper->groundControlPoint(id);
+    item.crp = d->helper->registrationTrack(id);
 
     emit this->dataChanged(index, index);
   }
@@ -363,9 +376,11 @@ void GroundControlPointsModel::resetPoints()
   d->points.clear();
   if (d->helper)
   {
-    for (auto const& i : d->helper->identifiers())
+    for (auto const& id : d->helper->identifiers())
     {
-      d->points.append({i, d->helper->groundControlPoint(i)});
+      auto const& gcp = d->helper->groundControlPoint(id);
+      auto const& crp = d->helper->registrationTrack(id);
+      d->points.append({id, gcp, crp});
     }
   }
 
@@ -379,6 +394,19 @@ void GroundControlPointsModel::setDataSource(GroundControlPointsHelper* helper)
 
   d->helper = helper;
   this->resetPoints();
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsModel::setActiveCamera(kv::frame_id_t id)
+{
+  QTE_D();
+
+  d->activeCamera = id;
+
+  emit this->dataChanged(
+    this->index(0, COLUMN_ID, {}),
+    this->index(this->rowCount({}), COLUMN_ID, {}),
+    {Qt::DecorationRole});
 }
 
 //-----------------------------------------------------------------------------
@@ -398,5 +426,25 @@ void GroundControlPointsModel::setRegisteredIcon(QIcon const& icon)
   emit this->dataChanged(
     this->index(0, COLUMN_ID, {}),
     this->index(this->rowCount({}), COLUMN_ID, {}),
+    {Qt::DecorationRole});
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsModel::setSurveyedIcon(QIcon const& icon)
+{
+  QTE_D();
+
+  d->surveyedIcon = icon;
+
+  for (auto const s : icon.availableSizes())
+  {
+    QPixmap p{s};
+    p.fill(Qt::transparent);
+    d->emptyIcon.addPixmap(p);
+  }
+
+  emit this->dataChanged(
+    this->index(0, COLUMN_NAME, {}),
+    this->index(this->rowCount({}), COLUMN_NAME, {}),
     {Qt::DecorationRole});
 }

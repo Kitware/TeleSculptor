@@ -50,6 +50,7 @@ class GroundControlPointsHelper : public QObject
 public:
   using id_t = kwiver::vital::ground_control_point_id_t;
   using gcp_sptr = kwiver::vital::ground_control_point_sptr;
+  using crt_sptr = kwiver::vital::track_sptr;
 
   GroundControlPointsHelper(QObject* parent = nullptr);
   ~GroundControlPointsHelper();
@@ -76,6 +77,9 @@ public:
 
   // Get access to a single ground control point
   gcp_sptr groundControlPoint(id_t pointId);
+
+  // Get access to a camera registration "track"
+  crt_sptr registrationTrack(id_t pointId);
 
   bool readGroundControlPoints(QString const& path);
 
