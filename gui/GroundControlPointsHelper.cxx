@@ -925,7 +925,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
     d->crpIdToHandleMap.clear();
     auto activeHandle = decltype(d->crpWidget->activeHandle()){-1};
 
-    auto widgetPointCount = d->cameraWidget->numberOfPoints();
+    auto widgetPointCount = d->crpWidget->numberOfPoints();
     auto pointsUsed = decltype(widgetPointCount){0};
 
     for (auto const& p : d->groundControlPoints)
@@ -969,6 +969,7 @@ void GroundControlPointsHelper::updateCameraViewPoints()
   kwiver::arrows::vtk::vtkKwiverCamera* camera = d->mainWindow->activeCamera();
   if (!camera)
   {
+    d->cameraWidget->clearPoints();
     return;
   }
 

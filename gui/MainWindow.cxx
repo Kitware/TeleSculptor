@@ -1087,9 +1087,10 @@ void MainWindowPrivate::updateCameraView()
   if (!activeFrame->camera)
   {
     // Can't show landmarks or residuals with no camera
+    this->groundControlPointsHelper->updateCameraViewPoints();
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearResiduals();
-    this->UI.cameraView->clearGroundControlPoints();
+    this->UI.cameraView->render();
     return;
   }
 
