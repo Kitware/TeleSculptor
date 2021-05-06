@@ -77,12 +77,12 @@ public:
   int findHandleWidget(vtkHandleWidget* handle) const;
 
   // Add a point
-  void addDisplayPoint(double pt[3]);
-  void addDisplayPoint(double x, double y, double z);
-  void addDisplayPoint(kwiver::vital::vector_3d pt);
-  void addPoint(double const pt[3]);
-  void addPoint(double x, double y, double z);
-  void addPoint(kwiver::vital::vector_3d pt);
+  int addDisplayPoint(double pt[3]);
+  int addDisplayPoint(double x, double y, double z);
+  int addDisplayPoint(kwiver::vital::vector_3d pt);
+  int addPoint(double const pt[3]);
+  int addPoint(double x, double y, double z);
+  int addPoint(kwiver::vital::vector_3d pt);
   void movePoint(int handleId, double x, double y, double z);
   void clearPoints();
 

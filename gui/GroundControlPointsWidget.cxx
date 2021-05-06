@@ -271,45 +271,47 @@ int GroundControlPointsWidget::findHandleWidget(vtkHandleWidget* handle) const
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(double pt[3])
+int GroundControlPointsWidget::addDisplayPoint(double pt[3])
 {
   QTE_D();
 
   if (!d->renderer)
   {
-    return;
+    return -1;
   }
 
-  int handleId = d->repr->CreateHandle(pt);
+  auto const handleId = static_cast<unsigned>(d->repr->CreateHandle(pt));
   d->repr->SetSeedWorldPosition(handleId, pt);
   // Now that the seed is placed, reset the point placer to ensure free
   // motion of the handle
   d->repr->GetHandleRepresentation(handleId)->SetPointPlacer(nullptr);
   vtkHandleWidget* currentHandle = d->widget->CreateNewHandle();
   currentHandle->SetEnabled(1);
+
+  return static_cast<int>(handleId);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(double x, double y, double z)
+int GroundControlPointsWidget::addDisplayPoint(double x, double y, double z)
 {
   double pt[3] = { x, y, z };
-  this->addDisplayPoint(pt);
+  return this->addDisplayPoint(pt);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(kwiver::vital::vector_3d pt)
+int GroundControlPointsWidget::addDisplayPoint(kwiver::vital::vector_3d pt)
 {
-  this->addDisplayPoint(pt.data());
+  return this->addDisplayPoint(pt.data());
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(double x, double y, double z)
+int GroundControlPointsWidget::addPoint(double x, double y, double z)
 {
   QTE_D();
 
   if (!d->renderer)
   {
-    return;
+    return -1;
   }
 
   double p[4] = { x, y, z, 1.0 };
@@ -318,20 +320,23 @@ void GroundControlPointsWidget::addPoint(double x, double y, double z)
     d->transformMatrix->MultiplyPoint(p, p);
   }
 
-  this->addDisplayPoint(p);
+  auto const handleId = this->addDisplayPoint(p);
+
   d->widget->HighlightActiveSeed();
+
+  return handleId;
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(double const p[3])
+int GroundControlPointsWidget::addPoint(double const p[3])
 {
-  this->addPoint(p[0], p[1], p[2]);
+  return this->addPoint(p[0], p[1], p[2]);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(kwiver::vital::vector_3d p)
+int GroundControlPointsWidget::addPoint(kwiver::vital::vector_3d p)
 {
-  this->addPoint(p.data());
+  return this->addPoint(p.data());
 }
 
 //-----------------------------------------------------------------------------

@@ -342,7 +342,7 @@ public:
   void setActiveCamera(kv::frame_id_t);
   void updateCameraView();
 
-  std::string getFrameName(kv::frame_id_t frame);
+  QString getFrameName(kv::frame_id_t frame) const;
 
   void loadImage(FrameData frame);
   void loadEmptyImage(kwiver::arrows::vtk::vtkKwiverCamera* camera);
@@ -1087,9 +1087,10 @@ void MainWindowPrivate::updateCameraView()
   if (!activeFrame->camera)
   {
     // Can't show landmarks or residuals with no camera
+    this->groundControlPointsHelper->updateCameraViewPoints();
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearResiduals();
-    this->UI.cameraView->clearGroundControlPoints();
+    this->UI.cameraView->render();
     return;
   }
 
@@ -1156,7 +1157,7 @@ int MainWindowPrivate::loadCameras()
       << this->frames.count();
     for (auto const& frame : this->frames)
     {
-      auto frameName = qtString(this->getFrameName(frame.id)) + ".krtd";
+      auto frameName = this->getFrameName(frame.id) + ".krtd";
       if (QFileInfo::exists(QDir(this->project->cameraPath).filePath(frameName)))
       {
         try
@@ -1183,20 +1184,20 @@ int MainWindowPrivate::loadCameras()
 }
 
 //-----------------------------------------------------------------------------
-std::string MainWindowPrivate::getFrameName(kv::frame_id_t frameId)
+QString MainWindowPrivate::getFrameName(kv::frame_id_t frameId) const
 {
   if (videoMetadataMap)
   {
     auto mdv = videoMetadataMap->get_vector(frameId);
     if (!mdv.empty())
     {
-      return frameName(frameId, mdv);
+      return qtString(frameName(frameId, mdv));
     }
   }
   auto dummy_md = std::make_shared<kwiver::vital::metadata>();
   dummy_md->add<kwiver::vital::VITAL_META_VIDEO_URI>(
     stdString(this->videoPath));
-  return frameName(frameId, dummy_md);
+  return qtString(frameName(frameId, dummy_md));
 }
 
 //-----------------------------------------------------------------------------
@@ -1274,8 +1275,7 @@ void MainWindowPrivate::loadImage(FrameData frame)
       sfmConstraints->store_image_size(frame.id, dimensions[0], dimensions[1]);
 
       // Set frame name in camera view
-      this->UI.cameraView->setImagePath(
-        qtString(this->getFrameName(frame.id)));
+      this->UI.cameraView->setImagePath(this->getFrameName(frame.id));
 
       // Set image on views
       this->activeImageSize = {dimensions[0], dimensions[1]};
@@ -1301,7 +1301,7 @@ void MainWindowPrivate::findDepthMaps()
   {
     for (auto& frame : this->frames)
     {
-      auto depthName = qtString(this->getFrameName(frame.id)) + ".vti";
+      auto depthName = this->getFrameName(frame.id) + ".vti";
       auto depthMapPath = QDir{ this->project->depthPath }.filePath(depthName);
       QFileInfo check_file(depthMapPath);
       if (check_file.exists() && check_file.isFile())
@@ -2398,9 +2398,14 @@ void MainWindow::saveGroundControlPoints()
 {
   QTE_D();
 
-  auto const name = d->project->workingDir.dirName();
+  auto name = QStringLiteral("gcps.json");
+  if (d->project)
+  {
+    name = d->project->workingDir.dirName() + '_' + name;
+  }
+
   auto const path = QFileDialog::getSaveFileName(
-    this, "Export Ground Control Points", name + QString("_gcps.json"),
+    this, "Export Ground Control Points", name,
     "GeoJSON file (*.json);;"
     "All Files (*)");
 
@@ -2505,11 +2510,11 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
 
   auto qdir = QDir(path);
   auto entry_info_list = qdir.entryInfoList();
-  const QString cam_extension = "krtd";
+  auto camExtension = QStringLiteral("krtd");
 
   for (auto& ent : entry_info_list)
   {
-    if (ent.isFile() && ent.suffix() == cam_extension)
+    if (ent.isFile() && ent.suffix() == camExtension)
     {
       auto del_file_str = ent.absoluteFilePath();
       QFile f(del_file_str);
@@ -2524,7 +2529,7 @@ void MainWindow::saveCameras(QString const& path, bool writeToProject)
       auto const camera = cd.camera->GetCamera();
       if (camera)
       {
-        auto cameraName = qtString(d->getFrameName(cd.id) + "." + stdString(cam_extension));
+        auto cameraName = d->getFrameName(cd.id) + "." + camExtension;
         auto const filepath = QDir{path}.filePath(cameraName);
         out.insert(filepath, camera);
 
@@ -2605,7 +2610,7 @@ void MainWindow::saveDepthImage(QString const& path)
     return;
   }
 
-  auto filename = qtString(d->getFrameName(d->activeDepthFrame)) + ".vti";
+  auto filename = d->getFrameName(d->activeDepthFrame) + ".vti";
 
   if (!QDir(path).exists())
   {
@@ -2649,7 +2654,7 @@ void MainWindow::saveDepthPoints()
   QString name;
   if (d->currentDepthFrame > 0)
   {
-    name = qtString(d->getFrameName(d->currentDepthFrame) + "_depth.ply");
+    name = d->getFrameName(d->currentDepthFrame) + "_depth.ply";
   }
   auto const path = QFileDialog::getSaveFileName(
     this, "Export Depth Point Cloud", name,
@@ -3600,6 +3605,13 @@ CameraView* MainWindow::cameraView() const
   QTE_D();
 
   return d->UI.cameraView;
+}
+
+//-----------------------------------------------------------------------------
+QString MainWindow::frameName(kwiver::vital::frame_id_t frame) const
+{
+  QTE_D();
+  return d->getFrameName(frame);
 }
 
 //-----------------------------------------------------------------------------
