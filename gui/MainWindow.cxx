@@ -1033,6 +1033,7 @@ void MainWindowPrivate::setActiveCamera(kv::frame_id_t id)
 
   this->activeCameraIndex = id;
   this->UI.worldView->setActiveCamera(id);
+  this->UI.groundControlPoints->setActiveCamera(id);
 
   this->updateCameraView();
 

@@ -50,6 +50,9 @@ public:
 
   void setHelper(GroundControlPointsHelper*);
 
+public slots:
+  void setActiveCamera(qint64 id);
+
 protected:
   void changeEvent(QEvent* e) override;
   void showEvent(QShowEvent* e) override;

@@ -1461,3 +1461,11 @@ gcp_sptr GroundControlPointsHelper::groundControlPoint(id_t pointId)
   auto it = d->groundControlPoints.find(pointId);
   return it == d->groundControlPoints.end() ? nullptr : it->second.gcp;
 }
+
+//-----------------------------------------------------------------------------
+kv::track_sptr GroundControlPointsHelper::registrationTrack(id_t pointId)
+{
+  QTE_D();
+  auto it = d->groundControlPoints.find(pointId);
+  return it == d->groundControlPoints.end() ? nullptr : it->second.feature;
+}
