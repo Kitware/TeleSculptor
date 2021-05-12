@@ -46,6 +46,8 @@ namespace
 {
 
 using id_t = kv::ground_control_point_id_t;
+using gcp_sptr = GroundControlPointsHelper::gcp_sptr;
+using crt_sptr = GroundControlPointsHelper::crt_sptr;
 
 constexpr auto IndexIsValid =
   QAbstractItemModel::CheckIndexOption::IndexIsValid;
@@ -63,7 +65,9 @@ struct gcp_ref
 {
   id_t id;
   kv::ground_control_point_sptr gcp;
-  kv::track_sptr crp;
+  kv::track_sptr crt;
+
+  QVector<kv::frame_id_t> crtFrames;
 
   bool operator<(gcp_ref const& other) const
   { return this->id < other.id; }
@@ -74,6 +78,31 @@ struct gcp_ref
   kv::ground_control_point* operator->() const
   { return this->gcp.get(); }
 };
+
+//-----------------------------------------------------------------------------
+gcp_ref buildPoint(id_t id, gcp_sptr const& gcp, crt_sptr const& crt)
+{
+  auto crtFrames = QVector<kv::frame_id_t>{};
+  if (crt)
+  {
+    for (auto const& s : *crt)
+    {
+      crtFrames.append(s->frame());
+    }
+  }
+
+  return {id, gcp, crt, crtFrames};
+}
+
+//-----------------------------------------------------------------------------
+int rowForIndex(QModelIndex const& index)
+{
+  if (auto const data = index.internalId())
+  {
+    return static_cast<int>(data - 1);
+  }
+  return index.row();
+}
 
 } // namespace (anonymous)
 
@@ -109,7 +138,7 @@ id_t GroundControlPointsModel::id(QModelIndex const& index) const
 {
   QTE_D();
 
-  auto const r = index.row();
+  auto const r = rowForIndex(index);
   if (r < 0 || r > this->rowCount(index.parent()))
   {
     return std::numeric_limits<id_t>::max();
@@ -140,13 +169,19 @@ QModelIndex GroundControlPointsModel::find(id_t id, int column) const
 int GroundControlPointsModel::rowCount(const QModelIndex& parent) const
 {
   QTE_D();
-  return (parent.isValid() ? 0 : d->points.count());
+  if (parent.isValid())
+  {
+    auto const& item = d->points[parent.row()];
+    return item.crtFrames.count();
+  }
+
+  return d->points.count();
 }
 
 //-----------------------------------------------------------------------------
 int GroundControlPointsModel::columnCount(const QModelIndex& parent) const
 {
-  return (parent.isValid() ? 0 : COLUMNS);
+  return COLUMNS;
 }
 
 //-----------------------------------------------------------------------------
@@ -159,13 +194,20 @@ QModelIndex GroundControlPointsModel::index(
     return {};
   }
 
-  return createIndex(row, column);
+  auto const data =
+    (parent.isValid() ? static_cast<unsigned>(parent.row() + 1) : 0);
+  return this->createIndex(row, column, data);
 }
 
 //-----------------------------------------------------------------------------
 QModelIndex GroundControlPointsModel::parent(QModelIndex const& child) const
 {
-  Q_UNUSED(child)
+  if (auto const data = child.internalId())
+  {
+    auto const row = static_cast<int>(data - 1);
+    return this->createIndex(row, 0, quintptr{0});
+  }
+
   return {};
 }
 
@@ -179,6 +221,29 @@ QVariant GroundControlPointsModel::data(
   }
 
   QTE_D();
+
+  if (auto const data = index.internalId())
+  {
+    if (index.column() == COLUMN_ID)
+    {
+      auto const& item = d->points[static_cast<int>(data - 1)];
+
+      switch (role)
+      {
+        case Qt::DisplayRole:
+        case Qt::EditRole:
+          return QVariant::fromValue(item.crtFrames[index.row()]);
+
+        case Qt::TextAlignmentRole:
+          return int{Qt::AlignRight | Qt::AlignVCenter};
+
+        default:
+          return {};
+      }
+    }
+
+    return {};
+  }
 
   auto const& item = d->points[index.row()];
 
@@ -202,7 +267,7 @@ QVariant GroundControlPointsModel::data(
           return int{Qt::AlignRight | Qt::AlignVCenter};
 
         case Qt::DecorationRole:
-          if (item.crp && item.crp->contains(d->activeCamera))
+          if (item.crt && item.crt->contains(d->activeCamera))
           {
             return d->registeredIcon;
           }
@@ -246,11 +311,17 @@ Qt::ItemFlags GroundControlPointsModel::flags(QModelIndex const& index) const
 
   if (this->checkIndex(index, IndexIsValid))
   {
-    if (index.column() == COLUMN_NAME)
+    if (index.internalId())
     {
-      return baseFlags | Qt::ItemIsEditable;
+      return baseFlags | Qt::ItemNeverHasChildren;
     }
-    return baseFlags | Qt::ItemNeverHasChildren;
+    else
+    {
+      if (index.column() == COLUMN_NAME)
+      {
+        return baseFlags | Qt::ItemIsEditable;
+      }
+    }
   }
 
   return baseFlags;
@@ -260,7 +331,8 @@ Qt::ItemFlags GroundControlPointsModel::flags(QModelIndex const& index) const
 bool GroundControlPointsModel::setData(
   QModelIndex const& index, QVariant const& value, int role)
 {
-  if (!this->checkIndex(index, IndexIsValid) || index.column() != COLUMN_NAME)
+  if (!this->checkIndex(index, IndexIsValid) ||
+      index.internalId() || index.column() != COLUMN_NAME)
   {
     return false;
   }
@@ -324,11 +396,11 @@ void GroundControlPointsModel::addPoint(id_t id)
   }
 
   auto const& gcp = d->helper->groundControlPoint(id);
-  auto const& crp = d->helper->registrationTrack(id);
+  auto const& crt = d->helper->registrationTrack(id);
 
   auto const r = static_cast<int>(i - begin);
   this->beginInsertRows({}, r, r);
-  d->points.insert(i, {id, gcp, crp});
+  d->points.insert(i, buildPoint(id, gcp, crt));
   this->endInsertRows();
 }
 
@@ -353,14 +425,97 @@ void GroundControlPointsModel::removePoint(id_t id)
 //-----------------------------------------------------------------------------
 void GroundControlPointsModel::modifyPoint(id_t id)
 {
-  auto const& index = this->find(id, COLUMN_ID);
+  auto const& index = this->find(id);
   if (index.isValid())
   {
     QTE_D();
 
     auto& item = d->points[index.row()];
     item.gcp = d->helper->groundControlPoint(id);
-    item.crp = d->helper->registrationTrack(id);
+    item.crt = d->helper->registrationTrack(id);
+
+    if (!item.crt || item.crt->empty())
+    {
+      if (auto const oldFrames = item.crtFrames.count())
+      {
+        this->beginRemoveRows(index, 0, oldFrames - 1);
+        item.crtFrames.clear();
+        this->endRemoveRows();
+      }
+    }
+    else
+    {
+      auto i = item.crt->begin();
+      auto j = 0;
+      auto k = item.crtFrames.count();
+      auto const lastI = item.crt->end();
+
+      while (true)
+      {
+        // Have we run out of frames?
+        if (i == lastI)
+        {
+          if (j < k)
+          {
+            // Remove extra frames from end
+            this->beginRemoveRows(index, j, k - 1);
+            while (j < k)
+            {
+              item.crtFrames.removeLast();
+              --k;
+            }
+            this->endRemoveRows();
+          }
+          break;
+        }
+        // Do we need to add new frames to the end?
+        else if (j == k)
+        {
+          while (i != lastI)
+          {
+            this->beginInsertRows(index, k, k);
+            item.crtFrames.append((*i)->frame());
+            this->endInsertRows();
+
+            ++k;
+            ++i;
+          }
+
+          break;
+        }
+        // Are these frames the same?
+        else if ((*i)->frame() == item.crtFrames[j])
+        {
+          ++i;
+          ++j;
+        }
+        // Need to insert or remove a frame in the middle
+        else
+        {
+          auto const fi = (*i)->frame();
+          auto const fj = item.crtFrames[j];
+
+          if (fi > fj) // removal
+          {
+            this->beginRemoveRows(index, j, j);
+            item.crtFrames.removeAt(j);
+            this->endRemoveRows();
+
+            --k;
+          }
+          else // insertion
+          {
+            this->beginInsertRows(index, j, j);
+            item.crtFrames.insert(j, fi);
+            this->endInsertRows();
+
+            ++i;
+            ++j;
+            ++k;
+          }
+        }
+      }
+    }
 
     emit this->dataChanged(index, index);
   }
@@ -379,8 +534,8 @@ void GroundControlPointsModel::resetPoints()
     for (auto const& id : d->helper->identifiers())
     {
       auto const& gcp = d->helper->groundControlPoint(id);
-      auto const& crp = d->helper->registrationTrack(id);
-      d->points.append({id, gcp, crp});
+      auto const& crt = d->helper->registrationTrack(id);
+      d->points.append(buildPoint(id, gcp, crt));
     }
   }
 

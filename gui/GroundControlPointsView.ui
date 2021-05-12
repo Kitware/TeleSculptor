@@ -16,20 +16,14 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTreeView" name="pointsList">
-     <property name="rootIsDecorated">
-      <bool>false</bool>
-     </property>
-     <property name="uniformRowHeights">
+     <property name="alternatingRowColors">
       <bool>true</bool>
-     </property>
-     <property name="itemsExpandable">
-      <bool>false</bool>
      </property>
      <property name="allColumnsShowFocus">
       <bool>true</bool>
      </property>
      <attribute name="headerDefaultSectionSize">
-      <number>50</number>
+      <number>75</number>
      </attribute>
     </widget>
    </item>
