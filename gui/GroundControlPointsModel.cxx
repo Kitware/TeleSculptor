@@ -33,6 +33,7 @@
 #include "GroundControlPointsHelper.h"
 
 #include <qtGet.h>
+#include <qtIndexRange.h>
 #include <qtStlUtil.h>
 
 #include <QDebug>
@@ -115,6 +116,7 @@ public:
 
   QIcon registeredIcon;
   QIcon surveyedIcon;
+  QIcon cameraIcon;
   QIcon emptyIcon;
 
   kv::frame_id_t activeCamera = -1;
@@ -234,6 +236,9 @@ QVariant GroundControlPointsModel::data(
         case Qt::EditRole:
           return QVariant::fromValue(item.crtFrames[index.row()]);
 
+        case Qt::DecorationRole:
+          return d->cameraIcon;
+
         case Qt::TextAlignmentRole:
           return int{Qt::AlignRight | Qt::AlignVCenter};
 
@@ -255,10 +260,14 @@ QVariant GroundControlPointsModel::data(
         case Qt::DisplayRole:
           if (!item.gcp)
           {
-            static const auto t = QStringLiteral("(%1)");
+            static const auto t = QStringLiteral("(%1)\u2003");
             return t.arg(item.id);
           }
-          return QString::number(item.id);
+          else
+          {
+            static const auto t = QStringLiteral("%1\u2007\u2003");
+            return t.arg(item.id);
+          }
 
         case Qt::EditRole:
           return item.id;
@@ -602,4 +611,31 @@ void GroundControlPointsModel::setSurveyedIcon(QIcon const& icon)
     this->index(0, COLUMN_NAME, {}),
     this->index(this->rowCount({}), COLUMN_NAME, {}),
     {Qt::DecorationRole});
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsModel::setCameraIcon(QIcon const& icon)
+{
+  QTE_D();
+
+  d->cameraIcon = icon;
+
+  for (auto const s : icon.availableSizes())
+  {
+    QPixmap p{s};
+    p.fill(Qt::transparent);
+    d->emptyIcon.addPixmap(p);
+  }
+
+  for (auto const row : qtIndexRange(this->rowCount({})))
+  {
+    auto const& parent = this->index(row, 0, {});
+    if (auto const rows = this->rowCount(parent))
+    {
+      emit this->dataChanged(
+        this->index(0, COLUMN_ID, parent),
+        this->index(this->rowCount(parent), COLUMN_ID, parent),
+        {Qt::DecorationRole});
+    }
+  }
 }

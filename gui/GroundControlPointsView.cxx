@@ -147,6 +147,8 @@ void GroundControlPointsViewPrivate::updateIcons(QWidget* widget)
     return icon;
   };
 
+  this->model.setCameraIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/camera")));
   this->model.setSurveyedIcon(
     buildIcon(QStringLiteral(":/icons/scalable/surveyed")));
   this->model.setRegisteredIcon(
