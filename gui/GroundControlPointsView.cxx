@@ -327,6 +327,19 @@ GroundControlPointsView::GroundControlPointsView(
               d->helper->setActivePoint(id);
             }
           });
+  connect(d->UI.pointsList, &QTreeView::activated, this,
+          [d, this](QModelIndex const& index){
+            auto const& parent = index.parent();
+            if (parent.isValid())
+            {
+              auto const& fi = d->model.index(index.row(), 0, parent);
+              auto const& data = d->model.data(fi, Qt::EditRole);
+              if (data.isValid())
+              {
+                emit this->cameraRequested(data.value<kv::frame_id_t>());
+              }
+            }
+          });
 
   d->updateIcons(this);
 

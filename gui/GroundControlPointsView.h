@@ -50,6 +50,9 @@ public:
 
   void setHelper(GroundControlPointsHelper*);
 
+signals:
+  void cameraRequested(qint64);
+
 public slots:
   void setActiveCamera(qint64 id);
 
