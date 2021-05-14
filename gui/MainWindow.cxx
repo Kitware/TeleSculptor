@@ -1694,6 +1694,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           });
   d->UI.groundControlPoints->setHelper(d->groundControlPointsHelper);
 
+  connect(d->UI.groundControlPoints, &GroundControlPointsView::cameraRequested,
+          this, [d](kv::frame_id_t i){
+            d->UI.camera->setValue(static_cast<int>(i));
+          });
+
   // Camera calculation from user-created registration points
   connect(d->UI.cameraView, &CameraView::pointPlacementEnabled, this,
           [d](bool state) {

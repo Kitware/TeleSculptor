@@ -122,6 +122,7 @@
     <file alias="telesculptor@2x">128x128@2/telesculptor.png</file>
   </qresource>
   <qresource prefix="icons/scalable">
+    <file alias="camera">scalable/camera.svg</file>
     <file alias="registered">scalable/registered.svg</file>
     <file alias="surveyed">scalable/surveyed.svg</file>
   </qresource>

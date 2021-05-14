@@ -74,6 +74,7 @@ public:
 
   void setRegisteredIcon(QIcon const& icon);
   void setSurveyedIcon(QIcon const& icon);
+  void setCameraIcon(QIcon const& icon);
 
 public slots:
   void addPoint(kwiver::vital::ground_control_point_id_t);
