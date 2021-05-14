@@ -9,4 +9,5 @@ Fixes since v1.1.2
 
 TeleSculptor Application
 
-
+ * Fixed a bug in which the "zoom to landmarks" option would make the World
+   View projections permantly invalid if there were no landmarks to zoom to.
