@@ -123,6 +123,7 @@ ExternalProject_Add(fletch
     -DADDITIONAL_CXX_FLAGS:STRING=${ADDITIONAL_CXX_FLAGS}
     ${FLETCH_ADDITIONAL_OPTIONS}
   INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping install step."
+  USES_TERMINAL_BUILD 1
 )
 
 set(fletch_DIR "${TELESCULPTOR_EXTERNAL_DIR}/fletch-build")
