@@ -205,8 +205,6 @@ public:
     vtkNew<vtkDoubleArray> elevations;
   };
 
-  CameraViewPrivate() : featuresDirty(false), renderQueued(false) {}
-
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
@@ -241,9 +239,12 @@ public:
 
   double imageBounds[6];
 
-  bool featuresDirty;
+  EditMode editMode = EditMode::None;
 
-  bool renderQueued;
+  bool cameraValid = false;
+  bool featuresDirty = false;
+
+  bool renderQueued = false;
 };
 
 //END CameraViewPrivate definition
@@ -637,6 +638,19 @@ void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setActiveCamera(kwiver::arrows::vtk::vtkKwiverCamera* camera)
+{
+  QTE_D();
+
+  auto const valid = (camera != nullptr);
+  if (valid != d->cameraValid)
+  {
+    d->cameraValid = valid;
+    this->setEditMode(d->editMode);
+  }
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::setActiveFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
@@ -915,8 +929,10 @@ void CameraView::setEditMode(EditMode mode)
 {
   QTE_D();
 
+  d->editMode = mode;
+
   d->groundControlPointsWidget->enableWidget(
-    mode == EditMode::GroundControlPoints);
+    mode == EditMode::GroundControlPoints && d->cameraValid);
   d->registrationPointsWidget->enableWidget(
     mode == EditMode::CameraRegistrationPoints);
   d->UI.actionPlaceEditCRP->setChecked(

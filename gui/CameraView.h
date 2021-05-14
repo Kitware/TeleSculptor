@@ -41,8 +41,26 @@
 
 class vtkImageData;
 
-namespace kwiver { namespace vital { class landmark_map; } }
-namespace kwiver { namespace vital { class track; } }
+namespace kwiver {
+
+namespace arrows {
+
+namespace vtk {
+
+class vtkKwiverCamera;
+
+} // namespace vtk
+
+} // namespace arrows
+
+namespace vital {
+
+class landmark_map;
+class track;
+
+} // namespace vital
+
+} // namespace kwiver
 
 class GroundControlPointsWidget;
 class RulerWidget;
@@ -78,6 +96,7 @@ public slots:
 
   void setEditMode(EditMode);
 
+  void setActiveCamera(kwiver::arrows::vtk::vtkKwiverCamera*);
   void setActiveFrame(kwiver::vital::frame_id_t);
 
   void addLandmark(kwiver::vital::landmark_id_t id, double x, double y);

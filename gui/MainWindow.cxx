@@ -1064,6 +1064,7 @@ void MainWindowPrivate::updateCameraView()
   if (this->activeCameraIndex < 1)
   {
     this->loadEmptyImage(nullptr);
+    this->UI.cameraView->setActiveCamera(nullptr);
     this->UI.cameraView->setActiveFrame(-1);
     this->UI.cameraView->clearLandmarks();
     this->UI.cameraView->clearGroundControlPoints();
@@ -1078,12 +1079,14 @@ void MainWindowPrivate::updateCameraView()
   if (!activeFrame)
   {
     this->loadEmptyImage(nullptr);
+    this->UI.cameraView->setActiveCamera(nullptr);
     this->UI.cameraView->clearLandmarks();
     return;
   }
 
   // Show camera image
   this->loadImage(*activeFrame);
+  this->UI.cameraView->setActiveCamera(activeFrame->camera);
 
   if (!activeFrame->camera)
   {
