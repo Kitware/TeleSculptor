@@ -41,6 +41,9 @@ TeleSculptor Application
 
  * Added support for opening .ts (MPEG transport stream) video files.
 
+Build System
+
+ * The superbuild now allows using system packages for many dependencies.
 
 Fixes since v1.1.0
 ------------------

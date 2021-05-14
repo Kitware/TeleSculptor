@@ -11,6 +11,34 @@ if(NOT WIN32)
   set(FLETCH_ADDITIONAL_OPTIONS "-Dfletch_ENABLE_libxml2:BOOL=ON")
 endif()
 
+function(use_system_option NAME DESCRIPTION)
+  option(
+    TELESCULPTOR_USE_SYSTEM_${NAME}
+    "Use ${DESCRIPTION} provided by the system (rather than fletch)" OFF
+  )
+  if(TELESCULPTOR_USE_SYSTEM_${NAME})
+    set(TELESCULPTOR_ENABLE_FLETCH_${NAME} OFF PARENT_SCOPE)
+  else()
+    set(TELESCULPTOR_ENABLE_FLETCH_${NAME} ON PARENT_SCOPE)
+  endif()
+endfunction()
+
+use_system_option(BOOST "Boost")
+use_system_option(CERES "ceres-solver")
+use_system_option(EIGEN "Eigen")
+use_system_option(FFMPEG "FFmpeg")
+use_system_option(GDAL "GDAL")
+use_system_option(GEOTIFF "GeoTIFF")
+use_system_option(JPEG "libjpeg")
+use_system_option(OPENCV "OpenCV")
+use_system_option(PDAL "PDAL")
+use_system_option(PNG "libpng")
+use_system_option(PROJ "PROJ")
+use_system_option(QT "Qt")
+use_system_option(TIFF "libtiff")
+use_system_option(VTK "VTK")
+use_system_option(ZLIB "zlib")
+
 ExternalProject_Add(fletch
   PREFIX ${TELESCULPTOR_BINARY_DIR}
   GIT_REPOSITORY "git://github.com/Kitware/fletch.git"
@@ -23,18 +51,18 @@ ExternalProject_Add(fletch
     -DBUILD_SHARED_LIBS:BOOL=ON
     -Dfletch_BUILD_CXX11:BOOL=ON
     -Dfletch_BUILD_WITH_PYTHON:BOOL=${TELESCULPTOR_ENABLE_PYTHON}
-    -Dfletch_ENABLE_Boost:BOOL=ON
+    -Dfletch_ENABLE_Boost:BOOL=${TELESCULPTOR_ENABLE_FLETCH_BOOST}
     -DBoost_SELECT_VERSION:STRING=1.65.1
     -Dfletch_ENABLE_Caffe:BOOL=OFF
     -Dfletch_ENABLE_Caffe_Segnet:BOOL=OFF
-    -Dfletch_ENABLE_Ceres:BOOL=ON
+    -Dfletch_ENABLE_Ceres:BOOL=${TELESCULPTOR_ENABLE_FLETCH_CERES}
     -Dfletch_ENABLE_CppDB:BOOL=OFF
     -Dfletch_ENABLE_Darknet:BOOL=OFF
     -Dfletch_ENABLE_Darknet_OpenCV:BOOL=OFF
-    -Dfletch_ENABLE_Eigen:BOOL=ON
-    -Dfletch_ENABLE_FFmpeg:BOOL=ON
+    -Dfletch_ENABLE_Eigen:BOOL=${TELESCULPTOR_ENABLE_FLETCH_EIGEN}
+    -Dfletch_ENABLE_FFmpeg:BOOL=${TELESCULPTOR_ENABLE_FLETCH_FFMPEG}
     -DFFmpeg_SELECT_VERSION:STRING=3.3.3
-    -Dfletch_ENABLE_GDAL:BOOL=ON
+    -Dfletch_ENABLE_GDAL:BOOL=${TELESCULPTOR_ENABLE_FLETCH_GDAL}
     -Dfletch_ENABLE_GEOS:BOOL=ON
     -Dfletch_ENABLE_GFlags:BOOL=OFF
     -Dfletch_ENABLE_GLog:BOOL=ON
@@ -44,35 +72,35 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_ITK:BOOL=OFF
     -Dfletch_ENABLE_LMDB:BOOL=OFF
     -Dfletch_ENABLE_LevelDB:BOOL=OFF
-    -Dfletch_ENABLE_OpenBLAS:BOOL=OFF    
-    -Dfletch_ENABLE_OpenCV:BOOL=ON
+    -Dfletch_ENABLE_OpenBLAS:BOOL=OFF
+    -Dfletch_ENABLE_OpenCV:BOOL=${TELESCULPTOR_ENABLE_FLETCH_OPENCV}
     -DOpenCV_SELECT_VERSION:STRING=3.4.0
     -Dfletch_ENABLE_OpenCV_FFmpeg:BOOL=ON
     -Dfletch_ENABLE_OpenCV_contrib:BOOL=ON
     -Dfletch_ENABLE_OpenCV_highgui:BOOL=ON
-    -Dfletch_ENABLE_PDAL:BOOL=ON
-    -Dfletch_ENABLE_PNG:BOOL=ON
-    -Dfletch_ENABLE_PROJ:BOOL=ON
+    -Dfletch_ENABLE_PDAL:BOOL=${TELESCULPTOR_ENABLE_FLETCH_PDAL}
+    -Dfletch_ENABLE_PNG:BOOL=${TELESCULPTOR_ENABLE_FLETCH_PNG}
+    -Dfletch_ENABLE_PROJ:BOOL=${TELESCULPTOR_ENABLE_FLETCH_PROJ}
     -Dfletch_ENABLE_PostGIS:BOOL=OFF
     -Dfletch_ENABLE_PostgresSQL:BOOL=OFF
     -Dfletch_ENABLE_Protobuf:BOOL=OFF
-    -Dfletch_ENABLE_Qt:BOOL=ON
+    -Dfletch_ENABLE_Qt:BOOL=${TELESCULPTOR_ENABLE_FLETCH_QT}
     -DBUILD_Qt_MINIMAL:BOOL=ON
     -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
     -Dfletch_ENABLE_SQLite3:BOOL=ON
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
-    -Dfletch_ENABLE_VTK:BOOL=ON
+    -Dfletch_ENABLE_VTK:BOOL=${TELESCULPTOR_ENABLE_FLETCH_VTK}
     -DVTK_SELECT_VERSION:STRING=8.2
     -Dfletch_ENABLE_VXL:BOOL=ON
     -Dfletch_ENABLE_YAMLcpp:BOOL=OFF
-    -Dfletch_ENABLE_ZLib:BOOL=ON
-    -Dfletch_ENABLE_libgeotiff:BOOL=ON
-    -Dfletch_ENABLE_libjpeg-turbo:BOOL=ON
+    -Dfletch_ENABLE_ZLib:BOOL=${TELESCULPTOR_ENABLE_FLETCH_ZLIB}
+    -Dfletch_ENABLE_libgeotiff:BOOL=${TELESCULPTOR_ENABLE_FLETCH_GEOTIFF}
+    -Dfletch_ENABLE_libjpeg-turbo:BOOL=${TELESCULPTOR_ENABLE_FLETCH_JPEG}
     -Dfletch_ENABLE_libjson:BOOL=OFF
     -Dfletch_ENABLE_libkml:BOOL=OFF
-    -Dfletch_ENABLE_libtiff:BOOL=ON
+    -Dfletch_ENABLE_libtiff:BOOL=${TELESCULPTOR_ENABLE_FLETCH_TIFF}
     -Dfletch_ENABLE_log4cplus:BOOL=ON
     -Dfletch_ENABLE_openjpeg:BOOL=OFF
     -Dfletch_ENABLE_qtExtensions:BOOL=ON
