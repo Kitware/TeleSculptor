@@ -250,10 +250,7 @@ id_t GroundControlPointsViewPrivate::selectedPoint() const
   auto const& s = this->UI.pointsList->selectionModel()->selectedIndexes();
   if (!s.isEmpty())
   {
-    auto const& i = s.first();
-    auto const& ni = this->model.index(i.row(), 0, i.parent());
-    auto const& id = this->model.data(ni, Qt::EditRole);
-    return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+    return this->model.id(s.first());
   }
   return INVALID_POINT;
 }
