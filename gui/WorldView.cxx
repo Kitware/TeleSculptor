@@ -1325,6 +1325,11 @@ void WorldView::resetViewToLandmarks()
   vtkBoundingBox bbox;
   bbox.AddBounds(d->landmarkActor->GetBounds());
 
+  if (!bbox.IsValid())
+  {
+    return;
+  }
+
   double bounds[6];
   bbox.GetBounds(bounds);
   d->renderer->ResetCamera(bounds);
