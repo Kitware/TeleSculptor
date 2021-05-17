@@ -16,6 +16,7 @@ function(use_system_option NAME DESCRIPTION)
     TELESCULPTOR_USE_SYSTEM_${NAME}
     "Use ${DESCRIPTION} provided by the system (rather than fletch)" OFF
   )
+  mark_as_advanced(TELESCULPTOR_USE_SYSTEM_${NAME})
   if(TELESCULPTOR_USE_SYSTEM_${NAME})
     set(TELESCULPTOR_ENABLE_FLETCH_${NAME} OFF PARENT_SCOPE)
   else()
@@ -38,6 +39,12 @@ use_system_option(QT "Qt")
 use_system_option(TIFF "libtiff")
 use_system_option(VTK "VTK")
 use_system_option(ZLIB "zlib")
+
+if(TELESCULPTOR_ENABLE_FLETCH_GDAL OR TELESCULPTOR_ENABLE_FLETCH_PDAL)
+  set(TELESCULPTOR_ENABLE_FLETCH_GEOS ON)
+else()
+  set(TELESCULPTOR_ENABLE_FLETCH_GEOS OFF)
+endif()
 
 ExternalProject_Add(fletch
   PREFIX ${TELESCULPTOR_BINARY_DIR}
@@ -63,9 +70,9 @@ ExternalProject_Add(fletch
     -Dfletch_ENABLE_FFmpeg:BOOL=${TELESCULPTOR_ENABLE_FLETCH_FFMPEG}
     -DFFmpeg_SELECT_VERSION:STRING=3.3.3
     -Dfletch_ENABLE_GDAL:BOOL=${TELESCULPTOR_ENABLE_FLETCH_GDAL}
-    -Dfletch_ENABLE_GEOS:BOOL=ON
+    -Dfletch_ENABLE_GEOS:BOOL=${TELESCULPTOR_ENABLE_FLETCH_GEOS}
     -Dfletch_ENABLE_GFlags:BOOL=OFF
-    -Dfletch_ENABLE_GLog:BOOL=ON
+    -Dfletch_ENABLE_GLog:BOOL=${TELESCULPTOR_ENABLE_FLETCH_CERES}
     -Dfletch_ENABLE_GTest:BOOL=${TELESCULPTOR_ENABLE_TESTING}
     -Dfletch_ENABLE_GeographicLib:BOOL=OFF
     -Dfletch_ENABLE_HDF5:BOOL=OFF
@@ -88,8 +95,8 @@ ExternalProject_Add(fletch
     -DBUILD_Qt_MINIMAL:BOOL=ON
     -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
-    -Dfletch_ENABLE_SQLite3:BOOL=ON
-    -Dfletch_ENABLE_SuiteSparse:BOOL=ON
+    -Dfletch_ENABLE_SQLite3:BOOL=${TELESCULPTOR_ENABLE_PROJ}
+    -Dfletch_ENABLE_SuiteSparse:BOOL=${TELESCULPTOR_ENABLE_FLETCH_CERES}
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=${TELESCULPTOR_ENABLE_FLETCH_VTK}
     -DVTK_SELECT_VERSION:STRING=8.2
