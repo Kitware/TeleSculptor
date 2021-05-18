@@ -60,6 +60,7 @@ ExternalProject_Add(fletch
     -DBUILD_Qt_MINIMAL:BOOL=ON
     -DQt_SELECT_VERSION:STRING=5.11.2
     -Dfletch_ENABLE_Snappy:BOOL=OFF
+    -Dfletch_ENABLE_SQLite3:BOOL=ON
     -Dfletch_ENABLE_SuiteSparse:BOOL=ON
     -Dfletch_ENABLE_TinyXML:BOOL=OFF
     -Dfletch_ENABLE_VTK:BOOL=ON
