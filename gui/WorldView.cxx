@@ -90,6 +90,7 @@
 #include <vtkTimeStamp.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkVertexGlyphFilter.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
 
@@ -1033,6 +1034,14 @@ bool WorldView::loadMesh(QString const& path)
 void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 {
   QTE_D();
+
+  if (mesh->GetNumberOfCells() == 0)
+  {
+    vtkNew<vtkVertexGlyphFilter> vertexFilter;
+    vertexFilter->SetInputData(mesh);
+    vertexFilter->Update();
+    mesh = vertexFilter->GetOutput();
+  }
 
   d->mesh = mesh;
 
