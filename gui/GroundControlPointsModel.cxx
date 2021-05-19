@@ -141,7 +141,7 @@ id_t GroundControlPointsModel::id(QModelIndex const& index) const
   QTE_D();
 
   auto const r = rowForIndex(index);
-  if (r < 0 || r > this->rowCount(index.parent()))
+  if (r < 0 || r > d->points.count())
   {
     return std::numeric_limits<id_t>::max();
   }
