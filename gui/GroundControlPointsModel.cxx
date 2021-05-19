@@ -41,6 +41,16 @@
 
 #include <limits>
 
+// Define the string used to add a "fake" right margin to top-level items
+#ifdef Q_OS_LINUX
+// EM SPACE looks better and should be available on Linux
+#define MARGIN_SPACE u"\u2003"
+#else
+// Windows Unicode font support is trash (and apparently Q_OS_WIN is not being
+// reliably defined, so all of not-Linux loses)
+#define MARGIN_SPACE "  "
+#endif
+
 namespace kv = kwiver::vital;
 
 namespace
@@ -260,12 +270,12 @@ QVariant GroundControlPointsModel::data(
         case Qt::DisplayRole:
           if (!item.gcp)
           {
-            static const auto t = QStringLiteral("(%1)\u2003");
+            static const auto t = QStringLiteral("(%1) " MARGIN_SPACE );
             return t.arg(item.id);
           }
           else
           {
-            static const auto t = QStringLiteral("%1\u2007\u2003");
+            static const auto t = QStringLiteral("%1 " MARGIN_SPACE );
             return t.arg(item.id);
           }
 
