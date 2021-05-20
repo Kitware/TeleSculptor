@@ -55,17 +55,18 @@ public:
   QModelIndex find(kwiver::vital::ground_control_point_id_t,
                    int column = 0) const;
 
-  int rowCount(QModelIndex const& parent) const override;
-  int columnCount(QModelIndex const& parent) const override;
+  int rowCount(QModelIndex const& parent = {}) const override;
+  int columnCount(QModelIndex const& parent = {}) const override;
 
   QModelIndex index(int row, int column,
-                    QModelIndex const& parent) const override;
+                    QModelIndex const& parent = {}) const override;
   QModelIndex parent(QModelIndex const& child) const override;
 
-  QVariant data(QModelIndex const& index, int role) const override;
+  QVariant data(QModelIndex const& index,
+                int role = Qt::DisplayRole) const override;
   Qt::ItemFlags flags(QModelIndex const& index) const override;
   bool setData(QModelIndex const& index, QVariant const& value,
-               int role) override;
+               int role = Qt::EditRole) override;
 
   QVariant headerData(int section, Qt::Orientation orientation,
                       int role) const override;
