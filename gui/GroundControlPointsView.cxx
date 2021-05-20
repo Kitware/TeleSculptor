@@ -484,6 +484,31 @@ void GroundControlPointsView::setActiveCamera(qint64 id)
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsView::shiftSelection(int offset)
+{
+  QTE_D();
+
+  auto* const sm = d->UI.pointsList->selectionModel();
+  auto const& s = sm->selectedIndexes();
+  if (!s.isEmpty())
+  {
+    auto const& i = s.first();
+    auto const& p = i.parent();
+    auto const r = (p.isValid() ? p.row() : i.row());
+
+    auto const n = d->model.index(r + offset, 0);
+    if (n.isValid())
+    {
+      constexpr auto flags =
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current |
+        QItemSelectionModel::Rows;
+
+      sm->select(n, flags);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
 void GroundControlPointsView::changeEvent(QEvent* e)
 {
   if (e && e->type() == QEvent::PaletteChange)

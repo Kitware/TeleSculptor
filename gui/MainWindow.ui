@@ -651,6 +651,25 @@
     <string>Right</string>
    </property>
   </action>
+  <action name="actionGcpPrevious">
+   <property name="text">
+    <string>Previous Point</string>
+   </property>
+   <property name="shortcut">
+    <string>Up</string>
+   </property>
+  </action>
+  <action name="actionGcpNext">
+   <property name="text">
+    <string>Next Point</string>
+   </property>
+   <property name="toolTip">
+    <string>Next Point</string>
+   </property>
+   <property name="shortcut">
+    <string>Down</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

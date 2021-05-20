@@ -1514,6 +1514,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   this->addAction(d->UI.actionFramePrevious);
   this->addAction(d->UI.actionFrameNext);
+  this->addAction(d->UI.actionGcpPrevious);
+  this->addAction(d->UI.actionGcpNext);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -1706,6 +1708,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, [d](kv::frame_id_t i){
             d->UI.camera->setValue(static_cast<int>(i));
           });
+
+  connect(d->UI.actionGcpPrevious, &QAction::triggered,
+          this, [d]{ d->UI.groundControlPoints->shiftSelection(-1); });
+  connect(d->UI.actionGcpNext, &QAction::triggered,
+          this, [d]{ d->UI.groundControlPoints->shiftSelection(+1); });
 
   // Camera calculation from user-created registration points
   connect(d->UI.cameraView, &CameraView::pointPlacementEnabled, this,
