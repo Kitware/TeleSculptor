@@ -721,6 +721,8 @@ void MainWindowPrivate::addFrame(
     this->UI.actionSlideshowPlay->setEnabled(true);
     this->UI.camera->setEnabled(true);
     this->UI.cameraSpin->setEnabled(true);
+    this->UI.actionFramePrevious->setEnabled(true);
+    this->UI.actionFrameNext->setEnabled(true);
 
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
@@ -1509,6 +1511,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Set up UI
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
+
+  this->addAction(d->UI.actionFramePrevious);
+  this->addAction(d->UI.actionFrameNext);
 
   using std::placeholders::_1;
   using std::placeholders::_2;
