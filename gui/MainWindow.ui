@@ -637,7 +637,7 @@
     <string>Previous Frame</string>
    </property>
    <property name="shortcut">
-    <string>Left</string>
+    <string>[</string>
    </property>
   </action>
   <action name="actionFrameNext">
@@ -648,7 +648,7 @@
     <string>Next Frame</string>
    </property>
    <property name="shortcut">
-    <string>Right</string>
+    <string>]</string>
    </property>
   </action>
   <action name="actionGcpPrevious">
@@ -656,7 +656,7 @@
     <string>Previous Point</string>
    </property>
    <property name="shortcut">
-    <string>Up</string>
+    <string>,</string>
    </property>
   </action>
   <action name="actionGcpNext">
@@ -667,7 +667,7 @@
     <string>Next Point</string>
    </property>
    <property name="shortcut">
-    <string>Down</string>
+    <string>.</string>
    </property>
   </action>
  </widget>
