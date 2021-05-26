@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2014-2020 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 /**
  * \file
@@ -213,7 +187,6 @@ static kwiver::vital::config_block_sptr default_config()
   return config;
 }
 
-
 // ------------------------------------------------------------------
 static bool check_config(kwiver::vital::config_block_sptr config)
 {
@@ -268,7 +241,6 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-
   if (!kwiver::vital::algo::video_input::check_nested_algo_configuration("video_reader", config))
   {
     MAPTK_CONFIG_FAIL("video_reader configuration check failed");
@@ -305,12 +277,10 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-
 #undef MAPTK_CONFIG_FAIL
 
   return config_valid;
 }
-
 
 // ------------------------------------------------------------------
 /// create a base camera instance from config options
@@ -325,7 +295,6 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
   return kwiver::vital::simple_camera_perspective(kwiver::vital::vector_3d(0,0,-1),
                                       kwiver::vital::rotation_d(), K);
 }
-
 
 // ------------------------------------------------------------------
 /// Subsample a every Nth camera, where N is specfied by factor
@@ -353,7 +322,6 @@ subsample_cameras(kwiver::vital::camera_map_sptr cameras, unsigned factor)
   sub_cams.insert(*cams.rbegin());
   return kwiver::vital::camera_map_sptr(new kwiver::vital::simple_camera_map(sub_cams));
 }
-
 
 // Generic configuration based input camera load function.
 //
@@ -397,7 +365,6 @@ bool load_input_cameras(kwiver::vital::config_block_sptr config,
   // No input specified
   return true;
 }
-
 
 static int maptk_main(int argc, char const* argv[])
 {
@@ -473,7 +440,6 @@ static int maptk_main(int argc, char const* argv[])
     config->merge_config(kwiver::vital::read_config_file(opt_config, "telesculptor",
                                                          TELESCULPTOR_VERSION, prefix));
   }
-
 
   kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
   kwiver::vital::algo::bundle_adjust::set_nested_algo_configuration("bundle_adjuster", config, bundle_adjuster);
@@ -600,7 +566,6 @@ static int maptk_main(int argc, char const* argv[])
       geo_origin_loaded_from_file = true;
     }
   }
-
 
   //
   // Initialize input and main cameras
@@ -753,7 +718,6 @@ static int maptk_main(int argc, char const* argv[])
                                              tracks->tracks());
     LOG_DEBUG(main_logger, "final reprojection RMSE: " << end_rmse);
   }
-
 
   //
   // Adjust cameras/landmarks based on input cameras/reference points
@@ -912,7 +876,6 @@ static int maptk_main(int argc, char const* argv[])
 
   return EXIT_SUCCESS;
 }
-
 
 int main(int argc, char const* argv[])
 {
