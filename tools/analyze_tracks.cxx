@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2014-2017 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include <iostream>
 #include <fstream>
@@ -61,12 +35,10 @@
 typedef kwiversys::SystemTools     ST;
 typedef kwiversys::CommandLineArguments argT;
 
-
 // Global options
 bool        opt_help( false );
 std::string opt_config;         // config file name
 std::string opt_out_config;     // output config file name
-
 
 // ------------------------------------------------------------------
 static kwiver::vital::config_block_sptr default_config()
@@ -100,7 +72,6 @@ static kwiver::vital::config_block_sptr default_config()
 
   return config;
 }
-
 
 // ------------------------------------------------------------------
 static bool check_config( kwiver::vital::config_block_sptr config )
@@ -143,7 +114,6 @@ static bool check_config( kwiver::vital::config_block_sptr config )
   return true;
 }
 
-
 // ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
 {
@@ -159,7 +129,6 @@ static int maptk_main(int argc, char const* argv[])
                    "Output a configuration. This may be seeded with a configuration file from -c/--config." );
   arg.AddArgument( "-o",            argT::SPACE_ARGUMENT, &opt_out_config,
                    "Output a configuration. This may be seeded with a configuration file from -c/--config." );
-
 
   if ( ! arg.Parse() )
   {
@@ -347,7 +316,6 @@ static int maptk_main(int argc, char const* argv[])
   std::cout << std::endl;
   return EXIT_SUCCESS;
 }
-
 
 // ------------------------------------------------------------------
 int main( int argc, char const* argv[] )
