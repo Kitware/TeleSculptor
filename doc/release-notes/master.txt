@@ -2,7 +2,7 @@ TeleSculptor v1.2.0 Release Notes
 =================================
 
 This is a minor release of TeleSculptor that provides both new functionality
-and fixes over the previous v1.1.0 release. 
+and fixes over the previous v1.1.0 release.
 
 
 Updates since v1.1.0
@@ -41,6 +41,8 @@ TeleSculptor Application
 
  * Added support for opening .ts (MPEG transport stream) video files.
 
+ * Added keyboard shortcuts to change frames and to change the selected ground
+   control point.
 
 Fixes since v1.1.0
 ------------------
