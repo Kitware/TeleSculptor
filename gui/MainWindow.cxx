@@ -695,6 +695,8 @@ void MainWindowPrivate::addFrame(
     this->UI.actionSlideshowPlay->setEnabled(true);
     this->UI.camera->setEnabled(true);
     this->UI.cameraSpin->setEnabled(true);
+    this->UI.actionFramePrevious->setEnabled(true);
+    this->UI.actionFrameNext->setEnabled(true);
 
     this->setActiveCamera(1);
     this->UI.cameraView->resetView();
@@ -1483,6 +1485,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   d->UI.setupUi(this);
   d->AM.setupActions(d->UI, this);
 
+  this->addAction(d->UI.actionFramePrevious);
+  this->addAction(d->UI.actionFrameNext);
+  this->addAction(d->UI.actionGcpPrevious);
+  this->addAction(d->UI.actionGcpNext);
+
   using std::placeholders::_1;
   using std::placeholders::_2;
   using std::placeholders::_3;
@@ -1674,6 +1681,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, [d](kv::frame_id_t i){
             d->UI.camera->setValue(static_cast<int>(i));
           });
+
+  connect(d->UI.actionGcpPrevious, &QAction::triggered,
+          this, [d]{ d->UI.groundControlPoints->shiftSelection(-1); });
+  connect(d->UI.actionGcpNext, &QAction::triggered,
+          this, [d]{ d->UI.groundControlPoints->shiftSelection(+1); });
 
   // Camera calculation from user-created registration points
   connect(d->UI.cameraView, &CameraView::pointPlacementEnabled, this,

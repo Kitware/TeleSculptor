@@ -29,6 +29,7 @@ signals:
 
 public slots:
   void setActiveCamera(qint64 id);
+  void shiftSelection(int offset);
 
 protected:
   void changeEvent(QEvent* e) override;

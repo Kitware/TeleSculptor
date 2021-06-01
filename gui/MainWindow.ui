@@ -629,6 +629,47 @@
     <string>Fused Mesh Frame Colors...</string>
    </property>
   </action>
+  <action name="actionFramePrevious">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Previous Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>[</string>
+   </property>
+  </action>
+  <action name="actionFrameNext">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Next Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>]</string>
+   </property>
+  </action>
+  <action name="actionGcpPrevious">
+   <property name="text">
+    <string>Previous Point</string>
+   </property>
+   <property name="shortcut">
+    <string>,</string>
+   </property>
+  </action>
+  <action name="actionGcpNext">
+   <property name="text">
+    <string>Next Point</string>
+   </property>
+   <property name="toolTip">
+    <string>Next Point</string>
+   </property>
+   <property name="shortcut">
+    <string>.</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -712,6 +753,38 @@
     <hint type="destinationlabel">
      <x>613</x>
      <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFramePrevious</sender>
+   <signal>triggered()</signal>
+   <receiver>cameraSpin</receiver>
+   <slot>stepDown()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>569</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFrameNext</sender>
+   <signal>triggered()</signal>
+   <receiver>cameraSpin</receiver>
+   <slot>stepUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>569</y>
     </hint>
    </hints>
   </connection>
