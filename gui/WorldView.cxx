@@ -35,6 +35,7 @@
 #include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkColorTransferFunction.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkEventQtSlotConnect.h>
@@ -66,6 +67,7 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
@@ -85,9 +87,51 @@
 #include <QToolButton>
 #include <QWidgetAction>
 
+#include <array>
+
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
+
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkColorTransferFunction> createBluesColorPalette(
+  double* range)
+{
+  auto lut = vtkSmartPointer<vtkColorTransferFunction>::New();
+  std::array<std::array<double, 3>, 17> blues = {{
+      {0.031373, 0.188235, 0.419608},
+      {0.031373, 0.253195, 0.516063},
+      {0.031757, 0.318139, 0.612149},
+      {0.080969, 0.38113, 0.661361},
+      {0.130427, 0.444152, 0.710327},
+      {0.195386, 0.509112, 0.743791},
+      {0.260715, 0.573841, 0.777209},
+      {0.341423, 0.628958, 0.808704},
+      {0.422745, 0.684075, 0.839892},
+      {0.523137, 0.739193, 0.861546},
+      {0.622684, 0.793464, 0.883429},
+      {0.701423, 0.826928, 0.910988},
+      {0.778685, 0.8603, 0.937993},
+      {0.825928, 0.891795, 0.953741},
+      {0.87328, 0.923291, 0.969489},
+      {0.922491, 0.954787, 0.985236},
+      {0.968627, 0.984314, 1}}};
+  for (size_t i = 0; i < blues.size(); ++i)
+  {
+    lut->AddRGBPoint(
+      range[0] + (range[1] - range[0]) * i / (blues.size() - 1),
+      blues[i][0], blues[i][1], blues[i][2]);
+  }
+  // blues from ParaView: ColorMap.json
+  lut->SetColorSpaceToLab();
+  return lut;
+}
+
+} // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -979,6 +1023,8 @@ void WorldView::computeContour(double threshold)
 //-----------------------------------------------------------------------------
 bool WorldView::loadMesh(QString const& path)
 {
+  QTE_D();
+
   QFileInfo fileInfo{path};
   if (!fileInfo.exists() || !fileInfo.isFile())
   {
@@ -986,20 +1032,30 @@ bool WorldView::loadMesh(QString const& path)
   }
 
   QGuiApplication::setOverrideCursor(Qt::WaitCursor);
-
-  // Create the vtk pipeline and read the mesh
-  vtkNew<vtkPLYReader> reader;
-  reader->SetFileName(qPrintable(path));
-  reader->Update();
-  QGuiApplication::restoreOverrideCursor();
-
-  auto mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
-  if (mesh->GetPointData()->GetNumberOfArrays() <= 0)
+  vtkSmartPointer<vtkPolyData> mesh;
+  QString const& ext = fileInfo.suffix().toLower();
+  if (ext == "ply")
   {
+    vtkNew<vtkPLYReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else if (ext == "vtp")
+  {
+    vtkNew<vtkXMLPolyDataReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else
+  {
+    LOG_ERROR(d->logger, "Invalid mesh type: " << qPrintable(fileInfo.suffix()));
     return false;
   }
+  QGuiApplication::restoreOverrideCursor();
 
-  this->setMesh(reader->GetOutput());
+  this->setMesh(mesh);
 
   return true;
 }
@@ -1035,13 +1091,35 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
-
-  if (mesh->GetPointData()->HasArray("RGB"))
+  char const* arrayName = nullptr;
+  constexpr char const* rgbName = "RGB";
+  constexpr char const* rgbaName = "RGBA";
+  if (mesh->GetPointData()->HasArray(rgbaName))
   {
+    arrayName = rgbaName;
+  }
+  else if (mesh->GetPointData()->HasArray(rgbName))
+  {
+    arrayName = rgbName;
+  }
+  vtkDataArray* scalars = nullptr;
+  if (arrayName)
+  {
+    meshMapper->SetScalarModeToUsePointFieldData();
+    meshMapper->SelectColorArray(arrayName);
     meshMapper->ScalarVisibilityOn();
-    meshMapper->SelectColorArray("RGB");
     d->volumeOptions->setSurfaceColored(true);
   }
+  else if ((scalars = mesh->GetPointData()->GetScalars()))
+  {
+    double range[2];
+    scalars->GetRange(range);
+    meshMapper->SetLookupTable(createBluesColorPalette(range));
+    meshMapper->SetColorModeToMapScalars();
+    meshMapper->ScalarVisibilityOn();
+    d->volumeOptions->setSurfaceColored(true);
+  }
+
 
   emit contourChanged();
 }
