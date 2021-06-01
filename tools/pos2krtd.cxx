@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2013-2017 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 /**
  * \file
@@ -99,7 +73,6 @@ default_config()
                     "The file format is ASCII (degrees, meters):\n"
                     "latitude longitude altitude");
 
-
   // base camera options
   config->set_value("base_camera:focal_length", "1.0",
                     "focal length of the base camera model");
@@ -125,7 +98,6 @@ default_config()
 
   return config;
 }
-
 
 // ------------------------------------------------------------------
 /// Check configuration options
@@ -171,7 +143,6 @@ check_config(kwiver::vital::config_block_sptr config)
   return config_valid;
 }
 
-
 // ------------------------------------------------------------------
 /// create a base camera instance from config options
 kwiver::vital::simple_camera_perspective
@@ -185,7 +156,6 @@ base_camera_from_config(kwiver::vital::config_block_sptr config)
   return kwiver::vital::simple_camera_perspective(kwiver::vital::vector_3d(0,0,-1),
                                                   kwiver::vital::rotation_d(), K);
 }
-
 
 // ------------------------------------------------------------------
 static int maptk_main(int argc, char const* argv[])
@@ -227,7 +197,6 @@ static int maptk_main(int argc, char const* argv[])
       << arg.GetHelp() << std::endl;
     return EXIT_SUCCESS;
   }
-
 
   // register the algorithm implementations
   auto& vpm = kwiver::vital::plugin_manager::instance();
@@ -285,12 +254,10 @@ static int maptk_main(int argc, char const* argv[])
     return EXIT_FAILURE;
   }
 
-
   kwiver::vital::path_t video_source = config->get_value<kwiver::vital::path_t>("video_source"),
                        output = config->get_value<kwiver::vital::path_t>("output");
   auto base_camera = base_camera_from_config(config->subblock_view("base_camera"));
   kwiver::vital::rotation_d ins_rot_offset = config->get_value<kwiver::vital::rotation_d>("ins:rotation_offset");
-
 
   if( kwiver::vital::get_geo_conv() == nullptr )
   {
@@ -314,7 +281,6 @@ static int maptk_main(int argc, char const* argv[])
       geo_origin_loaded_from_file = true;
     }
   }
-
 
   std::map<kwiver::vital::frame_id_t, kwiver::vital::metadata_sptr> md_map;
   std::map<kwiver::vital::frame_id_t, std::string> krtd_filenames;
@@ -366,7 +332,6 @@ static int maptk_main(int argc, char const* argv[])
     kwiver::vital::write_krtd_file(*cam, krtd_filenames[p.first]);
   }
 
-
   // if we computed an origin that was not loaded from a file
   if (!local_cs.origin().is_empty() &&
       !geo_origin_loaded_from_file &&
@@ -379,7 +344,6 @@ static int maptk_main(int argc, char const* argv[])
 
   return EXIT_SUCCESS;
 }
-
 
 // ------------------------------------------------------------------
 int main(int argc, char const* argv[])

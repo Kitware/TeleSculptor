@@ -44,6 +44,11 @@ TeleSculptor Application
  * Added keyboard shortcuts to change frames and to change the selected ground
    control point.
 
+Build System
+
+ * The superbuild now allows using system packages for many dependencies.
+
+
 Fixes since v1.1.0
 ------------------
 

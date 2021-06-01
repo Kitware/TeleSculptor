@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2016-2019 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither name of Kitware, Inc. nor the names of any contributors may be used
- *    to endorse or promote products derived from this software without specific
- *    prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 /**
  * \file
@@ -151,7 +125,6 @@ static kwiver::vital::config_block_sptr default_config()
   return config;
 }
 
-
 // ------------------------------------------------------------------
 static bool check_config(kwiver::vital::config_block_sptr config)
 {
@@ -213,12 +186,10 @@ static bool check_config(kwiver::vital::config_block_sptr config)
     }
   }
 
-
 #undef MAPTK_CONFIG_FAIL
 
   return config_valid;
 }
-
 
 static int maptk_main(int argc, char const* argv[])
 {
@@ -298,7 +269,6 @@ static int maptk_main(int argc, char const* argv[])
                                                          TELESCULPTOR_VERSION, prefix));
   }
 
-
   kwiver::vital::algo::video_input::set_nested_algo_configuration("video_reader", config, video_reader);
   kwiver::vital::algo::triangulate_landmarks::set_nested_algo_configuration("triangulator", config, triangulator);
   kwiver::vital::algo::estimate_similarity_transform::set_nested_algo_configuration("st_estimator", config, st_estimator);
@@ -377,7 +347,6 @@ static int maptk_main(int argc, char const* argv[])
     }
   }
 
-
   //
   // Load Cameras and Landmarks
   //
@@ -396,7 +365,6 @@ static int maptk_main(int argc, char const* argv[])
     std::string ply_file = config->get_value<std::string>("input_ply_file");
     lm_map = kwiver::vital::read_ply_file(ply_file);
   }
-
 
   // Copy input cameras into main camera map
   kwiver::vital::camera_map::map_camera_t cameras;
@@ -559,7 +527,6 @@ static int maptk_main(int argc, char const* argv[])
 
   return EXIT_SUCCESS;
 }
-
 
 int main(int argc, char const* argv[])
 {
