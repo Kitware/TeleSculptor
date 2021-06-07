@@ -39,6 +39,7 @@ public:
 
   // Set ground control points
   void setGroundControlPoints(kwiver::vital::ground_control_point_map const&);
+  void setGroundControlPoint(id_t, kwiver::vital::vector_3d const&);
 
   // Get ground control points
   std::vector<gcp_sptr> groundControlPoints() const;

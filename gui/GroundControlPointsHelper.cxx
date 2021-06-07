@@ -1163,6 +1163,63 @@ void GroundControlPointsHelper::setGroundControlPoints(
 }
 
 //-----------------------------------------------------------------------------
+void GroundControlPointsHelper::setGroundControlPoint(
+  id_t id, kwiver::vital::vector_3d const& loc)
+{
+  QTE_D();
+
+  if (auto* const gcp = qtGet(d->groundControlPoints, id))
+  {
+    if (gcp->second.gcp)
+    {
+      if (auto* const hp = qtGet(d->gcpIdToHandleMap, id))
+      {
+        auto const handleId = d->worldWidget->findHandleWidget(hp->second);
+        if (handleId < 0)
+        {
+          qWarning()
+            << "Failed to find the VTK ID associated with the VTK handle"
+            << hp->second << " and the point with ID" << id;
+          return;
+        }
+
+        d->movePoint(handleId, d->worldWidget, loc);
+        if (auto* const camera = d->mainWindow->activeCamera())
+        {
+          double cameraPt[2];
+          camera->ProjectPoint(loc, cameraPt);
+          d->movePoint(
+            handleId, d->cameraWidget, { cameraPt[0], cameraPt[1], 0.0 });
+        }
+        else
+        {
+          d->updatePoint(handleId);
+        }
+      }
+      else
+      {
+        qWarning() << "Failed to find the VTK handle associated with "
+                      "the point with ID" << id;
+      }
+
+      return;
+    }
+  }
+
+  auto const oldNextId = d->nextId;
+
+  auto gcp = std::make_shared<kv::ground_control_point>();
+  gcp->set_loc(loc);
+
+  d->addPoint(id, gcp);
+
+  d->nextId = std::max(id + 1, oldNextId);
+
+  emit this->pointAdded(id);
+  emit this->pointCountChanged(d->groundControlPoints.size());
+}
+
+//-----------------------------------------------------------------------------
 bool GroundControlPointsHelper::isEmpty() const
 {
   QTE_D();

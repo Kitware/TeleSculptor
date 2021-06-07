@@ -3627,6 +3627,21 @@ void MainWindow::rebuildScene()
         {
           d->updateCameras(data->cameras);
         }
+        if (data->landmarks && data->landmarks->size())
+        {
+          auto lm = data->landmarks->landmarks();
+          for (auto const& li : lm)
+          {
+            if (li.second)
+            {
+              using gcp_id_t = kwiver::vital::ground_control_point_id_t;
+
+              auto const i = li.first;
+              d->groundControlPointsHelper->setGroundControlPoint(
+                static_cast<gcp_id_t>(i), li.second->loc());
+            }
+          }
+        }
       }
 
       d->setActiveTool(nullptr);
