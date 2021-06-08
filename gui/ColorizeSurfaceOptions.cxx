@@ -307,6 +307,7 @@ void ColorizeSurfaceOptions::colorize()
       {
         d->UI.comboBoxColorDisplay->setEnabled(true);
         emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+        this->InsideColorize = false;
         return;
       }
       QEventLoop loop;

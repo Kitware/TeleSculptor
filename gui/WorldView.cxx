@@ -131,6 +131,61 @@ vtkSmartPointer<vtkColorTransferFunction> createBluesColorPalette(
   return lut;
 }
 
+//-----------------------------------------------------------------------------
+bool validForColoring(vtkDataArray* a, bool& mapScalars)
+{
+  if (! a)
+  {
+    return false;
+  }
+  int numberOfComponents = a->GetNumberOfComponents();
+  if (numberOfComponents == 4 || numberOfComponents == 3)
+  {
+    // RGBA or RGB
+    mapScalars = false;
+    return true;
+  }
+  else if (numberOfComponents == 1)
+  {
+    mapScalars = true;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+vtkDataArray* findArrayToColor(vtkDataSet* dataset, bool& mapScalars)
+{
+  vtkPointData* pd = dataset->GetPointData();
+  // first try the active scalars
+  vtkDataArray* a = pd->GetScalars();
+  if (validForColoring(a, mapScalars))
+  {
+    return a;
+  }
+  // if active scalars are not set look through all arrays,
+  // if we find an array that fits, set it as active scalars and return it.
+  for(int i = 0; i < pd->GetNumberOfArrays(); ++i)
+  {
+    a = pd->GetArray(i);
+    if (validForColoring(a, mapScalars))
+    {
+      pd->SetScalars(a);
+      return a;
+    }
+    else
+    {
+      continue;
+    }
+  }
+  mapScalars = false;
+  return nullptr;
+}
+
 } // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
@@ -1091,37 +1146,26 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
-  char const* arrayName = nullptr;
-  constexpr char const* rgbName = "RGB";
-  constexpr char const* rgbaName = "RGBA";
-  if (mesh->GetPointData()->HasArray(rgbaName))
+  bool mapScalars = false;
+  vtkDataArray* scalars = findArrayToColor(mesh, mapScalars);
+  if (scalars)
   {
-    arrayName = rgbaName;
-  }
-  else if (mesh->GetPointData()->HasArray(rgbName))
-  {
-    arrayName = rgbName;
-  }
-  vtkDataArray* scalars = nullptr;
-  if (arrayName)
-  {
-    meshMapper->SetScalarModeToUsePointFieldData();
-    meshMapper->SelectColorArray(arrayName);
-    meshMapper->ScalarVisibilityOn();
+    if (mapScalars)
+    {
+      double range[2];
+      scalars->GetRange(range);
+      meshMapper->SetLookupTable(createBluesColorPalette(range));
+      meshMapper->SetColorModeToMapScalars();
+    }
+    else
+    {
+      // for char, short, int, long arrays 0-255 maps to color component
+      // for float arrays 0-1 maps to color component
+      meshMapper->SetColorModeToDirectScalars();      
+    }
     d->volumeOptions->setSurfaceColored(true);
+    emit contourChanged();
   }
-  else if ((scalars = mesh->GetPointData()->GetScalars()))
-  {
-    double range[2];
-    scalars->GetRange(range);
-    meshMapper->SetLookupTable(createBluesColorPalette(range));
-    meshMapper->SetColorModeToMapScalars();
-    meshMapper->ScalarVisibilityOn();
-    d->volumeOptions->setSurfaceColored(true);
-  }
-
-
-  emit contourChanged();
 }
 
 //-----------------------------------------------------------------------------
