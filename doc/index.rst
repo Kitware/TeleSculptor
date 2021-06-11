@@ -8,7 +8,7 @@
 TeleSculptor
 ==============
 
-.. image:: /../gui/icons/256x256/telesculptor.png
+.. image:: ../gui/icons/256x256/telesculptor.png
    :align: right
 
 Introduction
@@ -44,7 +44,7 @@ Getting Started
 .. toctree::
    :maxdepth: 2
    :hidden:
-   
+
    manuals/installation
    manuals/views
    manuals/workflows
