@@ -341,20 +341,27 @@ void vtkMaptkCameraRepresentation::Update()
   {
     this->Internal->PathPolyData->Reset();
 
-    vtkNew<vtkPoints> points;
-    this->Internal->PathPolyData->SetPoints(points.GetPointer());
-    points->Allocate(this->Internal->Cameras.size());
-
-    vtkNew<vtkCellArray> lines;
-    this->Internal->PathPolyData->SetLines(lines.GetPointer());
-    lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
-
-    for(auto const& camData : this->Internal->Cameras)
+    // Don't add points unless we have more than one camera; we obviously can't
+    // draw lines for a single point, and for some reason having only one point
+    // causes the other actors to fail to render
+    if (this->Internal->Cameras.size() > 1)
     {
-      double position[3];
-      camData.second->GetPosition(position);
-      lines->InsertCellPoint(points->InsertNextPoint(position));
+      vtkNew<vtkPoints> points;
+      this->Internal->PathPolyData->SetPoints(points.GetPointer());
+      points->Allocate(this->Internal->Cameras.size());
+
+      vtkNew<vtkCellArray> lines;
+      this->Internal->PathPolyData->SetLines(lines.GetPointer());
+      lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
+
+      for(auto const& camData : this->Internal->Cameras)
+      {
+        double position[3];
+        camData.second->GetPosition(position);
+        lines->InsertCellPoint(points->InsertNextPoint(position));
+      }
     }
+
     this->Internal->PathPolyData->Modified();
     this->Internal->PathNeedsUpdate = false;
   }
