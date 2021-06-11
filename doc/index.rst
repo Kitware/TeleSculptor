@@ -6,13 +6,13 @@
 .. include:: manuals/version.rst
 
 TeleSculptor
-==============
+============
 
-.. image:: ../gui/icons/256x256/telesculptor.png
+.. image:: /../gui/icons/256x256/telesculptor.png
    :align: right
 
 Introduction
---------------
+------------
 
 Welcome to TeleSculptor.  This software is free and open source software developed by Kitware under multiple SBIR contracts for DARPA and AFRL.  The purpose of the software is to 
 calibrate cameras and extract 3D information from video and images, especially aerial video.  The software is designed to have different workflows that can either improve the manual 
@@ -27,7 +27,7 @@ TeleSculptor is a cross-platform desktop application for Windows, Linux, and Mac
 work nearly the same on other platforms.
 
 Branding: Origins and Destinations
------------------------------------
+----------------------------------
 
 TeleSculptor has its origins in a software project developed as “MAP-Tk”, the Motion-imagery Aerial Photogrammetry Toolkit.  The original software was not an end user application but 
 a collection of developer tools and libraries.  As the software evolved it developed a graphical application that we now call TeleSculptor.  At the same time, the software libraries 
@@ -35,7 +35,7 @@ of MAP-Tk were reorganized into a new, broader toolkit called KWIVER (Kitware Im
 TeleSculptor application powered by KWIVER.  However, some uses of the name MAP-Tk may persist for historical reasons.
 
 Getting Started
-----------------
+---------------
 
 * For instructions on how to install Telesculptor, see :ref:`Installation <installation>`.
 
@@ -52,3 +52,4 @@ Getting Started
    manuals/advancedtools
    manuals/computeoptions
    manuals/advancedconfig
+   manuals/cameracalibration
