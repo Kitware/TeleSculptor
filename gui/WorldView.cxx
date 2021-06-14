@@ -35,7 +35,6 @@
 #include <vtkBoxWidget2.h>
 #include <vtkCellArray.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkColorTransferFunction.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkDoubleArray.h>
 #include <vtkEventQtSlotConnect.h>
@@ -93,69 +92,8 @@ using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
 
-
 namespace // anonymous
 {
-
-//-----------------------------------------------------------------------------
-vtkSmartPointer<vtkColorTransferFunction> createBluesColorPalette(
-  double* range)
-{
-  auto lut = vtkSmartPointer<vtkColorTransferFunction>::New();
-  std::array<std::array<double, 3>, 17> blues = {{
-      {0.031373, 0.188235, 0.419608},
-      {0.031373, 0.253195, 0.516063},
-      {0.031757, 0.318139, 0.612149},
-      {0.080969, 0.38113, 0.661361},
-      {0.130427, 0.444152, 0.710327},
-      {0.195386, 0.509112, 0.743791},
-      {0.260715, 0.573841, 0.777209},
-      {0.341423, 0.628958, 0.808704},
-      {0.422745, 0.684075, 0.839892},
-      {0.523137, 0.739193, 0.861546},
-      {0.622684, 0.793464, 0.883429},
-      {0.701423, 0.826928, 0.910988},
-      {0.778685, 0.8603, 0.937993},
-      {0.825928, 0.891795, 0.953741},
-      {0.87328, 0.923291, 0.969489},
-      {0.922491, 0.954787, 0.985236},
-      {0.968627, 0.984314, 1}}};
-  for (size_t i = 0; i < blues.size(); ++i)
-  {
-    lut->AddRGBPoint(
-      range[0] + (range[1] - range[0]) * i / (blues.size() - 1),
-      blues[i][0], blues[i][1], blues[i][2]);
-  }
-  // blues from ParaView: ColorMap.json
-  lut->SetColorSpaceToLab();
-  return lut;
-}
-
-//-----------------------------------------------------------------------------
-bool validForColoring(vtkDataArray* a, bool& mapScalars)
-{
-  if (! a)
-  {
-    return false;
-  }
-  int numberOfComponents = a->GetNumberOfComponents();
-  if (numberOfComponents == 4 || numberOfComponents == 3)
-  {
-    // RGBA or RGB
-    mapScalars = false;
-    return true;
-  }
-  else if (numberOfComponents == 1)
-  {
-    mapScalars = true;
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 vtkDataArray* findArrayToColor(vtkDataSet* dataset, bool& mapScalars)
@@ -163,7 +101,7 @@ vtkDataArray* findArrayToColor(vtkDataSet* dataset, bool& mapScalars)
   vtkPointData* pd = dataset->GetPointData();
   // first try the active scalars
   vtkDataArray* a = pd->GetScalars();
-  if (validForColoring(a, mapScalars))
+  if (VolumeOptions::validForColoring(a, mapScalars))
   {
     return a;
   }
@@ -172,7 +110,7 @@ vtkDataArray* findArrayToColor(vtkDataSet* dataset, bool& mapScalars)
   for(int i = 0; i < pd->GetNumberOfArrays(); ++i)
   {
     a = pd->GetArray(i);
-    if (validForColoring(a, mapScalars))
+    if (VolumeOptions::validForColoring(a, mapScalars))
     {
       pd->SetScalars(a);
       return a;
@@ -1142,30 +1080,14 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   d->volumeOptions->setEnabled(true);
 
   this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
-  d->volumeOptions->showColorizeSurfaceMenu(true);
+  bool mapScalars = false;
+  vtkDataArray* scalars = findArrayToColor(mesh, mapScalars);
+  d->volumeOptions->setOriginalColorArray(scalars);
+  d->volumeOptions->setSurfaceColor(VolumeOptions::ORIGINAL_COLOR);
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
-  bool mapScalars = false;
-  vtkDataArray* scalars = findArrayToColor(mesh, mapScalars);
-  if (scalars)
-  {
-    if (mapScalars)
-    {
-      double range[2];
-      scalars->GetRange(range);
-      meshMapper->SetLookupTable(createBluesColorPalette(range));
-      meshMapper->SetColorModeToMapScalars();
-    }
-    else
-    {
-      // for char, short, int, long arrays 0-255 maps to color component
-      // for float arrays 0-1 maps to color component
-      meshMapper->SetColorModeToDirectScalars();      
-    }
-    d->volumeOptions->setSurfaceColored(true);
-    emit contourChanged();
-  }
+  emit contourChanged();
 }
 
 //-----------------------------------------------------------------------------
@@ -1281,11 +1203,11 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
-  foreach (auto const& lm, landmarks)
+  foreach (auto const& landmark, landmarks)
   {
-    auto const& pos = lm.second->loc();
-    auto const& color = lm.second->color();
-    auto const observations = lm.second->observations();
+    auto const& pos = landmark.second->loc();
+    auto const& color = landmark.second->color();
+    auto const observations = landmark.second->observations();
 
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);

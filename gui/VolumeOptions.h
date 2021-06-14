@@ -13,8 +13,8 @@
 #include <QWidget>
 
 class vtkPolyData;
-
 class vtkActor;
+class vtkDataArray;
 
 class VolumeOptionsPrivate;
 
@@ -51,8 +51,17 @@ public:
 
   void setCurrentFrame(kwiver::vital::frame_id_t);
 
-  void setSurfaceColored(bool enabled);
+  enum SurfaceColor
+  {
+    NO_COLOR,
+    ORIGINAL_COLOR,
+    IMAGE_COLOR
+  };
+  void setSurfaceColor(int surfaceColor);
+  void setOriginalColorArray(vtkDataArray* dataArray);
   bool isColorOptionsEnabled();
+
+  static bool validForColoring(vtkDataArray* a, bool& mapScalars);
 
 signals:
   void currentFrameIDChanged(int);
@@ -60,7 +69,7 @@ signals:
   void colorOptionsEnabled(bool);
 
 public slots:
-  void showColorizeSurfaceMenu(bool state);
+  void showColorizeSurfaceMenu(int index);
   void reshowColorizeSurfaceMenu();
   void updateColorizeSurfaceMenu(QString const& text);
 

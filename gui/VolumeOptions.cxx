@@ -16,12 +16,52 @@
 #include <QWidgetAction>
 
 #include <vtkActor.h>
+#include <vtkColorTransferFunction.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 #include <string>
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkColorTransferFunction> createBluesColorPalette(
+  double* range)
+{
+  auto lut = vtkSmartPointer<vtkColorTransferFunction>::New();
+  std::array<std::array<double, 3>, 17> blues = {{
+      {0.031373, 0.188235, 0.419608},
+      {0.031373, 0.253195, 0.516063},
+      {0.031757, 0.318139, 0.612149},
+      {0.080969, 0.38113, 0.661361},
+      {0.130427, 0.444152, 0.710327},
+      {0.195386, 0.509112, 0.743791},
+      {0.260715, 0.573841, 0.777209},
+      {0.341423, 0.628958, 0.808704},
+      {0.422745, 0.684075, 0.839892},
+      {0.523137, 0.739193, 0.861546},
+      {0.622684, 0.793464, 0.883429},
+      {0.701423, 0.826928, 0.910988},
+      {0.778685, 0.8603, 0.937993},
+      {0.825928, 0.891795, 0.953741},
+      {0.87328, 0.923291, 0.969489},
+      {0.922491, 0.954787, 0.985236},
+      {0.968627, 0.984314, 1}}};
+  for (size_t i = 0; i < blues.size(); ++i)
+  {
+    lut->AddRGBPoint(
+      range[0] + (range[1] - range[0]) * i / (blues.size() - 1),
+      blues[i][0], blues[i][1], blues[i][2]);
+  }
+  // blues from ParaView: ColorMap.json
+  lut->SetColorSpaceToLab();
+  return lut;
+}
+
+}  // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 class VolumeOptionsPrivate
@@ -37,6 +77,7 @@ public:
   ColorizeSurfaceOptions* colorizeSurfaceOptions;
 
   vtkActor* volumeActor;
+  vtkDataArray* originalColorArray;
 
 };
 
@@ -70,10 +111,12 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   d->uiState.restore();
 
   d->colorizeSurfaceOptions = new ColorizeSurfaceOptions(settingsGroup, this);
+  d->originalColorArray = nullptr;
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
 
   // Connect signals/slots
-  connect(d->UI.checkBoxColorizeSurface, &QAbstractButton::toggled,
+  connect(d->UI.comboBoxColorizeSurface,
+          QOverload<int>::of(&QComboBox::currentIndexChanged),
           this, &VolumeOptions::showColorizeSurfaceMenu);
 
   connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
@@ -216,11 +259,11 @@ void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setSurfaceColored(bool enabled)
+void VolumeOptions::setSurfaceColor(int index)
 {
   QTE_D();
 
-  d->UI.checkBoxColorizeSurface->setChecked(enabled);
+  d->UI.comboBoxColorizeSurface->setCurrentIndex(index);
 }
 
 //-----------------------------------------------------------------------------
@@ -228,22 +271,83 @@ bool VolumeOptions::isColorOptionsEnabled()
 {
   QTE_D();
 
-  return d->UI.checkBoxColorizeSurface->isCheckable()
-         && d->UI.checkBoxColorizeSurface->isChecked();
+  return  d->UI.comboBoxColorizeSurface->currentIndex() == IMAGE_COLOR;
+}
+
+
+//-----------------------------------------------------------------------------
+bool VolumeOptions::validForColoring(vtkDataArray* a, bool& mapScalars)
+{
+  if (!a)
+  {
+    return false;
+  }
+  int numberOfComponents = a->GetNumberOfComponents();
+  if (numberOfComponents == 4 || numberOfComponents == 3)
+  {
+    // RGBA or RGB
+    mapScalars = false;
+    return true;
+  }
+  else if (numberOfComponents == 1)
+  {
+    mapScalars = true;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::showColorizeSurfaceMenu(bool state)
+void VolumeOptions::showColorizeSurfaceMenu(int index)
 {
   QTE_D();
-  d->UI.toolButtonColorizeSurfaceMenu->setEnabled(state);
-  d->colorizeSurfaceOptions->enableMenu(state);
-  if (state)
+  d->UI.toolButtonColorizeSurfaceMenu->setEnabled(index == IMAGE_COLOR);
+  d->colorizeSurfaceOptions->enableMenu(index == IMAGE_COLOR);
+  vtkMapper* meshMapper = d->volumeActor->GetMapper();
+  switch(index)
   {
+  case ORIGINAL_COLOR:
+    bool mapScalars;
+    if (validForColoring(d->originalColorArray, mapScalars))
+    {
+      vtkPolyData* volume = vtkPolyData::SafeDownCast(
+        d->volumeActor->GetMapper()->GetInput());
+      volume->GetPointData()->SetScalars(d->originalColorArray);
+      meshMapper->SetScalarVisibility(true);
+      if (mapScalars)
+      {
+        double range[2];
+        d->originalColorArray->GetRange(range);
+        meshMapper->SetLookupTable(createBluesColorPalette(range));
+        meshMapper->SetColorModeToMapScalars();
+      }
+      else
+      {
+        // for char, short, int, long arrays 0-255 maps to color component
+        // for float arrays 0-1 maps to color component
+        meshMapper->SetColorModeToDirectScalars();
+      }
+    }
+    break;
+  case IMAGE_COLOR:
     this->forceColorize();
+    // we always color by mean first.
+    meshMapper->SetColorModeToDirectScalars();
+    break;
   }
-  d->volumeActor->GetMapper()->SetScalarVisibility(state);
+  d->volumeActor->GetMapper()->SetScalarVisibility(
+    index == ORIGINAL_COLOR || index == IMAGE_COLOR);
   emit modified();
+}
+
+//-----------------------------------------------------------------------------
+void VolumeOptions::setOriginalColorArray(vtkDataArray* dataArray)
+{
+  QTE_D();
+  d->originalColorArray = dataArray;
 }
 
 //-----------------------------------------------------------------------------
@@ -253,7 +357,7 @@ void VolumeOptions::reshowColorizeSurfaceMenu()
   if (d->volumeActor)
   {
     d->volumeActor->GetMapper()->Update();
-    this->showColorizeSurfaceMenu(d->UI.checkBoxColorizeSurface->isChecked());
+    this->showColorizeSurfaceMenu(d->UI.comboBoxColorizeSurface->currentIndex());
   }
 }
 
