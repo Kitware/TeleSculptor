@@ -46,14 +46,16 @@ and observe it in the Camera View pane. Rotate the 3D model to the desired view,
 e.g. resembling the current image.
 
 To place/edit ground control points (GCP), click the 3D viewer GCP tool |gcp_button| 
-to start GCP creation and editing.
+to start GCP creation and editing. Use Ctrl+click to place GCP buttons.
+Drag them as needed to refine their locations.
 Place six or more GCPs on the 3D model at the feature points visible from the camera view,
 observe their IDs appear in the Ground Control Points list, name them, if desired.
 
 To build 3D-2D point correspondences, click camera registration points (CRP) tool |gcp_button|
 in the Camera View.
-For each GCP in the list (also high-lighted in the 3D viewer):
+For each GCP in the list (also highlighted in the 3D viewer):
 select a 3D point, then click on the Camera View image, where its 2D projection is expected to be.
+Use Ctrl+click to place a CRP, and drag it with the mouse to refine its location.
 Observe the target-like icon in the GCP list for the 3D point having a corresponding 2D point.
 Select another 3D GCP and create-click-move its 2D counterpart.
 Continue with the 3D-2D correspondence process until the count of 6 or more.
@@ -64,6 +66,9 @@ Observe the 3D viewer for the image projection corresponding to the newly calibr
 Click the tree-expandable marker in the GCP list next to a GCP point to see the frame numbers
 this point was used in for camera calibration.
 Double-Click on the desired frame number to jump to that frame.
+
+.. image:: /doc/screenshot/telesculptor_screenshot_calibration.png
+   :alt: Manual Camera Calibration Screenshot
 
 Move 3D and/or 2D points to adjust the camera calibration as needed.
 Zoom in and out, if necessary in both 3D and 2D views.
