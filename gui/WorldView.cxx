@@ -1097,7 +1097,7 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
     // if the mesh has the required arrays set IMAGE_COLOR and
     // avoid recomputing colors from current image.
     d->volumeOptions->setColorizeSurface(
-      VolumeOptions::IMAGE_COLOR);
+      VolumeOptions::IMAGE_COLOR, true /*blockSignals*/);
   }
   else
   {

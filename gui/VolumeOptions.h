@@ -57,7 +57,7 @@ public:
     IMAGE_COLOR,
     ORIGINAL_COLOR
   };
-  void setColorizeSurface(int surfaceColor);
+  void setColorizeSurface(int surfaceColor, bool blockSignals = false);
   void setOriginalColorArray(vtkDataArray* dataArray);
   bool isColorOptionsEnabled();
 

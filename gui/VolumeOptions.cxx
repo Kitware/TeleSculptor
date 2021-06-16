@@ -118,7 +118,7 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
 
   d->colorizeSurfaceOptions = new ColorizeSurfaceOptions(settingsGroup, this);
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
-
+  d->UI.comboBoxColorizeSurface->setSizeAdjustPolicy(QComboBox::AdjustToContents);
   // Connect signals/slots
   connect(d->UI.comboBoxColorizeSurface,
           QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -264,7 +264,7 @@ void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setColorizeSurface(int index)
+void VolumeOptions::setColorizeSurface(int index, bool blockSignals)
 {
   QTE_D();
 
@@ -277,7 +277,17 @@ void VolumeOptions::setColorizeSurface(int index)
   {
     d->UI.comboBoxColorizeSurface->insertItem(index, "Original color");
   }
+  if (blockSignals)
+  {
+    d->UI.comboBoxColorizeSurface->blockSignals(true);
+  }
   d->UI.comboBoxColorizeSurface->setCurrentIndex(index);
+  d->UI.toolButtonColorizeSurfaceMenu->setEnabled(index == IMAGE_COLOR);
+  d->colorizeSurfaceOptions->enableMenu(index == IMAGE_COLOR);
+  if (blockSignals)
+  {
+    d->UI.comboBoxColorizeSurface->blockSignals(false);
+  }
 }
 
 //-----------------------------------------------------------------------------
