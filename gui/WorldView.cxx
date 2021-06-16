@@ -1106,7 +1106,11 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
     if (scalars)
     {
       d->volumeOptions->setOriginalColorArray(scalars);
-      d->volumeOptions->setColorizeSurface(VolumeOptions::ORIGINAL_COLOR);
+      // make sure refresh the picture even when setting the same ORIGINAL_COLOR
+      d->volumeOptions->setColorizeSurface(
+        VolumeOptions::ORIGINAL_COLOR, true /*blockSignals*/);
+      d->volumeOptions->showColorizeSurfaceMenu(
+        VolumeOptions::ORIGINAL_COLOR);
     }
     else
     {
