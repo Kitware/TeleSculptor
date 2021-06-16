@@ -24,6 +24,8 @@
 
 #include <string>
 
+#include <vital/logger/logger.h>
+
 namespace // anonymous
 {
 
@@ -67,7 +69,11 @@ vtkSmartPointer<vtkColorTransferFunction> createBluesColorPalette(
 class VolumeOptionsPrivate
 {
 public:
-  VolumeOptionsPrivate():colorizeSurfaceOptions(nullptr),volumeActor(nullptr)
+  VolumeOptionsPrivate()
+    :  colorizeSurfaceOptions(nullptr),
+       volumeActor(nullptr),
+       originalColorArray(nullptr),
+       logger(kwiver::vital::get_logger("telesculptor.volumeoptions"))
   {}
 
   void setPopup(QToolButton* button, QWidget* popup);
@@ -78,7 +84,7 @@ public:
 
   vtkActor* volumeActor;
   vtkDataArray* originalColorArray;
-
+  kwiver::vital::logger_handle_t logger;
 };
 
 QTE_IMPLEMENT_D_FUNC(VolumeOptions)
@@ -111,7 +117,6 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   d->uiState.restore();
 
   d->colorizeSurfaceOptions = new ColorizeSurfaceOptions(settingsGroup, this);
-  d->originalColorArray = nullptr;
   d->setPopup(d->UI.toolButtonColorizeSurfaceMenu, d->colorizeSurfaceOptions);
 
   // Connect signals/slots
@@ -259,10 +264,19 @@ void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setSurfaceColor(int index)
+void VolumeOptions::setColorizeSurface(int index)
 {
   QTE_D();
 
+  if (index < 0 || index > ORIGINAL_COLOR)
+  {
+    LOG_ERROR(d->logger, "Invalid index: " << index);
+  }
+  if (index == ORIGINAL_COLOR &&
+      d->UI.comboBoxColorizeSurface->count() <= 2)
+  {
+    d->UI.comboBoxColorizeSurface->insertItem(index, "Original color");
+  }
   d->UI.comboBoxColorizeSurface->setCurrentIndex(index);
 }
 

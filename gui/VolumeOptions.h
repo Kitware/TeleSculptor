@@ -54,10 +54,10 @@ public:
   enum SurfaceColor
   {
     NO_COLOR,
-    ORIGINAL_COLOR,
-    IMAGE_COLOR
+    IMAGE_COLOR,
+    ORIGINAL_COLOR
   };
-  void setSurfaceColor(int surfaceColor);
+  void setColorizeSurface(int surfaceColor);
   void setOriginalColorArray(vtkDataArray* dataArray);
   bool isColorOptionsEnabled();
 

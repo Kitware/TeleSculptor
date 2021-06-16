@@ -68,11 +68,6 @@
      </item>
      <item>
       <property name="text">
-       <string>Original color</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>Image color</string>
       </property>
      </item>

@@ -323,7 +323,6 @@ void ColorizeSurfaceOptions::forceColorize()
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-  std::cout << "InsideColorize: " << d->insideColorize << std::endl;
   if (! d->insideColorize)
   {
     d->insideColorize = true;
@@ -331,21 +330,15 @@ void ColorizeSurfaceOptions::colorize()
       (d->UI.radioButtonCurrentFrame->isChecked() ? d->currentFrame : -1);
     while (d->lastColorizedFrame != colorizedFrame)
     {
-      std::cout << "begin while" << std::endl
-                << "LastColorizedFrame: " << d->lastColorizedFrame
-                << std::endl
-                << "colorizedFrame: " << colorizedFrame << std::endl;
       d->lastColorizedFrame = colorizedFrame;
 
       if (!d->cameras || d->cameras->size() == 0)
       {
-        std::cout << "no cameras" << "\n\n";
         d->UI.comboBoxColorDisplay->setEnabled(true);
         emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
         d->insideColorize = false;
         return;
       }
-      std::cout << "setup coloration" << std::endl;
       QEventLoop loop;
       vtkPolyData* volume = vtkPolyData::SafeDownCast(d->volumeActor->GetMapper()
                                                       ->GetInput());
@@ -376,10 +369,6 @@ void ColorizeSurfaceOptions::colorize()
       coloration->start();
       loop.exec();
       colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
-      std::cout << "end while" << std::endl
-                << "LastColorizedFrame: " << d->lastColorizedFrame
-                << std::endl
-                << "colorizedFrame: " << colorizedFrame << std::endl;
     }
     d->insideColorize = false;
   }

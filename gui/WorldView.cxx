@@ -96,8 +96,9 @@ namespace // anonymous
 {
 
 //-----------------------------------------------------------------------------
-vtkDataArray* findArrayToColor(vtkDataSet* dataset, bool& mapScalars)
+vtkDataArray* findArrayToColor(vtkDataSet* dataset)
 {
+  bool mapScalars;
   vtkPointData* pd = dataset->GetPointData();
   // first try the active scalars
   vtkDataArray* a = pd->GetScalars();
@@ -1075,19 +1076,43 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   // Set the actor's mapper
   d->volumeActor->SetMapper(meshMapper);
   d->volumeActor->SetVisibility(true);
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor);
   emit this->fusedMeshEnabled(true);
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
   this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
-  bool mapScalars = false;
-  vtkDataArray* scalars = findArrayToColor(mesh, mapScalars);
-  d->volumeOptions->setOriginalColorArray(scalars);
-  d->volumeOptions->setSurfaceColor(VolumeOptions::ORIGINAL_COLOR);
-
-  // Add this actor to the renderer
-  d->renderer->AddActor(d->volumeActor);
-  emit contourChanged();
+  std::array<std::string, 3> requiredArrays = {"mean", "median", "count"};
+  size_t i;
+  for (i = 0; i < requiredArrays.size(); ++i)
+  {
+    if (! mesh->GetPointData()->GetArray(requiredArrays[i].c_str()))
+    {
+      break;
+    }
+  }
+  if (i == requiredArrays.size())
+  {
+    // if the mesh has the required arrays set IMAGE_COLOR and
+    // avoid recomputing colors from current image.
+    d->volumeOptions->setColorizeSurface(
+      VolumeOptions::IMAGE_COLOR);
+  }
+  else
+  {
+    // check if there is other scalar to color
+    vtkDataArray* scalars = findArrayToColor(mesh);
+    if (scalars)
+    {
+      d->volumeOptions->setOriginalColorArray(scalars);
+      d->volumeOptions->setColorizeSurface(VolumeOptions::ORIGINAL_COLOR);
+    }
+    else
+    {
+      d->volumeOptions->setColorizeSurface(VolumeOptions::NO_COLOR);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
