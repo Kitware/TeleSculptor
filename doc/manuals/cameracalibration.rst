@@ -67,7 +67,7 @@ Click the tree-expandable marker in the GCP list next to a GCP point to see the 
 this point was used in for camera calibration.
 Double-Click on the desired frame number to jump to that frame.
 
-.. image:: /doc/screenshot/telesculptor_screenshot_calibration.png
+.. image:: /screenshot/telesculptor_screenshot_calibration.png
    :alt: Manual Camera Calibration Screenshot
 
 Move 3D and/or 2D points to adjust the camera calibration as needed.
