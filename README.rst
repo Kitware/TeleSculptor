@@ -443,7 +443,7 @@ public release via 88ABW-2015-2555.
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
 .. _Qt: https://www.qt.io/
-.. _Travis CI: https://travis-ci.org/
+.. _Travis CI: https://travis-ci.com/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _VTK: https://vtk.org/
 .. _latest release: https://github.com/Kitware/TeleSculptor/releases/latest
@@ -453,8 +453,8 @@ public release via 88ABW-2015-2555.
 
 .. |>=| unicode:: U+02265 .. greater or equal sign
 
-.. |CI:master| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=master
-.. |CI:release| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=release
+.. |CI:master| image:: https://travis-ci.com/Kitware/TeleSculptor.svg?branch=master
+.. |CI:release| image:: https://travis-ci.com/Kitware/TeleSculptor.svg?branch=release
 
-.. _CI:master: https://travis-ci.org/Kitware/TeleSculptor
-.. _CI:release: https://travis-ci.org/Kitware/TeleSculptor
+.. _CI:master: https://travis-ci.com/Kitware/TeleSculptor
+.. _CI:release: https://travis-ci.com/Kitware/TeleSculptor
