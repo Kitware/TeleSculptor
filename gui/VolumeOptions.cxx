@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QToolButton>
 #include <QWidgetAction>
+#include <QtDebug>
 
 #include <vtkActor.h>
 #include <vtkColorTransferFunction.h>
@@ -23,8 +24,6 @@
 #include <vtkPolyData.h>
 
 #include <string>
-
-#include <vital/logger/logger.h>
 
 namespace // anonymous
 {
@@ -70,21 +69,15 @@ class VolumeOptionsPrivate
 {
 public:
   VolumeOptionsPrivate()
-    :  colorizeSurfaceOptions(nullptr),
-       volumeActor(nullptr),
-       originalColorArray(nullptr),
-       logger(kwiver::vital::get_logger("telesculptor.volumeoptions"))
   {}
 
   void setPopup(QToolButton* button, QWidget* popup);
 
   Ui::VolumeOptions UI;
   qtUiState uiState;
-  ColorizeSurfaceOptions* colorizeSurfaceOptions;
-
-  vtkActor* volumeActor;
-  vtkDataArray* originalColorArray;
-  kwiver::vital::logger_handle_t logger;
+  ColorizeSurfaceOptions* colorizeSurfaceOptions = nullptr;
+  vtkActor* volumeActor = nullptr;
+  vtkDataArray* originalColorArray = nullptr;
 };
 
 QTE_IMPLEMENT_D_FUNC(VolumeOptions)
@@ -122,7 +115,7 @@ VolumeOptions::VolumeOptions(const QString &settingsGroup, QWidget* parent,
   // Connect signals/slots
   connect(d->UI.comboBoxColorizeSurface,
           QOverload<int>::of(&QComboBox::currentIndexChanged),
-          this, &VolumeOptions::showColorizeSurfaceMenu);
+          this, &VolumeOptions::surfaceColoringModeChanged);
 
   connect(d->colorizeSurfaceOptions, &ColorizeSurfaceOptions::colorModeChanged,
           this, &VolumeOptions::updateColorizeSurfaceMenu);
@@ -264,13 +257,14 @@ void VolumeOptions::setCurrentFrame(kwiver::vital::frame_id_t frame)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::setColorizeSurface(int index, bool blockSignals)
+void VolumeOptions::setSurfaceColoringMode(SurfaceColor index, bool blockSignals)
 {
   QTE_D();
 
   if (index < 0 || index > ORIGINAL_COLOR)
   {
-    LOG_ERROR(d->logger, "Invalid index: " << index);
+    qWarning() << "Invalid index: " << index << " setting index to NO_COLOR";
+    index = NO_COLOR;
   }
   if (index == ORIGINAL_COLOR &&
       d->UI.comboBoxColorizeSurface->count() <= 2)
@@ -300,7 +294,7 @@ bool VolumeOptions::isColorOptionsEnabled()
 
 
 //-----------------------------------------------------------------------------
-bool VolumeOptions::validForColoring(vtkDataArray* a, bool& mapScalars)
+bool VolumeOptions::isArrayValidForColoring(vtkDataArray* a, bool& mapScalars)
 {
   if (!a)
   {
@@ -325,7 +319,7 @@ bool VolumeOptions::validForColoring(vtkDataArray* a, bool& mapScalars)
 }
 
 //-----------------------------------------------------------------------------
-void VolumeOptions::showColorizeSurfaceMenu(int index)
+void VolumeOptions::surfaceColoringModeChanged(int index)
 {
   QTE_D();
   d->UI.toolButtonColorizeSurfaceMenu->setEnabled(index == IMAGE_COLOR);
@@ -335,7 +329,7 @@ void VolumeOptions::showColorizeSurfaceMenu(int index)
   {
   case ORIGINAL_COLOR:
     bool mapScalars;
-    if (validForColoring(d->originalColorArray, mapScalars))
+    if (isArrayValidForColoring(d->originalColorArray, mapScalars))
     {
       vtkPolyData* volume = vtkPolyData::SafeDownCast(
         d->volumeActor->GetMapper()->GetInput());
@@ -381,7 +375,7 @@ void VolumeOptions::reshowColorizeSurfaceMenu()
   if (d->volumeActor)
   {
     d->volumeActor->GetMapper()->Update();
-    this->showColorizeSurfaceMenu(d->UI.comboBoxColorizeSurface->currentIndex());
+    this->surfaceColoringModeChanged(d->UI.comboBoxColorizeSurface->currentIndex());
   }
 }
 

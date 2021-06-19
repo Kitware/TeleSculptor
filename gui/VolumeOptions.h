@@ -57,11 +57,11 @@ public:
     IMAGE_COLOR,
     ORIGINAL_COLOR
   };
-  void setColorizeSurface(int surfaceColor, bool blockSignals = false);
+  void setSurfaceColoringMode(SurfaceColor surfaceColor, bool blockSignals = false);
   void setOriginalColorArray(vtkDataArray* dataArray);
   bool isColorOptionsEnabled();
 
-  static bool validForColoring(vtkDataArray* a, bool& mapScalars);
+  static bool isArrayValidForColoring(vtkDataArray* a, bool& mapScalars);
 
 signals:
   void currentFrameIDChanged(int);
@@ -69,7 +69,7 @@ signals:
   void colorOptionsEnabled(bool);
 
 public slots:
-  void showColorizeSurfaceMenu(int index);
+  void surfaceColoringModeChanged(int index);
   void reshowColorizeSurfaceMenu();
   void updateColorizeSurfaceMenu(QString const& text);
 

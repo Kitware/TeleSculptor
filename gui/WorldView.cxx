@@ -102,7 +102,7 @@ vtkDataArray* findArrayToColor(vtkDataSet* dataset)
   vtkPointData* pd = dataset->GetPointData();
   // first try the active scalars
   vtkDataArray* a = pd->GetScalars();
-  if (VolumeOptions::validForColoring(a, mapScalars))
+  if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
   {
     return a;
   }
@@ -111,7 +111,7 @@ vtkDataArray* findArrayToColor(vtkDataSet* dataset)
   for(int i = 0; i < pd->GetNumberOfArrays(); ++i)
   {
     a = pd->GetArray(i);
-    if (VolumeOptions::validForColoring(a, mapScalars))
+    if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
     {
       pd->SetScalars(a);
       return a;
@@ -1096,7 +1096,7 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   {
     // if the mesh has the required arrays set IMAGE_COLOR and
     // avoid recomputing colors from current image.
-    d->volumeOptions->setColorizeSurface(
+    d->volumeOptions->setSurfaceColoringMode(
       VolumeOptions::IMAGE_COLOR, true /*blockSignals*/);
   }
   else
@@ -1107,14 +1107,14 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
     {
       d->volumeOptions->setOriginalColorArray(scalars);
       // make sure refresh the picture even when setting the same ORIGINAL_COLOR
-      d->volumeOptions->setColorizeSurface(
+      d->volumeOptions->setSurfaceColoringMode(
         VolumeOptions::ORIGINAL_COLOR, true /*blockSignals*/);
-      d->volumeOptions->showColorizeSurfaceMenu(
+      d->volumeOptions->surfaceColoringModeChanged(
         VolumeOptions::ORIGINAL_COLOR);
     }
     else
     {
-      d->volumeOptions->setColorizeSurface(VolumeOptions::NO_COLOR);
+      d->volumeOptions->setSurfaceColoringMode(VolumeOptions::NO_COLOR);
     }
   }
 }
