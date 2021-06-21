@@ -33,23 +33,10 @@ public:
   int getFrameSampling() const;
 
   void setCurrentFrame(kwiver::vital::frame_id_t frame);
-  void setOcclusionThreshold(double occlusionThreshold)
-  {
-    this->OcclusionThreshold = occlusionThreshold;
-  }
-  void setRemoveOccluded(double removeOccluded)
-  {
-    this->RemoveOccluded = removeOccluded;
-  }
-  void setRemoveMasked(double removeMasked)
-  {
-    this->RemoveMasked = removeMasked;
-  }
-  double getOcclusionThreshold()
-  {
-    return this->OcclusionThreshold;
-  }
-
+  void setOcclusionThreshold(double occlusionThreshold);
+  void setRemoveOccluded(double removeOccluded);
+  void setRemoveMasked(double removeMasked);
+  double getOcclusionThreshold();
   void setActor(vtkActor* actor);
   void setVideoConfig(std::string const& path,
                       kwiver::vital::config_block_sptr config);
@@ -80,14 +67,6 @@ public slots:
   void updateOcclusionThreshold();
   void removeOccludedChanged(int removeOccluded);
   void removeMaskedChanged(int removeMasked);
-
-protected:
-  double OcclusionThreshold;
-  bool RemoveOccluded;
-  bool RemoveMasked;
-  bool InsideColorize;
-  const int INVALID_FRAME = -2;
-  kwiver::vital::frame_id_t LastColorizedFrame;
 
 private:
 

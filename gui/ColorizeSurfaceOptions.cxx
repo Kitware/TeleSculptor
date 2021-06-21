@@ -46,6 +46,13 @@ public:
   QString frameFile;
 
   kv::frame_id_t currentFrame = -1;
+
+  double occlusionThreshold = 1;
+  bool removeOccluded = true;
+  bool removeMasked = true;
+  bool insideColorize = false;
+  const int INVALID_FRAME = -2;
+  kwiver::vital::frame_id_t lastColorizedFrame = INVALID_FRAME;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -102,11 +109,6 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
   d->frameFile = QString();
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
-  this->OcclusionThreshold = 1;
-  this->RemoveOccluded = true;
-  this->RemoveMasked = true;
-  this->InsideColorize = false;
-  this->LastColorizedFrame = INVALID_FRAME;
 }
 
 //-----------------------------------------------------------------------------
@@ -115,6 +117,34 @@ ColorizeSurfaceOptions::~ColorizeSurfaceOptions()
   QTE_D();
 
   d->uiState.save();
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setOcclusionThreshold(double occlusionThreshold)
+{
+  QTE_D();
+  d->occlusionThreshold = occlusionThreshold;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setRemoveOccluded(double removeOccluded)
+{
+  QTE_D();
+  d->removeOccluded = removeOccluded;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setRemoveMasked(double removeMasked)
+{
+  QTE_D();
+  d->removeMasked = removeMasked;
+}
+
+//-----------------------------------------------------------------------------
+double ColorizeSurfaceOptions::getOcclusionThreshold()
+{
+  QTE_D();
+  return d->occlusionThreshold;
 }
 
 //-----------------------------------------------------------------------------
@@ -274,8 +304,6 @@ void ColorizeSurfaceOptions::changeColorDisplay()
   else
   {
     mapper->SetColorModeToDirectScalars();
-    mapper->CreateDefaultLookupTable();
-    mapper->UseLookupTableScalarRangeOff();
   }
 
   mapper->Update();
@@ -286,7 +314,8 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::forceColorize()
 {
-  this->LastColorizedFrame = INVALID_FRAME;
+  QTE_D();
+  d->lastColorizedFrame = d->INVALID_FRAME;
   colorize();
 }
 
@@ -294,19 +323,20 @@ void ColorizeSurfaceOptions::forceColorize()
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-  if (! this->InsideColorize)
+  if (! d->insideColorize)
   {
-    this->InsideColorize = true;
+    d->insideColorize = true;
     auto colorizedFrame =
       (d->UI.radioButtonCurrentFrame->isChecked() ? d->currentFrame : -1);
-    while (this->LastColorizedFrame != colorizedFrame)
+    while (d->lastColorizedFrame != colorizedFrame)
     {
-      this->LastColorizedFrame = colorizedFrame;
+      d->lastColorizedFrame = colorizedFrame;
 
       if (!d->cameras || d->cameras->size() == 0)
       {
         d->UI.comboBoxColorDisplay->setEnabled(true);
         emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+        d->insideColorize = false;
         return;
       }
       QEventLoop loop;
@@ -320,17 +350,17 @@ void ColorizeSurfaceOptions::colorize()
       coloration->set_input(volume);
       coloration->set_output(volume);
       coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
-      coloration->set_occlusion_threshold(this->OcclusionThreshold);
-      coloration->set_remove_occluded(this->RemoveOccluded);
-      coloration->set_remove_masked(this->RemoveMasked);
-      coloration->set_frame(this->LastColorizedFrame);
+      coloration->set_occlusion_threshold(d->occlusionThreshold);
+      coloration->set_remove_occluded(d->removeOccluded);
+      coloration->set_remove_masked(d->removeMasked);
+      coloration->set_frame(d->lastColorizedFrame);
       coloration->set_all_frames(false);
       connect(coloration, &MeshColoration::resultReady,
               this, &ColorizeSurfaceOptions::meshColorationHandleResult);
       connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
       connect(coloration, &MeshColoration::finished,
               coloration, &MeshColoration::deleteLater);
-      if (this->LastColorizedFrame < 0)
+      if (d->lastColorizedFrame < 0)
       {
         // only enable the progress bar if coloring with multiple frames
         connect(coloration, &MeshColoration::progressChanged,
@@ -340,7 +370,7 @@ void ColorizeSurfaceOptions::colorize()
       loop.exec();
       colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
     }
-    this->InsideColorize = false;
+    d->insideColorize = false;
   }
 }
 

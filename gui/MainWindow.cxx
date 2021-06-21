@@ -1854,7 +1854,7 @@ void MainWindow::openMesh()
 
   auto const path = QFileDialog::getOpenFileName(
     this, "Open Mesh File", initialDir,
-    "PLY Files (*.ply);;"
+    "Mesh Files (*.ply *.vtp);;"
     "All Files (*)");
 
   if (!path.isEmpty())

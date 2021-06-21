@@ -66,6 +66,7 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
@@ -85,9 +86,46 @@
 #include <QToolButton>
 #include <QWidgetAction>
 
+#include <array>
+
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+vtkDataArray* findArrayToColor(vtkDataSet* dataset)
+{
+  bool mapScalars;
+  vtkPointData* pd = dataset->GetPointData();
+  // first try the active scalars
+  vtkDataArray* a = pd->GetScalars();
+  if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
+  {
+    return a;
+  }
+  // if active scalars are not set look through all arrays,
+  // if we find an array that fits, set it as active scalars and return it.
+  for(int i = 0; i < pd->GetNumberOfArrays(); ++i)
+  {
+    a = pd->GetArray(i);
+    if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
+    {
+      pd->SetScalars(a);
+      return a;
+    }
+    else
+    {
+      continue;
+    }
+  }
+  mapScalars = false;
+  return nullptr;
+}
+
+} // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -979,6 +1017,8 @@ void WorldView::computeContour(double threshold)
 //-----------------------------------------------------------------------------
 bool WorldView::loadMesh(QString const& path)
 {
+  QTE_D();
+
   QFileInfo fileInfo{path};
   if (!fileInfo.exists() || !fileInfo.isFile())
   {
@@ -986,20 +1026,30 @@ bool WorldView::loadMesh(QString const& path)
   }
 
   QGuiApplication::setOverrideCursor(Qt::WaitCursor);
-
-  // Create the vtk pipeline and read the mesh
-  vtkNew<vtkPLYReader> reader;
-  reader->SetFileName(qPrintable(path));
-  reader->Update();
-  QGuiApplication::restoreOverrideCursor();
-
-  auto mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
-  if (mesh->GetPointData()->GetNumberOfArrays() <= 0)
+  vtkSmartPointer<vtkPolyData> mesh;
+  QString const& ext = fileInfo.suffix().toLower();
+  if (ext == "ply")
   {
+    vtkNew<vtkPLYReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else if (ext == "vtp")
+  {
+    vtkNew<vtkXMLPolyDataReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else
+  {
+    LOG_ERROR(d->logger, "Invalid mesh type: " << qPrintable(fileInfo.suffix()));
     return false;
   }
+  QGuiApplication::restoreOverrideCursor();
 
-  this->setMesh(reader->GetOutput());
+  this->setMesh(mesh);
 
   return true;
 }
@@ -1026,24 +1076,47 @@ void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
   // Set the actor's mapper
   d->volumeActor->SetMapper(meshMapper);
   d->volumeActor->SetVisibility(true);
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor);
   emit this->fusedMeshEnabled(true);
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
 
   this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
-  d->volumeOptions->showColorizeSurfaceMenu(true);
-
-  // Add this actor to the renderer
-  d->renderer->AddActor(d->volumeActor);
-
-  if (mesh->GetPointData()->HasArray("RGB"))
+  std::array<std::string, 3> requiredArrays = {"mean", "median", "count"};
+  size_t i;
+  for (i = 0; i < requiredArrays.size(); ++i)
   {
-    meshMapper->ScalarVisibilityOn();
-    meshMapper->SelectColorArray("RGB");
-    d->volumeOptions->setSurfaceColored(true);
+    if (! mesh->GetPointData()->GetArray(requiredArrays[i].c_str()))
+    {
+      break;
+    }
   }
-
-  emit contourChanged();
+  if (i == requiredArrays.size())
+  {
+    // if the mesh has the required arrays set IMAGE_COLOR and
+    // avoid recomputing colors from current image.
+    d->volumeOptions->setSurfaceColoringMode(
+      VolumeOptions::IMAGE_COLOR, true /*blockSignals*/);
+  }
+  else
+  {
+    // check if there is other scalar to color
+    vtkDataArray* scalars = findArrayToColor(mesh);
+    if (scalars)
+    {
+      d->volumeOptions->setOriginalColorArray(scalars);
+      // make sure refresh the picture even when setting the same ORIGINAL_COLOR
+      d->volumeOptions->setSurfaceColoringMode(
+        VolumeOptions::ORIGINAL_COLOR, true /*blockSignals*/);
+      d->volumeOptions->surfaceColoringModeChanged(
+        VolumeOptions::ORIGINAL_COLOR);
+    }
+    else
+    {
+      d->volumeOptions->setSurfaceColoringMode(VolumeOptions::NO_COLOR);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1159,11 +1232,11 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
-  foreach (auto const& lm, landmarks)
+  foreach (auto const& landmark, landmarks)
   {
-    auto const& pos = lm.second->loc();
-    auto const& color = lm.second->color();
-    auto const observations = lm.second->observations();
+    auto const& pos = landmark.second->loc();
+    auto const& color = landmark.second->color();
+    auto const observations = landmark.second->observations();
 
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
