@@ -1169,7 +1169,7 @@ QString MainWindowPrivate::getFrameName(kv::frame_id_t frameId) const
   {
     auto mdv = videoMetadataMap->get_vector(frameId);
     if (!mdv.empty())
-    {
+    { // TODO: option to get a full(er) image path
       return qtString(frameName(frameId, mdv));
     }
   }
