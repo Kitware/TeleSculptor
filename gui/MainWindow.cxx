@@ -1355,6 +1355,7 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
     tool->setEnabled(enableTools);
   }
   this->UI.actionCancelComputation->setEnabled(enableCancel);
+  this->UI.actionRebuildScene->setEnabled(enableTools);
   this->UI.actionOpenProject->setEnabled(enableTools);
   // FIXME disable import actions
 }
@@ -1500,7 +1501,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
-    d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
+    d->UI.menuCompute->insertSeparator(d->UI.actionRebuildScene);
   QAction * runAllSep = d->UI.menuCompute->insertSeparator(d->toolSeparator);
 
   d->addTool(new TrackFeaturesTool(this), this);
@@ -1700,6 +1701,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           });
   connect(d->UI.cameraView, &CameraView::cameraComputationRequested,
           this, &MainWindow::computeCamera);
+  connect(d->UI.actionRebuildScene, &QAction::triggered,
+          this, &MainWindow::rebuildScene);
 
   // Ruler widget
   d->rulerHelper = new RulerHelper(this);
@@ -3573,6 +3576,77 @@ void MainWindow::computeCamera()
     static auto msg = QStringLiteral("Resectioning failed: %1");
     QMessageBox::critical(
       this, QStringLiteral("Algorithm error"), msg.arg(e.what()));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::rebuildScene()
+{
+  QTE_D();
+
+  if (!d->activeTool)
+  {
+    InitCamerasLandmarksTool tool{this};
+    QEventLoop eventLoop;
+
+    QObject::connect(&tool, &AbstractTool::completed,
+                     &eventLoop, &QEventLoop::quit);
+    QObject::connect(&tool, &AbstractTool::failed,
+                     &eventLoop, &QEventLoop::quit);
+    QObject::connect(&tool, &AbstractTool::failed,
+                     this, &MainWindow::reportToolError);
+
+    auto const constraints =
+      std::make_shared<kv::sfm_constraints>(*d->sfmConstraints);
+    constraints->set_metadata(nullptr);
+
+    auto features = d->groundControlPointsHelper->registrationTracks();
+    auto landmarks = d->groundControlPointsHelper->registrationLandmarks();
+
+    tool.setTracks(features);
+    tool.setLandmarks(landmarks);
+    tool.setSfmConstraints(constraints);
+    tool.setVideoPath(stdString(d->videoPath));
+    tool.setMaskPath(stdString(d->maskPath));
+
+    auto config = readConfig("gui_manual_initialize.conf");
+    config->merge_config(d->project->config);
+
+    tool.setConfig(config);
+
+    if (tool.execute())
+    {
+      d->setActiveTool(&tool);
+      d->updateProgress(&tool, tool.description(), 0);
+
+      eventLoop.exec();
+
+      if (auto const& data = tool.data())
+      {
+        if (data->cameras && data->cameras->size())
+        {
+          d->updateCameras(data->cameras);
+        }
+        if (data->landmarks && data->landmarks->size())
+        {
+          auto lm = data->landmarks->landmarks();
+          for (auto const& li : lm)
+          {
+            if (li.second)
+            {
+              using gcp_id_t = kwiver::vital::ground_control_point_id_t;
+
+              auto const i = li.first;
+              d->groundControlPointsHelper->setGroundControlPoint(
+                static_cast<gcp_id_t>(i), li.second->loc());
+            }
+          }
+        }
+      }
+
+      d->setActiveTool(nullptr);
+      d->updateProgress(&tool, tool.description(), 100);
+    }
   }
 }
 

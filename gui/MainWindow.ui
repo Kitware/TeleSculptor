@@ -122,6 +122,8 @@
      <addaction name="actionVariableLens"/>
      <addaction name="actionFixGeoOrigin"/>
     </widget>
+    <addaction name="actionRebuildScene"/>
+    <addaction name="separator"/>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
@@ -668,6 +670,14 @@
    </property>
    <property name="shortcut">
     <string>.</string>
+   </property>
+  </action>
+  <action name="actionRebuildScene">
+   <property name="text">
+    <string>Reb&amp;uild Scene</string>
+   </property>
+   <property name="toolTip">
+    <string>Reconstruct cameras and ground control points from camera registration points</string>
    </property>
   </action>
  </widget>

@@ -85,6 +85,7 @@ public slots:
 
   void applySimilarityTransform();
   void computeCamera();
+  void rebuildScene();
 
   void saveWebGLScene();
 
