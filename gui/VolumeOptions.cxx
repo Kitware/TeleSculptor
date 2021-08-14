@@ -23,6 +23,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
+#include <array>
 #include <string>
 
 namespace // anonymous

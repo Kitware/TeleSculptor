@@ -15,6 +15,8 @@
 #include <vtkSphereSource.h>
 #include <vtkTransform.h>
 
+#include <array>
+
 vtkStandardNewMacro(vtkMaptkAxesActor);
 
 //-----------------------------------------------------------------------------
