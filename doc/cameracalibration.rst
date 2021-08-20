@@ -45,7 +45,7 @@ Scroll to the desired video/image frame using the Camera Selection slider
 and observe it in the Camera View pane. Rotate the 3D model to the desired view,
 e.g. resembling the current image.
 
-To place/edit ground control points (GCP), click the 3D viewer GCP tool |gcp_button| 
+To place/edit ground control points (GCP), click the 3D viewer GCP tool |gcp_button|
 to start GCP creation and editing. Use Ctrl+click to place GCP buttons.
 Drag them as needed to refine their locations.
 Place six or more GCPs on the 3D model at the feature points visible from the camera view,
