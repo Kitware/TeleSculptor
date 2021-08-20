@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. include:: manuals/version.rst
+.. include:: version.rst
 
 TeleSculptor
 ============
@@ -45,11 +45,11 @@ Getting Started
    :maxdepth: 2
    :hidden:
 
-   manuals/installation
-   manuals/views
-   manuals/workflows
-   manuals/processingsteps
-   manuals/advancedtools
-   manuals/computeoptions
-   manuals/advancedconfig
-   manuals/cameracalibration
+   installation
+   views
+   workflows
+   processingsteps
+   advancedtools
+   computeoptions
+   advancedconfig
+   cameracalibration
