@@ -98,6 +98,10 @@ CameraOptions::CameraOptions(vtkMaptkCameraRepresentation* rep,
   inactiveModeGroup->addButton(d->UI.inactiveAsPoints);
   inactiveModeGroup->addButton(d->UI.inactiveAsFrustums);
 
+  // Set default values for scale sliders
+  d->UI.scale->setValue(0.25);
+  d->UI.inactiveScale->setValue(-1.0);
+
   // Set up option persistence
   // TODO We may want to get a parent group from the user (of this class) that
   //      would identify which view in case of multiple views, so that we can
