@@ -10,8 +10,8 @@
 TeleSculptor Installation
 ===========================
 
-The TeleSculptor software uses a standard installer package on Windows. To install, double click the installer icon and step through the installation steps as shown in the images 
-below. This will require administrative privileges. The name of the 64-bit Windows installer is **TeleSculptor-** |version| **-Windows-AMD64.exe**. 
+The TeleSculptor software uses a standard installer package on Windows. To install, double click the installer icon and step through the installation steps as shown in the images
+below. This will require administrative privileges. The name of the 64-bit Windows installer is **TeleSculptor-** |version| **-Windows-AMD64.exe**.
 
 .. figure:: /images/telesculptor_install_1.png
    :align: center
@@ -49,28 +49,28 @@ below. This will require administrative privileges. The name of the 64-bit Windo
 
    \6. Click "Finish" to complete
 
-To run the application, find TeleSculptor in the Start Menu and click the icon.  The program will open with an appearance as shown below.  
+To run the application, find TeleSculptor in the Start Menu and click the icon.  The program will open with an appearance as shown below.
 
 .. figure:: /images/application_opened.png
    :align: center
 
    *The TeleSculptor Application when first opened.*
 
-Once the application is open you can access additional documentation about the various features in the User Manual which is opened from the *Help* menu or by pressing the F1 shortcut 
-key.  The User Manual will open in your default web browser.  The User Manual does not yet provide step-by-step instructions, as this document does, but it does provide more detailed 
+Once the application is open you can access additional documentation about the various features in the User Manual which is opened from the *Help* menu or by pressing the F1 shortcut
+key.  The User Manual will open in your default web browser.  The User Manual does not yet provide step-by-step instructions, as this document does, but it does provide more detailed
 descriptions of each of the buttons and menu options.
 
 SketchUp Plugin Installation
 ==============================
 
-The TeleSculptor application also comes with a plugin for SketchUp that allows SketchUp to read TeleSculptor project files.  This is not installed automatically.  To install the 
-SketchUp plugin, first locate the plugin in your TeleSculptor installation.  If TeleSculptor is installed in the default location, you will find the plugin at 
+The TeleSculptor application also comes with a plugin for SketchUp that allows SketchUp to read TeleSculptor project files.  This is not installed automatically.  To install the
+SketchUp plugin, first locate the plugin in your TeleSculptor installation.  If TeleSculptor is installed in the default location, you will find the plugin at
 
 **C:\\Program Files\\TeleSculptor** |space| |version| **\\share\\telesculptor\\** |version| **\\plugins\\sketchup\\kw_telesculptor.rbz**
 
-To install this plug in SketchUp, first open SketchUp.  Next navigate to the *Window->Preferences* menu as shown in the figure below.  Within the *System Preferences* dialog, click 
-on Extensions in the menu on the left.  Now click the Install Extension button at the bottom of the dialog.  Use the file open dialog to locate the kw_telesculptor.rbz file at the 
-location above and click the Open button.  Administrative privileges are needed to complete the installation.  Once installed “TeleSculptor Importer” will appear in the Extensions 
+To install this plug in SketchUp, first open SketchUp.  Next navigate to the *Window->Preferences* menu as shown in the figure below.  Within the *System Preferences* dialog, click
+on Extensions in the menu on the left.  Now click the Install Extension button at the bottom of the dialog.  Use the file open dialog to locate the kw_telesculptor.rbz file at the
+location above and click the Open button.  Administrative privileges are needed to complete the installation.  Once installed “TeleSculptor Importer” will appear in the Extensions
 list and the box next to it should be checked to activate the plugin.  The plugin may not be fully active until the SketchUp application is closed and re-opened.
 
 .. figure:: /images/sketchup_preferences.png
