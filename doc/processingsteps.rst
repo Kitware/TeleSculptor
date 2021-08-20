@@ -39,19 +39,27 @@
 
 .. |horizontal_caption| replace:: Horizontal Constraint (hold X or Y)
 
-==================
+================
 Processing Steps
-==================
+================
 
-This section describes how to run the key processing steps and what each step does.  The previous section describes which of these steps you should run, and in which order, depending
-on the desired goals.  However, processing step are generally run in the order listed below, with some steps only needed for one workflow or another.
+This section describes how to run the key processing steps
+and what each step does.
+The previous section describes which of these steps you should run,
+and in which order, depending on the desired goals.
+However, processing step are generally run in the order listed below,
+with some steps only needed for one workflow or another.
 
 Create a New Project
-======================
+====================
 
-The TeleSculptor application requires a working directory, also called the project folder, in which to save settings and algorithm results when processing a video.  To create a new
-project use the *File->New Project* menu item or keyboard shortcut Ctrl+N.  Create a new empty folder at the desired location and press the “Select Folder” button with that new
-folder highlighted.
+The TeleSculptor application requires a working directory,
+also called the project folder,
+in which to save settings and algorithm results when processing a video.
+To create a new project use the *File* |rarrow| *New Project* menu item
+or keyboard shortcut Ctrl+N.
+Create a new empty folder at the desired location
+and press the "Select Folder" button with that new folder highlighted.
 
 .. figure:: /images/new_project.png
    :align: center
@@ -114,9 +122,16 @@ the visibility, size, and color of camera path, camera frustums, and active came
 Run End-to-End
 ================
 
-Run End-to-End is a new feature in TeleSculptor v |version| .  Rather than waiting for user input to run each if the primary processing steps, Run End-to-End automatically runs Track
-Features, Estimate Cameras/Landmarks, Batch Compute Depth Maps, and Fuse Depth Maps.  These steps are run sequential in this order.  See details of these steps in their respective
-sections below.
+Run End-to-End is a new feature in TeleSculptor v\ |version|.
+Rather than waiting for user input
+to run each of the primary processing steps,
+Run End-to-End automatically runs
+Track Features,
+Estimate Cameras/Landmarks,
+Batch Compute Depth Maps,
+and Fuse Depth Maps.
+These steps are run sequentially in this order.
+See details of these steps in their respective sections below.
 
 .. figure:: /images/end_to_end.png
    :align: center

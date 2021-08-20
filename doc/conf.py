@@ -4,6 +4,9 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from docutils import nodes
+from docutils.parsers.rst.states import Struct
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -18,9 +21,14 @@
 # -- Project information -----------------------------------------------------
 
 project = 'TeleSculptor'
+version = '1.2.0'
 copyright = '2021, Kitware, Inc.'
 author = 'Kitware, Inc.'
 
+kwiver_version = '1.6.0'
+
+repo_root = 'https://github.com/Kitware/TeleSculptor'
+relnotes_root = f'{repo_root}/blob/master/doc/release-notes'
 
 # -- General configuration ---------------------------------------------------
 
@@ -37,6 +45,14 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+rst_epilog = f'''
+.. include:: replacements.rst
+
+.. _Release Notes: {relnotes_root}/{version}.txt
+
+.. |kwiver_version| replace:: {kwiver_version}
+'''
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -59,5 +75,37 @@ html_favicon = "../gui/icons/telesculptor.ico"
 html_theme_options = {
     'logo_only': True,
 }
+
+html_css_files = [
+    'css/custom.css',
+]
+
 # The master toctree document
 master_doc = 'index'
+
+
+# -- Customizations ----------------------------------------------------------
+
+def make_parsed_text_role(class_names=[], node_class=nodes.inline):
+    def parsed_text_role(name, rawtext, text, lineno, inliner,
+                         options={}, content=[]):
+        # Prepare context for nested parsing
+        memo = Struct(document=inliner.document,
+                      reporter=inliner.reporter,
+                      language=inliner.language)
+
+        # Create parent node
+        options['classes'] = class_names
+        parent = node_class(rawtext, '', **options)
+
+        # Parse role text for markup and add to parent
+        processed, messages = inliner.parse(text, lineno, memo, parent)
+        parent += processed
+
+        # Return parent node, and any messages from nested parsing
+        return [parent], messages
+
+    return parsed_text_role
+
+def setup(app):
+    app.add_role('path', make_parsed_text_role(class_names=['filepath']))

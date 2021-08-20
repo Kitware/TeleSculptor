@@ -1,0 +1,18 @@
+pre.wrap {
+  white-space: pre-wrap !important;
+}
+
+pre.literal-block,
+.filepath
+{
+  font-size: 75%;
+  font-family: monospace;
+  background: #f8f8f8;
+  color: #333;
+}
+
+.filepath {
+  white-space: pre-wrap;
+  border: 1px solid #e1e4e5;
+  padding: 2px 5px;
+}
