@@ -108,7 +108,7 @@ kv::path_t kvPath(QString const& s)
 //-----------------------------------------------------------------------------
 QString findUserManual()
 {
-  static auto const name = "telesculptor.html";
+  static auto const name = "index.html";
   static auto const product = "telesculptor";
   static auto const version = TELESCULPTOR_VERSION;
 
