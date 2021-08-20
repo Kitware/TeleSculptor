@@ -124,12 +124,12 @@ Before building on Linux systems you must install the following packages:
   sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
   sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
 
-On Linux, to optionally build with Python and help menu documentation you will
-also need to install the following:
+On Linux, to optionally build with Python and to build the user documentation,
+you will also need to install the following:
 
 .. code-block :: bash
 
-  sudo apt-get install python3-dev python3-docutils
+  sudo apt-get install python3-dev python3-sphinx-rtd-theme
 
 Set up the folder structure and obtain the source files. This can be done with
 git or by downloading the files and extracting them. Then setup the folder(s)
