@@ -137,7 +137,7 @@ endif()
 # Manuals
 #
 if(TELESCULPTOR_ENABLE_MANUALS)
-  add_subdirectory(doc/manuals)
+  add_subdirectory(doc)
 endif()
 
 ###
