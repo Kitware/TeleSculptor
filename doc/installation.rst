@@ -58,7 +58,7 @@ The program will open with an appearance as shown below.
 .. figure:: /images/application_opened.png
    :align: center
 
-   *The TeleSculptor Application when first opened.*
+   The TeleSculptor Application when first opened.
 
 Once the application is open,
 you can access this documentation from the *Help* menu
@@ -100,16 +100,18 @@ until the SketchUp application is closed and re-opened.
    :align: center
    :width: 80 %
 
-   *Access the SketchUp Preferences to install the TeleSculptor plugin.*
+   Access the SketchUp Preferences to install the TeleSculptor plugin.
 
 .. figure:: /images/telesculptor_importer.png
    :align: center
    :width: 80 %
 
-   *TeleSculptor Importer installed and activated in the SketchUp Extensions list in System Preferences.*
+   TeleSculptor Importer installed and activated
+   in the SketchUp Extensions list in System Preferences.
 
 .. figure:: /images/import_telesculptor_project.png
    :align: center
    :width: 80 %
 
-   *The Import TeleSculptor Project option in the Plugins menu after installing the extension.*
+   The Import TeleSculptor Project option in the Plugins menu
+   after installing the extension.

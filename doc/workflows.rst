@@ -23,7 +23,7 @@ represented, but this video has only platform orientation and is missing sensor 
 .. figure:: /images/inspect_metadata.png
    :align: center
 
-   *Inspecting Metadata geometrically and with the metadata viewer pane.*
+   Inspecting Metadata geometrically and with the metadata viewer pane.
 
 To inspect the metadata, follow the instructions for opening a video.  There is no need to create a project file if no further processing is anticipated.  When a video is opened it
 is automatically scanned for all metadata to build the 3D representation of the cameras.  Scanning a video for metadata may take several seconds or even minutes for very large
@@ -36,12 +36,12 @@ The goal of this workflow is to estimate accurate camera models for keyframes in
 interface to build 3D models in SketchUp by drawing directly on the images.  The SketchUp workflow is described in a separate document.  This document describes how to use
 TeleSculptor to produce the data that will be loaded into SketchUp.  The processing steps are as follows
 
-1.	Create a New Project
-2.	Import a Video
-3.	Track Features
-4.	Estimate Cameras/Landmarks
-5.	Save Frames
-6.	Set Ground Control Points
+1. Create a New Project
+2. Import a Video
+3. Track Features
+4. Estimate Cameras/Landmarks
+5. Save Frames
+6. Set Ground Control Points
 
 Dense Automated 3D Models
 ==========================
