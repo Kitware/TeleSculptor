@@ -1,7 +1,5 @@
 .. _processingsteps:
 
-.. include:: version.rst
-
 .. |image_button| image:: /../gui/icons/16x16/image.png
 
 .. |cameras_button| image:: /../gui/icons/16x16/camera.png
@@ -15,7 +13,7 @@
 .. |copy_location_button| image:: /../gui/icons/16x16/copy-location.png
 
 .. |icon| image:: /images/icon.png
-   :scale: 55 %
+   :scale: 55%
 
 .. |reset_button| image:: /../gui/icons/16x16/reset.png
 
@@ -30,10 +28,10 @@
 .. |measurement_tool| image:: /../gui/icons/22x22/ruler.png
 
 .. |vertical_constraint| image:: /images/vertical_constraint.png
-   :width: 49 %
+  :width: 50%
 
 .. |horizontal_constraint| image:: /images/horizontal_constraint.png
-   :width: 49 %
+  :width: 50%
 
 .. |vertical_caption| replace:: Vertical Constraint (hold Z)
 
