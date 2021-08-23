@@ -1,3 +1,7 @@
+p {
+  text-align: justify;
+}
+
 pre.wrap {
   white-space: pre-wrap !important;
 }
