@@ -4,7 +4,9 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-from docutils import nodes
+import os.path
+
+from docutils import nodes, utils
 from docutils.parsers.rst.states import Struct
 
 # -- Path setup --------------------------------------------------------------
@@ -44,7 +46,11 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+    'Thumbs.db',
+    '.DS_Store',
+    'replacements.rst',
+]
 
 rst_epilog = f'''
 .. include:: replacements.rst
@@ -86,6 +92,55 @@ master_doc = 'index'
 
 # -- Customizations ----------------------------------------------------------
 
+icon_root = '../gui/icons'
+icon_sizes = [22, 16]
+srcdir = ''
+
+def locate_icon(name, size):
+    for d in [f'{size}x{size}@2', f'{size}x{size}']:
+        p = os.path.join(icon_root, d, f'{name}.png')
+        print(p)
+        if os.path.isfile(os.path.join(srcdir, p)):
+            return p
+
+    return None
+
+def build_icon(rawtext, text, lineno, inliner, options={}, sizes=icon_sizes):
+    if text in ['-', 'blank']:
+        return None
+
+    options['alt'] = utils.unescape(text)
+    for s in sizes:
+        uri = locate_icon(text, s)
+        print(s, uri)
+        if uri is not None:
+            options['uri'] = uri
+            options['classes'] = [f'icon-{s}']
+            return nodes.image(rawtext, **options)
+
+    return None
+
+def action_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    parts = text.split()
+    print(parts)
+
+    # Build icon element
+    icon = build_icon(rawtext, parts[0], lineno, inliner, sizes=[16, 22])
+
+    # Create node
+    options['classes'] = ['action']
+    node = nodes.inline(rawtext, '', **options)
+
+    if icon is not None:
+        node += icon
+        node += nodes.Text(' ', ' ')
+
+    title = ' '.join(parts[1:])
+    node += nodes.Text(title, title)
+
+    # Return resulting node
+    return [node], []
+
 def make_parsed_text_role(class_names=[], node_class=nodes.inline):
     def parsed_text_role(name, rawtext, text, lineno, inliner,
                          options={}, content=[]):
@@ -108,4 +163,13 @@ def make_parsed_text_role(class_names=[], node_class=nodes.inline):
     return parsed_text_role
 
 def setup(app):
+    global srcdir
+    srcdir = app.srcdir
+
+    app.add_role('var', make_parsed_text_role(class_names=['math', 'script']))
+    app.add_role('math', make_parsed_text_role(class_names=['math']))
     app.add_role('path', make_parsed_text_role(class_names=['filepath']))
+    app.add_role('menu', make_parsed_text_role(class_names=['menu']))
+    app.add_role('shortcut', make_parsed_text_role(class_names=['shortcut']))
+
+    app.add_role('action', action_role)

@@ -1,7 +1,5 @@
 .. _advancedconfig:
 
-.. include:: version.rst
-
 ==============================
 Advanced Configuration Options
 ==============================

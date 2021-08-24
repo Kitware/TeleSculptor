@@ -59,7 +59,8 @@ detect and correct for this ambiguity, so this the manual correction is rarely n
 .. figure:: /images/necker_reversal_after.png
    :align: center
 
-   *Effect of Necker Reversal on camera orbits.  Bottom cameras are flipped and upside down.*
+   Effect of Necker Reversal on camera orbits.
+   Bottom cameras are flipped and upside down.
 
 Align
 =======

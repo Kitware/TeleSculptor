@@ -1,7 +1,5 @@
 .. _processingsteps:
 
-.. include:: version.rst
-
 .. |image_button| image:: /../gui/icons/16x16/image.png
 
 .. |cameras_button| image:: /../gui/icons/16x16/camera.png
@@ -15,7 +13,7 @@
 .. |copy_location_button| image:: /../gui/icons/16x16/copy-location.png
 
 .. |icon| image:: /images/icon.png
-   :scale: 55 %
+   :scale: 55%
 
 .. |reset_button| image:: /../gui/icons/16x16/reset.png
 
@@ -30,10 +28,10 @@
 .. |measurement_tool| image:: /../gui/icons/22x22/ruler.png
 
 .. |vertical_constraint| image:: /images/vertical_constraint.png
-   :width: 49 %
+  :width: 50%
 
 .. |horizontal_constraint| image:: /images/horizontal_constraint.png
-   :width: 49 %
+  :width: 50%
 
 .. |vertical_caption| replace:: Vertical Constraint (hold Z)
 
@@ -64,12 +62,12 @@ and press the "Select Folder" button with that new folder highlighted.
 .. figure:: /images/new_project.png
    :align: center
 
-   *Create a new project from the File->New Project menu item.*
+   Create a new project from the File->New Project menu item.
 
 .. figure:: /images/new_project_folder.png
    :align: center
 
-   *Create a new project folder to store the results of processing.*
+   Create a new project folder to store the results of processing.
 
 After creating the new project, the application will create a project file in the project directory with the same name and a “.conf” file extension.  In the example shown in the
 figure above it will create **MyProject/MyProject.conf**.  This conf file is known as the project file or the project configuration file.  It contains the configuration settings for
@@ -96,7 +94,7 @@ estimating these mask videos for videos with burned in metadata.
 .. figure:: /images/import_video_clip.png
    :align: center
 
-   *Import a video clip, image list, or other data.*
+   Import a video clip, image list, or other data.
 
 Once a video is selected to open, the application will scan the entire video to find all metadata.  This may take several seconds or even minutes for very large videos. If scanning
 the video takes too long or it is known that the video does not contain metadata it is okay to cancel the metadata scanning using the “Cancel” option in the Compute menu.  If
@@ -110,7 +108,7 @@ active camera model is required.  An active camera model is a camera model for t
 .. figure:: /images/video_metadata.png
    :align: center
 
-   *A video with KLV metadata opened in the application.*
+   A video with KLV metadata opened in the application.
 
 As can be seen in the image above. The aircraft flight path, as given in the metadata, is shown as a curved line in the 3D World View.  A pyramid (frustum) is shown representing the
 orientation and position of the camera at each time step.  The active camera, representing the current frame of video, is shown in a different color and is longer than the others.
@@ -136,7 +134,7 @@ See details of these steps in their respective sections below.
 .. figure:: /images/end_to_end.png
    :align: center
 
-   *Run End-to-End Option in the Compute menu.*
+   Run End-to-End Option in the Compute menu.
 
 Track Features
 ================
@@ -147,7 +145,7 @@ The Track Features tool detects visually distinct points in the image called “
 .. figure:: /images/track_features.png
    :align: center
 
-   *Run the Track Features algorithm from the Compute menu.*
+   Run the Track Features algorithm from the Compute menu.
 
 When the tool is running it will draw feature points on the current frame and slowly play through the video tracking the motion of those points as it goes.  These tracks are
 visualized as red trails in the image below.  These colors are fully customizable.  The feature tracks button ( |feature_tracks_button| ) above the Camera View enables toggling the
@@ -156,7 +154,7 @@ visibility of tracks. The drop-down menu under this button has settings for the 
 .. figure:: /images/track_features_example.png
    :align: center
 
-   *The Track Features algorithm producing tracks on a video.*
+   The Track Features algorithm producing tracks on a video.
 
 The feature tracking tool will start processing on the active frame and will run until the video is complete or until the tool is canceled with the *Cancel* option in the *Compute*
 menu.  We recommend starting with the video on frame 1 and letting the algorithm process until complete for a video clip containing approximately one orbit of the UAV above the
@@ -180,7 +178,7 @@ where the camera returns to see the same view again.
 .. figure:: /images/match_matrix.png
    :align: center
 
-   *The Match Matrix view of feature tracking results.*
+   The Match Matrix view of feature tracking results.
 
 Estimate Cameras/Landmarks
 ============================
@@ -192,7 +190,7 @@ algorithm will try to estimate a camera for every frame that was tracked and a l
 .. figure:: /images/estimate_cameras_landmarks.png
    :align: center
 
-   *Run the Estimate Cameras/Landmarks algorithm from the Compute menu.*
+   Run the Estimate Cameras/Landmarks algorithm from the Compute menu.
 
 The solution will start with a sparse set of cameras and then incrementally add more.  Live updates will show progress in the world view display.  During optimization, the landmarks
 will appear to float above (or below) the ground plane grid because the true elevation is typically not near zero.  Once the optimization is complete, a local ground height is
@@ -212,7 +210,7 @@ images, not video.  So, this step produces the image files that are needed when 
 .. figure:: /images/save_video_frame.png
    :align: center
 
-   *Save the loaded video frame as image files on disk*
+   Save the loaded video frame as image files on disk.
 
 Set Ground Control Points
 ===========================
@@ -232,7 +230,8 @@ on any point makes it active.  Hitting the *Delete* key will delete the current 
 .. figure:: /images/set_gcp.png
    :align: center
 
-   *Setting ground control points, the active point is shown in green.*
+   Setting ground control points.
+   The active point is shown in green.
 
 The Ground Control Points pane provides a way to select and manage the added GCPs.  The pane lists all added points and allows the user to optionally assign a name to each.  The GCP
 pane also shows the geodetic coordinates of the active point, and these points can be copied to the clipboard in different formats using the copy location button
@@ -254,7 +253,7 @@ SketchUp.
 .. figure:: /images/export_gcps.png
    :align: center
 
-   *Export the ground control points.*
+   Export the ground control points.
 
 Set 3D Region of Interest
 ===========================
@@ -274,7 +273,8 @@ scale the box uniformily about its origin.  Note that the ground plane grid will
 .. figure:: /images/default_3D_bounding_box.png
    :align: center
 
-   *The default 3D bounding box is fit to the sparse landmarks and is often bigger than needed.*
+   The default 3D bounding box is fit to the sparse landmarks
+   and is often bigger than needed.
 
 A good practice is to set the bottom of the ROI box just below the ground and the top just above the tallest part of the structure.  Likewise, set the sides to be just a bit outside
 the object of interest.  It may be difficult to determine the bounds accurately from the sparse landmarks.  A good strategy is to start with a slightly larger guess, then use the
@@ -286,7 +286,7 @@ To reset the ROI to the initial estimated bounding box, use the *Reset Region of
 .. figure:: /images/tighter_bounding_box.png
    :align: center
 
-   *Setting a tighter bounding box around one structure of interest.*
+   Setting a tighter bounding box around one structure of interest.
 
 Batch Compute Depth Maps
 ==========================
@@ -301,7 +301,7 @@ nearby positions are required. By default, the algorithm uses the ten frames bef
 .. figure:: /images/compute_dense_depth_map.png
    :align: center
 
-   *Compute dense depth maps on key frames*
+   Compute dense depth maps on key frames.
 
 The results of depth map estimation are shown in two ways.  In the world view the depth maps are shown as a dense colored point cloud in which every image pixel is back projected
 into 3D at the estimated depth.  Use the Depth Map button ( |depth_map_button| ) to toggle depth point cloud visibility.  The second way depth maps are visualized is as a depth image
@@ -311,7 +311,7 @@ in the Depth Map View.  Here each pixel is color coded by depth and the color ma
    :align: center
 
 
-   *Results of depth map computation*
+   Results of depth map computation.
 
 Fuse Depth Maps
 =================
@@ -325,7 +325,7 @@ the volume.
 .. figure:: /images/fuse_depth_maps.png
    :align: center
 
-   *Fuse the depth maps into a consistent mesh.*
+   Fuse the depth maps into a consistent mesh.
 
 To toggle the view of the fused mesh, press the Volume Display button ( |volume_display_button| ) above the 3D World View. The surface mesh can be fine-tuned if desired by adjusting
 the surface threshold in the drop-down menu under the Volume Display button.  Setting the threshold slightly positive (e.g. 0.5) often helps to remove unwanted outlier surfaces that
@@ -334,7 +334,7 @@ tend to appear in areas with only a few views.
 .. figure:: /images/fused_mesh.png
    :align: center
 
-   *View the fused mesh, adjust surface threshold if desired.*
+   View the fused mesh, adjust surface threshold if desired.
 
 Colorize Mesh
 ==============
@@ -350,17 +350,18 @@ The *Normals* option colors the mesh by surface normal direction, and the *NbPro
 .. figure:: /images/mesh_colorization_menu.png
    :align: center
 
-   *The mesh colorization menu options.*
+   The mesh colorization menu options.
 
 .. figure:: /images/colored_fused_mesh.png
    :align: center
 
-   *A fused mesh colored by the mean of multiple frames.*
+   A fused mesh colored by the mean of multiple frames.
 
 .. figure:: /images/mesh_colored_by_views.png
    :align: center
 
-   *A fused mesh colored by the number of views that see each part of the surface.*
+   A fused mesh colored by the number of views
+   that see each part of the surface.
 
 Export Data
 ============
@@ -373,12 +374,12 @@ currently set.
 .. figure:: /images/save_colorized_mesh.png
    :align: center
 
-   *Save a colorized mesh as a PLY, LAS, or VTP file.*
+   Save a colorized mesh as a PLY, LAS, or VTP file.
 
 .. figure:: /images/save_mesh_as_LAS.png
    :align: center
 
-   *Change the Save as type to export as LAS.*
+   Change the Save as type to export as LAS.
 
 To export the active 2.5D depth map for use in other software, use the *File->Export->Depth Map* menu item.  This will provide a file dialog to save the model as an RGB colored point
 cloud in the standard PLY or LAS file formats.
@@ -386,7 +387,7 @@ cloud in the standard PLY or LAS file formats.
 .. figure:: /images/save_depth_map.png
    :align: center
 
-   *Save a computed depth map as a point cloud in PLY or LAS formats.*
+   Save a computed depth map as a point cloud in PLY or LAS formats.
 
 Measurement Tool
 ==================
@@ -400,7 +401,7 @@ location when playing back the video then the 3D coordinates are correct.
 .. figure:: /images/measure_building_height.png
    :align: center
 
-   *Measuring a building height with the measurement tool.*
+   Measuring a building height with the measurement tool.
 
 When measuring it is sometimes convenient to constraint the measurements to the horizontal or vertical directions.  After the initial ruler is placed in the scene, click and drag one
 end point.  If the Z key is held on the keyboard the moving point will be constrained to lie on a vertical axis through the point at the other end of the ruler.  If either the X or Y
