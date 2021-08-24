@@ -20,3 +20,53 @@ pre.literal-block,
   border: 1px solid #e1e4e5;
   padding: 2px 5px;
 }
+
+.menu {
+  background: #f8fbfc;
+  padding: 0.1em 0.3em;
+  border: 1px solid #f4f7f8;
+  font-style: italic;
+}
+
+.action {
+  background: #f4f4f4;
+  padding-left: 0.3em;
+  padding-right: 0.3em;
+  border: 1px solid #e1e4e5;
+  border-radius: 0.4em;
+  font-weight: 700;
+}
+
+img.icon-16 {
+  position: relative;
+  bottom: calc(0.5em - 7px);
+  height: 16px;
+  width: 16px;
+}
+
+.glyph {
+  position: relative;
+  bottom: calc(0.5em - 6px);
+  height: 1em;
+}
+
+.shortcut {
+  background: #eceff0;
+  padding: 0.1em 0.3em;
+  border: 1px solid;
+  border-color: #f4f7f8 #e1e4e5 #e1e4e5 #f4f7f8;
+  border-radius: 0.4em;
+  font-weight: 700;
+  font-size: 80%;
+  position: relative;
+  top: -0.05em;
+}
+
+.math {
+  font-family: math, serif;
+  font-style: italic;
+}
+
+.math.script {
+  font-family: cursive, math, serif;
+}
