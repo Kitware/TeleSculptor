@@ -10,9 +10,6 @@ Updates since v1.1.0
 
 TeleSculptor Application
 
- * Removed deprecated command line maptk tools. All the underlying kwiver
-   algoritms can be accessed via the 'kwiver' command line tool.
-
  * Move computation of mesh coloring to a separate thread to prevent it from
    blocking GUI interaction while running.
 
@@ -46,6 +43,11 @@ TeleSculptor Application
 
  * Added keyboard shortcuts to change frames and to change the selected ground
    control point.
+
+Tools
+
+ * Removed deprecated command line maptk tools. All the underlying kwiver
+   algoritms can be accessed via the 'kwiver' command line tool.
 
 Build System
 

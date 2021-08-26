@@ -94,9 +94,8 @@ TeleSculptor application into the Applications folder.
 ``./TeleSculptor-<version>-Linux-x86_64.sh --help``
 
 The remainder of this document is aimed at developers who wish to build the
-project from source or run command line tools.  For end users looking for
-instruction on running the GUI application please read the
-`User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
+project from source.  For end users looking for instruction on running the GUI
+application please read the `User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
 
 
 Building TeleSculptor
@@ -199,7 +198,6 @@ CMake Options
 ``TELESCULPTOR_ENABLE_CUDA``       Enable GPU acceleration with CUDA
 ``TELESCULPTOR_ENABLE_PYTHON``     Enable Python bindings in KWIVER
 ``TELESCULPTOR_ENABLE_MANUALS``    Turn on building the user documentation
-``TELESCULPTOR_ENABLE_TOOLS``      Build the command line tools
 ``TELESCULPTOR_ENABLE_TESTING``    Build the unit tests
 ``TELESCULPTOR_SUPERBUILD``        Build as a superbuild (build Fletch and KWIVER)
 ================================== ===================================================
@@ -312,16 +310,7 @@ Overview of Directories
 ``plugins/blender``     contains Python plug-ins for Blender
 ``plugins/sketchup``    contains Ruby plug-ins for SketchUp
 ``tests``               contains testing framework and tests for each module
-``tools``               contains source for command line utilities
 ======================= ========================================================
-
-MAP-Tk Tools
-============
-
-MAP-Tk command line tools are placed in the ``bin`` directory of the build
-or install path.  These tools are described below.  Note that these tools are
-in the process of being migrated to KWIVER and will leave this repository soon.
-Continued support is not guaranteed and behavior may diverge from documentation.
 
 
 Getting Help
