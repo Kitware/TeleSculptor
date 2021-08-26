@@ -11,3 +11,9 @@ TeleSculptor Application
 
  * Fixed a bug in which the "zoom to landmarks" option would make the World
    View projections permantly invalid if there were no landmarks to zoom to.
+
+ * Updated OpenCV version to 4.5.1
+
+ * Updated Qt version to 5.12.8
+
+ * Updated VTK Version to 9.0
