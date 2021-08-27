@@ -4,7 +4,6 @@ TeleSculptor v1.2.0 Release Notes
 This is a minor release of TeleSculptor that provides both new functionality
 and fixes over the previous v1.1.0 release.
 
-
 Updates since v1.1.0
 --------------------
 
@@ -53,8 +52,16 @@ Build System
 
  * The superbuild now allows using system packages for many dependencies.
 
-
-Fixes since v1.1.0
+Fixes since v1.1.2
 ------------------
 
 TeleSculptor Application
+
+ * Fixed a bug in which the "zoom to landmarks" option would make the World
+   View projections permantly invalid if there were no landmarks to zoom to.
+
+ * Updated OpenCV version to 4.5.1
+
+ * Updated Qt version to 5.12.8
+
+ * Updated VTK Version to 9.0
