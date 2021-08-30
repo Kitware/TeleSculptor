@@ -105,12 +105,14 @@ def locate_icon(name, size):
 
     return None
 
-def build_icon(rawtext, text, lineno, inliner, options={}, sizes=icon_sizes):
-    if text in ['-', 'blank']:
+def build_icon(rawtext, text, lineno, inliner, options={}, sizes=[]):
+    if text == '-':
         return None
 
-    options['alt'] = utils.unescape(text)
-    for s in sizes:
+    if text != 'blank':
+        options['alt'] = utils.unescape(text)
+
+    for s in dict.fromkeys(sizes + icon_sizes):
         uri = locate_icon(text, s)
         print(s, uri)
         if uri is not None:
@@ -120,12 +122,21 @@ def build_icon(rawtext, text, lineno, inliner, options={}, sizes=icon_sizes):
 
     return None
 
+def icon_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
+    # Build icon element
+    icon = build_icon(rawtext, text, lineno, inliner, sizes=[22])
+
+    # Return resulting node, or nothing if the icon wasn't found
+    if icon is None:
+        return [], []
+    else:
+        return [icon], []
+
 def action_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
     parts = text.split()
-    print(parts)
 
     # Build icon element
-    icon = build_icon(rawtext, parts[0], lineno, inliner, sizes=[16, 22])
+    icon = build_icon(rawtext, parts[0], lineno, inliner, sizes=[16])
 
     # Create node
     options['classes'] = ['action']
@@ -166,10 +177,9 @@ def setup(app):
     global srcdir
     srcdir = app.srcdir
 
-    app.add_role('var', make_parsed_text_role(class_names=['math', 'script']))
-    app.add_role('math', make_parsed_text_role(class_names=['math']))
     app.add_role('path', make_parsed_text_role(class_names=['filepath']))
     app.add_role('menu', make_parsed_text_role(class_names=['menu']))
     app.add_role('shortcut', make_parsed_text_role(class_names=['shortcut']))
 
+    app.add_role('icon', icon_role)
     app.add_role('action', action_role)
