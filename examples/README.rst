@@ -5,7 +5,7 @@
 We recommend that new users try one of the following videos released as part
 of the `VIRAT Video Dataset`_. You will need to accept the Terms of Use before
 you proceed to the download. For a thorough description of TeleSculptor
-workflows, please see the `User Guide <../doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
+workflows, please see the `User Guide`_.
 
 
 09172008flight1tape3_2.mpg_: The aircraft makes about one complete orbit over
@@ -37,3 +37,4 @@ substantial overlap in the content seen between different images.
 .. _Kitware: http://www.kitware.com/
 .. _09152008flight2tape2_4.mpg: https://data.kitware.com/#item/56f580488d777f753209c72f
 .. _09172008flight1tape3_2.mpg: https://data.kitware.com/#item/5ef11b419014a6d84ed53971
+.. _User Guide: https://telesculptor.readthedocs.io/en/latest/
