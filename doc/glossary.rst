@@ -18,21 +18,21 @@ Frame:
 Camera:
   In TeleSculptor, a camera
   refers primarily to the model
-  which describes the intrinsic and extrinsic parameters of a camera
-  at a given frame.
+  which describes the intrinsic and extrinsic parameters
+  of a camera at a given frame.
   Intrinsic parameters include focal length and lens distortion.
   Extrinsic parameters are the camera pose |--| orientation and position.
   A frame may have at most one camera pose,
   which is unique to that frame.
   While extrinsic parameters are never shared across frames,
-  intrinsic parameters may or may not be share depending on the algorithm
-  that produced them.
+  intrinsic parameters may or may not be shared
+  depending on the algorithm that produced them.
 
   In the GUI, cameras are represented as rectangular pyramids.
   The peak of the pyramid is the camera center of projection.
   The rectangle base is proportional to the image aspect ratio,
-  and a triangle attached to the base indicates
-  which direction is "up" in the image.
+  and a triangle attached to the base
+  indicates which direction is "up" in the image.
   The pyramid visualizes the field of view of the camera.
 
 
@@ -43,7 +43,7 @@ Feature:
   Features are also known as interest points or corner points.
 
 Track:
-  A track, or feature track, is a collection of correlated features over time;
+  A (feature) track is a collection of correlated features;
   that is, detected feature points
   estimated to correspond to the same landmark.
 
@@ -59,22 +59,26 @@ Residual:
   corresponding landmark into the image.
 
 Ground Control Point (GCP):
-  A ground control point, or GCP, is a 3D point that is
-  manually placed in the scene by a user.
-  GCPs are often attached to an identifiable location
-  from a reference image or map.
+  A |gcp| is a 3D point
+  that is manually placed in the scene by a user.
+  Ground control points are often attached 
+  to an identifiable location from a reference image or map.
   The user can assign the true geodetic location
-  (latitude, longitude, elevation) to a GCP,
-  and that GCP can then serve as a constraint when geo-registering the model.
+  (latitude, longitude, elevation) to a |gcp|,
+  and that |gcp| can then serve as a constraint 
+  when geo-registering the model.
 
 Camera Registration Point (CRP):
-  A camera registration point, or CRP, is a 2D point that is
-  manually placed in one or more images by a user.
-  CRPs are associated with a GCP point and can tie that GCP
-  to multiple images, even when no camera model has been estimated.
-  While a GCP is the manually placed version of a landmark,
-  a CRP is the manually placed version of a feature track.
-  A collection of CRPs can be used to manually estimate a camera model
+  A |crp| is a 2D point 
+  that is manually placed by the user
+  in one or more frame images.
+  Camera registration points are associated with a |gcp|
+  and can tie that |gcp| to multiple images,
+  even when no camera model has been estimated.
+  While a |gcp| is the manually placed version of a landmark,
+  a |crp| is the manually placed version of a feature track.
+  A collection of |crp|\ s can be used 
+  to manually estimate a camera model
   when automated feature matching is not possible.
 
 ----
