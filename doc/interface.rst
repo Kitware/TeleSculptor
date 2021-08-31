@@ -430,7 +430,7 @@ Tool Bar
   Enables editing the |crp|\ s associated with a |gcp|.
   The associated pop-up allows computing a camera model on
   the current frame using |crp|\ s.
-  See also `Manual Camera Calibration`_.
+  See also :doc:`cameracalibration`.
 
 Feature Options
 ---------------
