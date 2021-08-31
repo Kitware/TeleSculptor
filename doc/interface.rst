@@ -426,6 +426,12 @@ Tool Bar
   The associated pop-up
   allows the color of the displayed residuals to be changed.
 
+:icon:`location` Edit Camera Registration Points
+  Enables editing the |crp|\ s associated with a |gcp|.
+  The associated pop-up allows computing a camera model on
+  the current frame using |crp|\ s.
+  See also `Manual Camera Calibration`_.
+
 Feature Options
 ---------------
 
