@@ -44,6 +44,13 @@ img.icon-16 {
   width: 16px;
 }
 
+img.icon-22 {
+  position: relative;
+  bottom: calc(0.5em - 6px);
+  height: 22px;
+  width: 22px;
+}
+
 .glyph {
   position: relative;
   bottom: calc(0.5em - 6px);
@@ -63,6 +70,7 @@ img.icon-16 {
 }
 
 .math {
+  color: #9c3028;
   font-family: math, serif;
   font-style: italic;
 }

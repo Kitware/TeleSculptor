@@ -66,12 +66,13 @@ Getting Started
    :hidden:
 
    installation
-   views
+   interface
    workflows
    processingsteps
    advancedtools
    computeoptions
    advancedconfig
    cameracalibration
+   glossary
 
 .. _KWIVER: https://www.kwiver.org

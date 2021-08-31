@@ -4,6 +4,9 @@
 Manual Camera Calibration
 =========================
 
+.. role:: var
+  :class: math script
+
 This section describes the functions
 for manual camera calibration capabilities in TeleSculptor (TS)
 and steps to achieve, possibly correct, and export
