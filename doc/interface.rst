@@ -57,7 +57,7 @@ Camera Selection:
 Camera View:
   Shows the imagery from the current frame,
   along with various two dimensional geometry.
-  If a camera pose is available,
+  If a camera model is available,
   also shows three dimensional geometry
   mapped into the camera's point of view,
   as well as estimation residuals.
@@ -175,7 +175,7 @@ Tool Bar
 :icon:`image` Show Camera Frame Image
   Toggles visibility of the frame image
   projected onto the ground plane
-  (if an associated camera pose is available).
+  (if an associated camera model is available).
   The associated pop-up allows the opacity of the same to be adjusted.
 
 :icon:`camera` Show Cameras
@@ -337,7 +337,8 @@ median color,
 surface normal,
 and number of observations.
 
-.. TODO move following to a different page with also CRP documentation
+.. TODO move following to a different page with also CRP documentation,
+        and probably consolidate with cameracalibration.rst
 
 Editing Ground Control Points
 -----------------------------
@@ -426,10 +427,12 @@ Tool Bar
   The associated pop-up
   allows the color of the displayed residuals to be changed.
 
+.. TODO fix following ref when content is moved
+
 :icon:`location` Edit Camera Registration Points
   Toggles editing of |crp|\ s.
   See :doc:`cameracalibration` for details.
-  The associated pop-up 
+  The associated pop-up
   allows computing a camera model
   on the current frame using |crp|\ s.
   The keyboard shortcut is :shortcut:`Ctrl+R`.
@@ -441,8 +444,9 @@ In addition to active feature points,
 which have all the options described in `Point Options`_,
 the position of feature points on adjacent frames
 may also be displayed by enabling :action:`- Trails`.
-For image collections where camera poses adjacent in the camera list
-are also spatially similar
+For image collections where frames
+adjacent in the frame list
+also have spatially similar camera poses
 (especially when using consecutive video frames as input),
 these may be useful as an additional means of visualizing camera motion.
 
