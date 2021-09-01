@@ -32,3 +32,13 @@ TeleSculptor automatically selects a local origin near the centroid of the data 
 algorithms that origin point is recalculated and may change.  In some cases, there are benefits to specifying the geographic origin to use and keeping it fixed, for example, forcing
 two data sets to share a common local origin for easier comparison.  Checking “Fix Geo-Origin” instructs TeleSculptor to keep the current geographic origin and not recalculate a new
 one.
+
+Use GPU
+=========
+
+TeleSculptor has historically used a CUDA implementation of the depth map
+fusion algorithm.  An Nvidia GPU is required for CUDA support, so some systems
+were not able to run this step of the pipeline.  A CPU version of this
+algorithm is now available and this option determines whether to use the CPU
+implementation or the GPU implementation.  Both should give the same results,
+but the GPU impementation is faster when suitable hardware is available.
