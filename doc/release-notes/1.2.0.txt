@@ -13,6 +13,8 @@ registration points on frames.
 TeleSculptor v1.2.0 also builds on updated KWIVER v1.6.0 and Fletch v1.5.0,
 which provide upgraded third-party packages and improvements to algorithms.
 For example, TeleSculptor now uses VTK 9.0, OpenCV 4.5, and Qt 5.12.
+KWIVER now supports both CPU and GPU (CUDA) implementations for depth map
+fusion, and an option has been added to TeleSculptor to enable GPU use.
 While command line tools have been removed from TeleSculptor, it is now
 possible to reproduce the entire TeleSculptor processing chain from the
 command line using the *kwiver* command.  The command line workflow uses
@@ -66,6 +68,11 @@ TeleSculptor Application
 
  * Added keyboard shortcuts to change frames and to change the selected ground
    control point.
+
+ * Added an option to enable use of the GPU.  This specifically supports depth
+   map fusion for which both GPU and CPU implementations exist.  For the first
+   time, it is now possible to run TeleSculptor end-to-end without a
+   CUDA-enabled GPU.
 
 Tools
 
