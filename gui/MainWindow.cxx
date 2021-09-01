@@ -1590,6 +1590,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::setVariableLens);
   connect(d->UI.actionFixGeoOrigin, &QAction::toggled,
           this, &MainWindow::setFixGeoOrigin);
+  connect(d->UI.actionUseGPU, &QAction::toggled,
+          this, &MainWindow::setUseGPU);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1951,6 +1953,10 @@ void MainWindow::loadProject(QString const& path)
   bool fix_geo_origin =
     d->project->config->get_value<bool>("fix_geo_origin", false);
   d->UI.actionFixGeoOrigin->setChecked(fix_geo_origin);
+
+  bool use_gpu =
+    d->project->config->get_value<bool>("use_gpu", true);
+  d->UI.actionUseGPU->setChecked(use_gpu);
 
   d->UI.menuComputeOptions->blockSignals(oldSignalState);
 
@@ -3240,6 +3246,12 @@ void MainWindow::setVariableLens(bool state)
 void MainWindow::setFixGeoOrigin(bool state)
 {
   setComputeOption("fix_geo_origin", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setUseGPU(bool state)
+{
+  setComputeOption("use_gpu", state);
 }
 
 //-----------------------------------------------------------------------------
