@@ -39,6 +39,7 @@
 #include <arrows/core/track_set_impl.h>
 #include <arrows/mvg/transform.h>
 #include "arrows/vtk/vtkKwiverCamera.h"
+#include <vital/algo/algorithm_factory.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/resection_camera.h>
 #include <vital/algo/video_input.h>
@@ -1720,6 +1721,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Unitil the bounding box is initialized, the bounds are going to be
   // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
   d->UI.worldView->setROI(d->roi);
+
+  // check if the application has the CUDA plugin
+  bool has_cuda =
+    kwiver::vital::has_algorithm_impl_name("integrate_depth_maps", "cuda");
+  if (!has_cuda)
+  {
+    d->UI.actionUseGPU->setChecked(false);
+    d->UI.actionUseGPU->setEnabled(false);
+  }
 }
 
 //-----------------------------------------------------------------------------
