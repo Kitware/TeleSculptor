@@ -633,7 +633,7 @@
     <string>&amp;Use GPU</string>
    </property>
    <property name="toolTip">
-    <string>Use CUDA to accelerate processing on the GPU </string>
+    <string>Use CUDA to accelerate processing on the GPU.</string>
    </property>
   </action>
   <action name="actionExportFusedMeshFrameColors">

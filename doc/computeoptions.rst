@@ -36,9 +36,12 @@ one.
 Use GPU
 =========
 
-TeleSculptor has historically used a CUDA implementation of the depth map
-fusion algorithm.  An Nvidia GPU is required for CUDA support, so some systems
-were not able to run this step of the pipeline.  A CPU version of this
-algorithm is now available and this option determines whether to use the CPU
-implementation or the GPU implementation.  Both should give the same results,
-but the GPU impementation is faster when suitable hardware is available.
+Some TeleSculptor algorithms
+(currently, depth map fusion)
+are able to use CUDA to improve performance.
+However, this requires an NVIDIA GPU
+with sufficient GPU RAM.
+Disabling this option instructs TeleSculptor
+to rely solely on the CPU.
+This is slower, but should give the same results
+and may be used if a suitable GPU is not available.
