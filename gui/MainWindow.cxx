@@ -1916,6 +1916,12 @@ void MainWindow::newProject()
       saveGeoOrigin(d->project->geoOriginFile);
     }
 
+    if (!d->UI.actionUseGPU->isEnabled())
+    {
+      // explicity disable GPU in the project if there is no option for it
+      d->project->config->set_value("use_gpu", "false");
+    }
+
     d->project->write();
   }
 
@@ -1967,6 +1973,12 @@ void MainWindow::loadProject(QString const& path)
   bool use_gpu = d->project->config->get_value<bool>(
     "use_gpu", d->UI.actionUseGPU->isChecked());
   d->UI.actionUseGPU->setChecked(use_gpu);
+
+  if (!d->UI.actionUseGPU->isEnabled())
+  {
+    // explicity disable GPU in the project if there is no option for it
+    d->project->config->set_value("use_gpu", "false");
+  }
 
   d->UI.menuComputeOptions->blockSignals(oldSignalState);
 
