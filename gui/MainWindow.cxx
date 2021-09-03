@@ -1952,20 +1952,20 @@ void MainWindow::loadProject(QString const& path)
 
   auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
 
-  bool ignore_metadata =
-    d->project->config->get_value<bool>("ignore_metadata", false);
+  bool ignore_metadata = d->project->config->get_value<bool>(
+    "ignore_metadata", d->UI.actionIgnoreMetadata->isChecked());
   d->UI.actionIgnoreMetadata->setChecked(ignore_metadata);
 
-  bool variable_lens =
-    d->project->config->get_value<bool>("variable_lens", false);
+  bool variable_lens = d->project->config->get_value<bool>(
+    "variable_lens", d->UI.actionVariableLens->isChecked());
   d->UI.actionVariableLens->setChecked(variable_lens);
 
-  bool fix_geo_origin =
-    d->project->config->get_value<bool>("fix_geo_origin", false);
+  bool fix_geo_origin = d->project->config->get_value<bool>(
+    "fix_geo_origin", d->UI.actionFixGeoOrigin->isChecked());
   d->UI.actionFixGeoOrigin->setChecked(fix_geo_origin);
 
-  bool use_gpu =
-    d->project->config->get_value<bool>("use_gpu", true);
+  bool use_gpu = d->project->config->get_value<bool>(
+    "use_gpu", d->UI.actionUseGPU->isChecked());
   d->UI.actionUseGPU->setChecked(use_gpu);
 
   d->UI.menuComputeOptions->blockSignals(oldSignalState);
