@@ -293,6 +293,12 @@ bool VolumeOptions::isColorOptionsEnabled()
   return  d->UI.comboBoxColorizeSurface->currentIndex() == IMAGE_COLOR;
 }
 
+//-----------------------------------------------------------------------------
+void VolumeOptions::disableOriginalColor()
+{
+  QTE_D();
+  d->UI.comboBoxColorizeSurface->removeItem(ORIGINAL_COLOR);
+}
 
 //-----------------------------------------------------------------------------
 bool VolumeOptions::isArrayValidForColoring(vtkDataArray* a, bool& mapScalars)

@@ -937,6 +937,8 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
+  d->volumeOptions->setSurfaceColoringMode(VolumeOptions::NO_COLOR);
+  d->volumeOptions->disableOriginalColor();
 
   emit this->volumeEnabled(true);
   emit this->fusedMeshEnabled(true);
