@@ -92,7 +92,7 @@ The relevant edit mode actions may be used at any time
 to switch between editing points in the camera or world views.
 
 Once six or more correspondences have been defined,
-the camera pose calibration process may be invoked
+the camera model calibration process may be invoked
 from the :menu:`Compute Camera` action located in the drop-down
 associated with :action:`location Edit Registration Points`.
 Check the Log Viewer for the re-projection error
@@ -114,10 +114,10 @@ projected onto the camera image.
 
 Repeat this process on additional frames.
 Point locations may be adjusted as needed, as described above,
-to refine the camera pose calibration.
+to refine the camera model calibration.
 Camera calibrations may be refined at any time;
-it is not necessary to "finalize" one camera pose
-before calibrating additional camera poses.
+it is not necessary to "finalize" one camera model
+before calibrating additional camera models.
 
 When satisfied,
 :menu:`File` |rarrow| :menu:`Export` |rarrow| :menu:`KRTD Cameras...`

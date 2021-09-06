@@ -1,7 +1,7 @@
 .. _glossary:
 
 ===============================================================================
-Glosary
+Glossary
 ===============================================================================
 
 Frame:
@@ -15,44 +15,75 @@ Frame:
   the term "frame" is used to indicate
   instances where the pose may not yet be known.
 
-Camera Pose:
-  In TeleSculptor, a camera pose
+Camera Model:
+  In TeleSculptor, a camera model
   (often shortened to "camera")
-  refers primarily to the model
-  which describes the properties of a camera pose,
-  including attributes such as focal length
-  and world position and orientation.
+  describes the intrinsic and extrinsic parameters
+  of a camera at a given frame.
+  Intrinsic parameters include focal length and lens distortion.
+  Extrinsic parameters are the camera pose |--| orientation and position.
   A frame may have at most one camera pose,
-  which is unique to that frame
-  (that is, camera poses are never shared)
-  In the GUI, cameras are represented as frustums.
+  which is unique to that frame.
+  While extrinsic parameters are never shared across frames,
+  intrinsic parameters may or may not be shared
+  depending on the algorithm that produced them.
 
-  At present, TeleSculptor assumes that all poses
-  have the same camera *intrinsics*;
-  that is, that all frame images are captured
-  using the same physical camera.
-  Note that this includes the lens' focal length.
+  In the GUI, cameras are represented as rectangular pyramids.
+  The peak of the pyramid is the camera center of projection.
+  The rectangle base is proportional to the image aspect ratio,
+  and a triangle attached to the base
+  indicates which direction is "up" in the image.
+  The pyramid visualizes the field of view of the camera.
 
 Feature:
-  A feature is a location that corresponds to an "interesting" point,
-  such as the corner of an object or other "notable" point.
-  The term "feature points" typically refers to features detected in imagery.
+  A feature describes a salient point in an image.
+  Features have enough visual texture
+  that they can be reliably localized
+  in images across time.
+  Features are also known
+  as interest points
+  or corner points.
 
 Track:
-  A track is a collection of correlated features;
+  A (feature) track is a collection of correlated features;
   that is, detected feature points
   estimated to correspond to the same landmark.
 
 Landmark:
-  A landmark is an estimated world location of a "true" feature
-  that is computed from a feature track.
+  A landmark is an estimated 3D world point that,
+  when projected into the images,
+  gave rise to an observed feature track.
 
 Residual:
-  A residual, in general, is the difference between an observed value and an
-  estimated value\ [#er]_. In TeleSculptor, the observed value is typically a
-  detected feature point, and the estimated value is a landmark.
+  A residual, in general, is the difference
+  between an observed value and an estimated value\ [#er]_.
+  In TeleSculptor, the observed value
+  is typically a detected feature point,
+  and the estimated value is the projection
+  of its corresponding landmark into the image.
 
-.. TODO document GCP, CRP
+Ground Control Point (GCP):
+  A |gcp| is a 3D point
+  that is manually placed in the scene by a user.
+  Ground control points are often attached
+  to an identifiable location from a reference image or map.
+  The user can assign the true geodetic location
+  (latitude, longitude, elevation) to a |gcp|,
+  and that |gcp| can then serve as a constraint
+  when geo-registering the model.
+
+Camera Registration Point (CRP):
+  A |crp| is a 2D point
+  that is manually placed by the user
+  in one or more frame images.
+  Camera registration points are associated with a |gcp|
+  and can tie that |gcp| to multiple images,
+  even when no camera model has been estimated.
+  Whereas a |gcp| is the manually placed version of a landmark,
+  a |crp| is the manually placed version of a feature track.
+  A collection of |crp|\ s can be used
+  to manually estimate a camera model
+  when automated feature matching is not possible.
 
 ----
 

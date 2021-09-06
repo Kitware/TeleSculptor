@@ -94,8 +94,15 @@ bool FuseDepthTool::execute(QWidget* window)
       "This operation requires cameras");
     return false;
   }
+
+  std::string config_file = "gui_integrate_depth_maps.conf";
+  if (this->data()->config->get_value<bool>("use_gpu", true))
+  {
+    config_file = "gui_integrate_depth_maps_gpu.conf";
+  }
+
   // Load configuration
-  auto const config = readConfig("gui_integrate_depth_maps.conf");
+  auto const config = readConfig(config_file);
 
   // Check configuration
   if (!config)
