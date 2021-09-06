@@ -39,6 +39,7 @@
 #include <arrows/core/track_set_impl.h>
 #include <arrows/mvg/transform.h>
 #include "arrows/vtk/vtkKwiverCamera.h"
+#include <vital/algo/algorithm_factory.h>
 #include <vital/algo/estimate_similarity_transform.h>
 #include <vital/algo/resection_camera.h>
 #include <vital/algo/video_input.h>
@@ -1590,6 +1591,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
           this, &MainWindow::setVariableLens);
   connect(d->UI.actionFixGeoOrigin, &QAction::toggled,
           this, &MainWindow::setFixGeoOrigin);
+  connect(d->UI.actionUseGPU, &QAction::toggled,
+          this, &MainWindow::setUseGPU);
 
   connect(d->UI.actionSetBackgroundColor, &QAction::triggered,
           this, &MainWindow::setViewBackroundColor);
@@ -1718,6 +1721,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   // Unitil the bounding box is initialized, the bounds are going to be
   // [VTK_DOUBLE_MIN, VTK_DOUBLE_MAX] in all directions.
   d->UI.worldView->setROI(d->roi);
+
+  // check if the application has the CUDA plugin
+  bool has_cuda =
+    kwiver::vital::has_algorithm_impl_name("integrate_depth_maps", "cuda");
+  if (!has_cuda)
+  {
+    d->UI.actionUseGPU->setChecked(false);
+    d->UI.actionUseGPU->setEnabled(false);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1904,6 +1916,12 @@ void MainWindow::newProject()
       saveGeoOrigin(d->project->geoOriginFile);
     }
 
+    if (!d->UI.actionUseGPU->isEnabled())
+    {
+      // explicity disable GPU in the project if there is no option for it
+      d->project->config->set_value("use_gpu", "false");
+    }
+
     d->project->write();
   }
 
@@ -1940,17 +1958,27 @@ void MainWindow::loadProject(QString const& path)
 
   auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
 
-  bool ignore_metadata =
-    d->project->config->get_value<bool>("ignore_metadata", false);
+  bool ignore_metadata = d->project->config->get_value<bool>(
+    "ignore_metadata", d->UI.actionIgnoreMetadata->isChecked());
   d->UI.actionIgnoreMetadata->setChecked(ignore_metadata);
 
-  bool variable_lens =
-    d->project->config->get_value<bool>("variable_lens", false);
+  bool variable_lens = d->project->config->get_value<bool>(
+    "variable_lens", d->UI.actionVariableLens->isChecked());
   d->UI.actionVariableLens->setChecked(variable_lens);
 
-  bool fix_geo_origin =
-    d->project->config->get_value<bool>("fix_geo_origin", false);
+  bool fix_geo_origin = d->project->config->get_value<bool>(
+    "fix_geo_origin", d->UI.actionFixGeoOrigin->isChecked());
   d->UI.actionFixGeoOrigin->setChecked(fix_geo_origin);
+
+  bool use_gpu = d->project->config->get_value<bool>(
+    "use_gpu", d->UI.actionUseGPU->isChecked());
+  d->UI.actionUseGPU->setChecked(use_gpu);
+
+  if (!d->UI.actionUseGPU->isEnabled())
+  {
+    // explicity disable GPU in the project if there is no option for it
+    d->project->config->set_value("use_gpu", "false");
+  }
 
   d->UI.menuComputeOptions->blockSignals(oldSignalState);
 
@@ -3240,6 +3268,12 @@ void MainWindow::setVariableLens(bool state)
 void MainWindow::setFixGeoOrigin(bool state)
 {
   setComputeOption("fix_geo_origin", state);
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::setUseGPU(bool state)
+{
+  setComputeOption("use_gpu", state);
 }
 
 //-----------------------------------------------------------------------------

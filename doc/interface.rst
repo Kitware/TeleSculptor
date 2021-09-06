@@ -921,6 +921,12 @@ Compute Menu |rarrow| Options
   to specify an origin and keep it fixed,
   such as comparing results across different data of the same location.
 
+:icon:`blank` Use GPU
+  If checked, this option will use a CUDA implementation
+  of some algorithms (currently, depth map fusion).
+  This requires an NVIDIA GPU with sufficient GPU RAM.
+  If unchecked, the CPU implementation will be used instead.
+
 .. _view-menu:
 
 View Menu

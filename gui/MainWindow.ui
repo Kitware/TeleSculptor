@@ -121,6 +121,7 @@
      <addaction name="actionIgnoreMetadata"/>
      <addaction name="actionVariableLens"/>
      <addaction name="actionFixGeoOrigin"/>
+     <addaction name="actionUseGPU"/>
     </widget>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
@@ -619,6 +620,20 @@
    </property>
    <property name="toolTip">
     <string>Keep the origin of the local geospatial coordinates fixed.</string>
+   </property>
+  </action>
+  <action name="actionUseGPU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Use GPU</string>
+   </property>
+   <property name="toolTip">
+    <string>Use CUDA to accelerate processing on the GPU.</string>
    </property>
   </action>
   <action name="actionExportFusedMeshFrameColors">
