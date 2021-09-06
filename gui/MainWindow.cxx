@@ -1956,7 +1956,7 @@ void MainWindow::loadProject(QString const& path)
   d->logFileStream.open(d->project->logFilePath.toStdString(),
                         std::ofstream::out | std::ofstream::app);
 
-  auto oldSignalState = d->UI.menuComputeOptions->blockSignals(true);
+  auto oldSignalState = d->UI.menuComputeSettings->blockSignals(true);
 
   bool ignore_metadata = d->project->config->get_value<bool>(
     "ignore_metadata", d->UI.actionIgnoreMetadata->isChecked());
@@ -1980,7 +1980,7 @@ void MainWindow::loadProject(QString const& path)
     d->project->config->set_value("use_gpu", "false");
   }
 
-  d->UI.menuComputeOptions->blockSignals(oldSignalState);
+  d->UI.menuComputeSettings->blockSignals(oldSignalState);
 
   // Get the video and mask sources
   if (d->project->config->has_value("video_reader:type"))

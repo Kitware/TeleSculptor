@@ -114,9 +114,9 @@
       <string>&amp;Advanced</string>
      </property>
     </widget>
-    <widget class="qtMenu" name="menuComputeOptions">
+    <widget class="qtMenu" name="menuComputeSettings">
      <property name="title">
-      <string>&amp;Options</string>
+      <string>&amp;Settings</string>
      </property>
      <addaction name="actionIgnoreMetadata"/>
      <addaction name="actionVariableLens"/>
@@ -127,7 +127,7 @@
     <addaction name="separator"/>
     <addaction name="menuAdvanced"/>
     <addaction name="separator"/>
-    <addaction name="menuComputeOptions"/>
+    <addaction name="menuComputeSettings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCompute"/>

@@ -70,7 +70,7 @@ Getting Started
    workflows
    processingsteps
    advancedtools
-   computeoptions
+   computesettings
    advancedconfig
    cameracalibration
    glossary

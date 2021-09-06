@@ -1,10 +1,10 @@
-.. _computeoptions:
+.. _computesettings:
 
-================
-Compute Options
-================
+=================
+Compute Settings
+=================
 
-.. image:: /images/compute_options.png
+.. image:: /images/compute_settings.png
    :align: right
    :scale: 50 %
 
