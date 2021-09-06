@@ -830,6 +830,11 @@ Compute Menu
   and may not be able to run
   if the ROI is too large for the GPU memory.
 
+:icon:`cancel` Cancel
+  Cancel the current running tool.
+  Most, but not, all tools support this cancel action,
+  which causes them to exit early and return a partial result.
+
 :icon:`blank` Advanced
   Provides access to additional, lower level tools.
   See :doc:`advancedtools` for details.
