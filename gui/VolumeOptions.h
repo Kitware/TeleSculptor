@@ -60,6 +60,7 @@ public:
   void setSurfaceColoringMode(SurfaceColor surfaceColor, bool blockSignals = false);
   void setOriginalColorArray(vtkDataArray* dataArray);
   bool isColorOptionsEnabled();
+  void disableOriginalColor();
 
   static bool isArrayValidForColoring(vtkDataArray* a, bool& mapScalars);
 
