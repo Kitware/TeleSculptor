@@ -391,6 +391,8 @@ The *Remove occluded surface color* option enables visibility checking
 such that occluded surfaces will not receive color.
 The *Occlusion threshold* varies the sensitivity of
 the occlusion depth test.
+Negative values cause larger occluded regions while
+positive values cause smaller occluded regions.
 
 .. figure:: /images/mesh_colored_by_single_frame.png
    :align: center
