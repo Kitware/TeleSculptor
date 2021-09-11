@@ -339,20 +339,40 @@ tend to appear in areas with only a few views.
 Colorize Mesh
 ==============
 
-The fused mesh is provided initially in a solid grey color.  To add color, use the drop down menu under the Volume Display button ( |volume_display_button| ).  Check the
-*Colorize surface* box to enable color.  There two options to color the mesh.  The *Current frame* option always projects the current frame onto the mesh and the color updates when
-you play back the video.  The *All frames* option estimates a static mesh coloring by projecting multiple images onto the surface and combining them.  The *Frame sampling* combo box
-allows configuration of how frequently to sample frames for coloring.  Smaller sampling uses more frames for better color but more computation time.  Press the Compute button to
-compute mesh color (note: a progress bar is not yet implemented for this step).  When complete, the *Color display* option can be changed without needing to recompute color.  The
-recommended color display option is *MedianColoration*, however, *MeanColoration* is often quite similar.  There are also special colorization options to gain insight into the data.
-The *Normals* option colors the mesh by surface normal direction, and the *NbProjectedDepthMap* option colors by the number of depth map views that observed each part of the surface.
+The fused mesh is provided initially in a solid grey color.
+To add color, use the drop down menu under the
+Volume Display button ( |volume_display_button| ).
+Use the left drop down menu to select between *No Color* and *Image Color*.
+If, and only if, a mesh was loaded from a file,
+a third option for *Original Color* is available.
+*Original Color* displays the color loaded from the mesh file.
 
 .. figure:: /images/mesh_colorization_menu.png
    :align: center
 
    The mesh colorization menu options.
 
-.. figure:: /images/colored_fused_mesh.png
+If *Image Color* is selected then the mesh vertices are colored by
+projecting color from one or more images onto the mesh.
+Additional settings on how the mesh is colored
+are in the right drop down menu.
+The *Current frame* option always projects the current frame onto the mesh
+and the color updates when you play back the video.
+The *All frames* option estimates a static mesh coloring by
+projecting multiple images onto the surface and combining them.
+The *Frame sampling* combo box allows configuration of
+how frequently to sample frames for coloring.
+Smaller sampling uses more frames for better color but more computation time.
+Press the *Compute* button to compute mesh color.
+When complete, the *Color display* option can be changed
+without needing to recompute color.
+The recommended color display option is *median*,
+however, *mean* is often quite similar.
+The *count* option colors by the number of depth map views
+that observed each part of the surface.
+
+
+.. figure:: /images/mesh_colored_by_mean.png
    :align: center
 
    A fused mesh colored by the mean of multiple frames.
@@ -362,6 +382,27 @@ The *Normals* option colors the mesh by surface normal direction, and the *NbPro
 
    A fused mesh colored by the number of views
    that see each part of the surface.
+
+Additional check boxes are available to enable removal of color
+on some surfaces that should not be colored.
+The *Remove masked surface color* option uses a mask video loaded
+into TeleSculptor and does not apply color at points under this mask.
+The *Remove occluded surface color* option enables visibility checking
+such that occluded surfaces will not receive color.
+The *Occlusion threshold* varies the sensitivity of
+the occlusion depth test.
+Negative values cause larger occluded regions while
+positive values cause smaller occluded regions.
+
+.. figure:: /images/mesh_colored_by_single_frame.png
+   :align: center
+
+   A fused mesh colored by a single frame using occlusion detection.
+
+.. figure:: /images/mesh_colored_by_single_frame_no_occ.png
+   :align: center
+
+   A fused mesh colored by a single frame without occlusion detection.
 
 Export Data
 ============
