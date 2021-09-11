@@ -830,102 +830,18 @@ Compute Menu
   and may not be able to run
   if the ROI is too large for the GPU memory.
 
+:icon:`cancel` Cancel
+  Cancel the current running tool.
+  Most, but not, all tools support this cancel action,
+  which causes them to exit early and return a partial result.
+
 :icon:`blank` Advanced
   Provides access to additional, lower level tools.
   See :doc:`advancedtools` for details.
 
-.. TODO consolidate following with advancedtools.rst
-
-Compute Menu |rarrow| Advanced
-------------------------------
-
-:icon:`blank` Filter Tracks
-  Filter the tracks to retain a smaller subset of tracks
-  that is still representative of the original set.
-  The intent is to make bundle adjustment (:action:`- Refine Solution`)
-  faster without loosing critical constraints.
-  The filter attempts to remove the shortest tracks
-  that span the same frames already covered by longer tracks.
-
-:icon:`blank` Triangulate Landmarks
-  For each available feature track,
-  back project rays from the cameras that contain each track state
-  and intersect those rays in 3D to estimate the location of a 3D landmark.
-  This requires both feature tracks and a reasonably accurate set of cameras.
-
-:icon:`blank` Refine Solution
-  Applies bundle adjustment to the cameras and landmarks
-  in order to refine the quality of the 3D reconstruction.
-  It aims to minimize this distance
-  between the landmarks projected into each image by the cameras
-  and the observed location of the corresponding feature tracks.
-
-:icon:`blank` Reverse (Necker)
-  Transforms the cameras and landmarks
-  in a manner intended to break the refinement process
-  out of a degenerate optimization
-  (which can occur due to the Necker cube phenomena\ [#nc]_),
-  by computing a best fit plane to the landmarks,
-  mirroring the landmarks about said plane,
-  and rotating the cameras 180 |deg|
-  about their respective optical axes
-  and 180 |deg| about the best fit plane normal
-  where each camera's optical axis intersects said plane.
-
-:icon:`blank` Align
-  Applies a similarity transformation to the camera and landmark data
-  so that the data has a standard ("canonical") alignment.
-  Particularly, this attempts to orient the data
-  so that the ground plane is parallel with the :f:`z = 0` plane
-  (with the cameras in the :f:`+Z` direction).
-  Additionally, the landmarks will be centered about the origin
-  and scaled to an approximate variance of :f:`1.0`.
-
-:icon:`blank` Save Key Frames
-  Iterate through a video and save every key frame as an image file
-  in a subdirectory of the project directory.
-  Key frames are marked by the feature tracking algorithm.
-
-:icon:`blank` Compute Single Depth Map
-  Estimate a dense depth map
-  and corresponding point cloud
-  for the current frame.
-  This requires a valid camera on the current frame
-  as well as cameras on other frames for triangulation.
-  It computes the solution within the active ROI
-  and shows an incremental visualization of how the solution evolves.
-
-Compute Menu |rarrow| Options
------------------------------
-
-:icon:`blank` Ignore Metadata
-  Ignore the metadata fields (e.g. from KLV)
-  that are attached to the imagery.
-  If this option is set, metadata will not be used
-  in camera estimation or in geolocation.
-  The main reason to use this option
-  is when the metadata is known to be invalid.
-
-:icon:`blank` Variable Lens
-  This option allows estimation of camera models
-  in which the lens model (e.g. focal length) can change over time.
-  If this option is off, all cameras will share the same lens model.
-  If the lens does not change between frames,
-  it is best to use a single model.
-
-:icon:`blank` Fix Geo-Origin
-  If checked, this option will prevent TeleSculptor
-  from resetting the geospatial origin to a point centered on the data.
-  Normally, TeleSculptor automatically chooses an origin,
-  but there are use cases where it is helpful
-  to specify an origin and keep it fixed,
-  such as comparing results across different data of the same location.
-
-:icon:`blank` Use GPU
-  If checked, this option will use a CUDA implementation
-  of some algorithms (currently, depth map fusion).
-  This requires an NVIDIA GPU with sufficient GPU RAM.
-  If unchecked, the CPU implementation will be used instead.
+:icon:`blank` Options
+  Provides options to alter how the tools operate.
+  See :doc:`computeoptions` for details.
 
 .. _view-menu:
 
