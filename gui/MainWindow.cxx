@@ -1499,6 +1499,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
     std::bind(&MainWindowPrivate::handleLogMessage, d, _1, _2, _3, _4);
   kv::kwiver_logger::set_global_callback(cb);
 
+  // Work around issue where "Options" menu will not display on MacOS
+#ifdef __APPLE__
+  d->UI.menuComputeOptions->setTitle("0ptions");
+#endif
+
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
     d->UI.menuCompute->insertSeparator(d->UI.actionCancelComputation);
