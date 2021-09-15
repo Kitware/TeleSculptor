@@ -3572,19 +3572,19 @@ void MainWindow::computeCamera()
   auto landmarks = d->groundControlPointsHelper->registrationLandmarks();
 
   // Set up algorithm
-  auto config = readConfig("resection_camera.conf");
+  auto config = readConfig("gui_resection_camera.conf");
   if (!config)
   {
     config = kv::config_block::empty_config();
   }
-  config->set_value("algorithm:type", "ocv");
+  config->set_value("resection:type", "ocv");
 
   try
   {
     // Create algorithm to write detections
     kv::algo::resection_camera_sptr algorithm;
     kv::algo::resection_camera::set_nested_algo_configuration(
-      "algorithm", config, algorithm);
+      "resection", config, algorithm);
 
     if (!algorithm)
     {
