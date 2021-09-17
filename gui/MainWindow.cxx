@@ -1351,9 +1351,9 @@ void MainWindowPrivate::setActiveTool(AbstractTool* tool)
 
   auto const enableTools = !tool;
   auto const enableCancel = tool && tool->isCancelable();
-  foreach (auto const& tool, this->tools)
+  foreach (auto const& t, this->tools)
   {
-    tool->setEnabled(enableTools);
+    t->setEnabled(enableTools);
   }
   this->UI.actionCancelComputation->setEnabled(enableCancel);
   this->UI.actionOpenProject->setEnabled(enableTools);
@@ -1498,6 +1498,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
   kv::kwiver_logger::callback_t cb =
     std::bind(&MainWindowPrivate::handleLogMessage, d, _1, _2, _3, _4);
   kv::kwiver_logger::set_global_callback(cb);
+
+  // Work around issue where "Options" menu will not display on MacOS
+#ifdef __APPLE__
+  d->UI.menuComputeOptions->setTitle("0ptions");
+#endif
 
   d->toolMenu = d->UI.menuCompute;
   d->toolSeparator =
@@ -3572,15 +3577,19 @@ void MainWindow::computeCamera()
   auto landmarks = d->groundControlPointsHelper->registrationLandmarks();
 
   // Set up algorithm
-  auto config = kv::config_block::empty_config();
-  config->set_value("algorithm:type", "ocv");
+  auto config = readConfig("gui_resection_camera.conf");
+  if (!config)
+  {
+    config = kv::config_block::empty_config();
+  }
+  config->set_value("resection:type", "ocv");
 
   try
   {
     // Create algorithm to write detections
     kv::algo::resection_camera_sptr algorithm;
     kv::algo::resection_camera::set_nested_algo_configuration(
-      "algorithm", config, algorithm);
+      "resection", config, algorithm);
 
     if (!algorithm)
     {
