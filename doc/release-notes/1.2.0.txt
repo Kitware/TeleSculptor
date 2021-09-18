@@ -77,7 +77,7 @@ TeleSculptor Application
 Tools
 
  * Removed deprecated command line maptk tools. All the underlying kwiver
-   algoritms can be accessed via the 'kwiver' command line tool.
+   algorithms can be accessed via the 'kwiver' command line tool.
 
 Build System
 
@@ -93,7 +93,7 @@ Documentation
 
  * Replaced the PDF user guide and the basic HTML help page with a better
    formatted and more maintainable manual using Sphinx.  The same user manual
-   is now availble at https://telesculptor.readthedocs.io and offline in the
+   is now available at https://telesculptor.readthedocs.io and offline in the
    TeleSculptor help menu.
 
 
@@ -103,4 +103,5 @@ Fixes since v1.1.2
 TeleSculptor Application
 
  * Fixed a bug in which the "zoom to landmarks" option would make the World
-   View projections permantly invalid if there were no landmarks to zoom to.
+   View projections permanently invalid if there were no landmarks to zoom to.
+
