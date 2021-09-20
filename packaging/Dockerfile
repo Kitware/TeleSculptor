@@ -20,6 +20,7 @@ apt-get install -y --no-install-recommends \
 build-essential file git \
 wget automake \
 libgl1-mesa-dev libxt-dev libexpat1-dev libgtk2.0-dev liblapack-dev \
+libx11-xcb-dev libxcb1-dev libxcb-glx0-dev libxkbcommon-x11-dev \
 python3-dev python3-sphinx python3-sphinx-rtd-theme && \
 rm -rf /var/lib/apt/lists/*
 
