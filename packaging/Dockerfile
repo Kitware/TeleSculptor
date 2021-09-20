@@ -15,11 +15,12 @@ ARG branch=release
 
 # Install required system packages to build TeleSculptor
 # Everything else is built from Fletch
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive \
+apt-get install -y --no-install-recommends \
 build-essential file git \
 wget automake \
 libgl1-mesa-dev libxt-dev libexpat1-dev libgtk2.0-dev liblapack-dev \
-python3-dev python3-docutils && \
+python3-dev python3-sphinx python3-sphinx-rtd-theme && \
 rm -rf /var/lib/apt/lists/*
 
 # Install CMake 3.15
