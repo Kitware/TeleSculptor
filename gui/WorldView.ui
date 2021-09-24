@@ -28,19 +28,17 @@
    </property>
    <item>
     <widget class="QToolBar" name="toolBar">
-     <property name="toolButtonStyle">
-      <enum>Qt::ToolButtonFollowStyle</enum>
-     </property>
      <addaction name="actionViewReset"/>
      <addaction name="separator"/>
      <addaction name="actionShowFrameImage"/>
      <addaction name="actionShowCameras"/>
      <addaction name="actionShowLandmarks"/>
-     <addaction name="actionPlaceEditGCP"/>
      <addaction name="actionShowGroundPlane"/>
      <addaction name="actionSelectROI"/>
      <addaction name="actionShowDepthMap"/>
      <addaction name="actionShowVolume"/>
+     <addaction name="separator"/>
+     <addaction name="actionPlaceEditGCP"/>
      <addaction name="actionShowRuler"/>
     </widget>
    </item>

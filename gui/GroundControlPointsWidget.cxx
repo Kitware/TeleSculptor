@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 // TeleSculptor includes
 #include "GroundControlPointsWidget.h"
@@ -51,6 +25,7 @@
 
 // Qt includes
 #include <QApplication>
+#include <QSignalBlocker>
 
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsWidget)
 
@@ -87,12 +62,10 @@ GroundControlPointsWidgetPrivate::GroundControlPointsWidgetPrivate()
   this->widget->ManagesCursorOn();
   this->repr->SetHandleRepresentation(this->pointRepr.GetPointer());
   vtkNew<vtkProperty> property;
-  property->SetColor(1, 1, 1);
   property->SetLineWidth(1.0);
   property->SetRenderLinesAsTubes(false);
   this->pointRepr->SetProperty(property.GetPointer());
   vtkNew<vtkProperty> selectedProperty;
-  selectedProperty->SetColor(0, 1, 0);
   selectedProperty->SetLineWidth(3.0);
   selectedProperty->SetRenderLinesAsTubes(true);
   this->pointRepr->SetSelectedProperty(selectedProperty.GetPointer());
@@ -136,6 +109,9 @@ GroundControlPointsWidget::GroundControlPointsWidget(QObject* parent)
 {
   QTE_D();
 
+  this->setColor(Qt::white);
+  this->setSelectedColor(Qt::green);
+
   d->connections->Connect(d->widget.GetPointer(),
                           vtkCommand::PlacePointEvent,
                           this,
@@ -166,8 +142,12 @@ GroundControlPointsWidget::~GroundControlPointsWidget()
 void GroundControlPointsWidget::enableWidget(bool enable)
 {
   QTE_D();
-  d->widget->SetEnabled(enable);
-  d->widget->GetInteractor()->Render();
+
+  with_expr (QSignalBlocker{this})
+  {
+    d->widget->SetEnabled(enable);
+    d->widget->GetInteractor()->Render();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -189,6 +169,24 @@ void GroundControlPointsWidget::setPointPlacer(vtkPointPlacer* placer)
 {
   QTE_D();
   d->pointRepr->SetPointPlacer(placer);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsWidget::setSelectedColor(QColor color)
+{
+  QTE_D();
+
+  auto* const property = d->pointRepr->GetSelectedProperty();
+  property->SetColor(color.redF(), color.greenF(), color.blueF());
 }
 
 //-----------------------------------------------------------------------------
@@ -247,45 +245,47 @@ int GroundControlPointsWidget::findHandleWidget(vtkHandleWidget* handle) const
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(double pt[3])
+int GroundControlPointsWidget::addDisplayPoint(double pt[3])
 {
   QTE_D();
 
   if (!d->renderer)
   {
-    return;
+    return -1;
   }
 
-  int handleId = d->repr->CreateHandle(pt);
+  auto const handleId = static_cast<unsigned>(d->repr->CreateHandle(pt));
   d->repr->SetSeedWorldPosition(handleId, pt);
   // Now that the seed is placed, reset the point placer to ensure free
   // motion of the handle
   d->repr->GetHandleRepresentation(handleId)->SetPointPlacer(nullptr);
   vtkHandleWidget* currentHandle = d->widget->CreateNewHandle();
   currentHandle->SetEnabled(1);
+
+  return static_cast<int>(handleId);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(double x, double y, double z)
+int GroundControlPointsWidget::addDisplayPoint(double x, double y, double z)
 {
   double pt[3] = { x, y, z };
-  this->addDisplayPoint(pt);
+  return this->addDisplayPoint(pt);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addDisplayPoint(kwiver::vital::vector_3d pt)
+int GroundControlPointsWidget::addDisplayPoint(kwiver::vital::vector_3d pt)
 {
-  this->addDisplayPoint(pt.data());
+  return this->addDisplayPoint(pt.data());
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(double x, double y, double z)
+int GroundControlPointsWidget::addPoint(double x, double y, double z)
 {
   QTE_D();
 
   if (!d->renderer)
   {
-    return;
+    return -1;
   }
 
   double p[4] = { x, y, z, 1.0 };
@@ -294,20 +294,23 @@ void GroundControlPointsWidget::addPoint(double x, double y, double z)
     d->transformMatrix->MultiplyPoint(p, p);
   }
 
-  this->addDisplayPoint(p);
+  auto const handleId = this->addDisplayPoint(p);
+
   d->widget->HighlightActiveSeed();
+
+  return handleId;
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(double const p[3])
+int GroundControlPointsWidget::addPoint(double const p[3])
 {
-  this->addPoint(p[0], p[1], p[2]);
+  return this->addPoint(p[0], p[1], p[2]);
 }
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsWidget::addPoint(kwiver::vital::vector_3d p)
+int GroundControlPointsWidget::addPoint(kwiver::vital::vector_3d p)
 {
-  this->addPoint(p.data());
+  return this->addPoint(p.data());
 }
 
 //-----------------------------------------------------------------------------
@@ -429,6 +432,11 @@ void GroundControlPointsWidget::activeHandleChangedCallback(
 void GroundControlPointsWidget::setActivePoint(int id)
 {
   QTE_D();
+
+  if (!d->repr->GetNumberOfSeeds())
+  {
+    return;
+  }
 
   if (d->repr->GetActiveHandle() == id)
   {

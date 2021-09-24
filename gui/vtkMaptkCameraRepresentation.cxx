@@ -1,38 +1,12 @@
-/*ckwg +29
- * Copyright 2016-2020 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "vtkMaptkCameraRepresentation.h"
 
 #include "arrows/vtk/vtkKwiverCamera.h"
-#include <vital/types/vector.h>
 
+#include <vital/types/vector.h>
 
 #include <vtkActor.h>
 #include <vtkAppendPolyData.h>
@@ -154,7 +128,7 @@ class vtkMaptkCameraRepresentation::vtkInternal
 public:
   vtkCamera* NextCamera();
 
-  std::map<int, vtkCamera*> Cameras;
+  std::map<kwiver::vital::frame_id_t, vtkCamera*> Cameras;
 
   vtkNew<vtkPolyData> ActivePolyData;
   vtkNew<vtkAppendPolyData> NonActiveAppendPolyData;
@@ -171,7 +145,6 @@ public:
   bool PathNeedsUpdate;
 };
 
-
 //-----------------------------------------------------------------------------
 vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   : Internal(new vtkInternal)
@@ -180,9 +153,9 @@ vtkMaptkCameraRepresentation::vtkMaptkCameraRepresentation()
   this->NonActiveCameraRepLength = 4.0;
   this->DisplayDensity = 1;
 
-  this->ActiveCamera = 0;
+  this->ActiveCamera = nullptr;
 
-  this->Internal->LastActiveCamera = 0;
+  this->Internal->LastActiveCamera = nullptr;
   this->Internal->LastNonActiveCameraRepLength = -1.0;
   this->Internal->PathNeedsUpdate = false;
 
@@ -236,7 +209,8 @@ vtkMaptkCameraRepresentation::~vtkMaptkCameraRepresentation()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::AddCamera(int id, vtkCamera* camera)
+void vtkMaptkCameraRepresentation::AddCamera(
+  kwiver::vital::frame_id_t id, vtkCamera* camera)
 {
   // Don't allow null or duplicate entries
   if (!camera || this->Internal->Cameras.count(id) > 0)
@@ -251,7 +225,7 @@ void vtkMaptkCameraRepresentation::AddCamera(int id, vtkCamera* camera)
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::RemoveCamera(int id)
+void vtkMaptkCameraRepresentation::RemoveCamera(kwiver::vital::frame_id_t id)
 {
   // If item isn't present, do nothing
   auto camIter = this->Internal->Cameras.find(id);
@@ -270,7 +244,7 @@ void vtkMaptkCameraRepresentation::RemoveCamera(int id)
 
   if (this->ActiveCamera == camIter->second)
   {
-    this->ActiveCamera = 0;
+    this->ActiveCamera = nullptr;
   }
 
   camIter->second->UnRegister(this);
@@ -288,7 +262,8 @@ void vtkMaptkCameraRepresentation::CamerasModified()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkCameraRepresentation::SetActiveCamera(int id)
+void vtkMaptkCameraRepresentation::SetActiveCamera(
+  kwiver::vital::frame_id_t id)
 {
   auto camIter = this->Internal->Cameras.find(id);
   if (camIter == this->Internal->Cameras.end())
@@ -366,20 +341,27 @@ void vtkMaptkCameraRepresentation::Update()
   {
     this->Internal->PathPolyData->Reset();
 
-    vtkNew<vtkPoints> points;
-    this->Internal->PathPolyData->SetPoints(points.GetPointer());
-    points->Allocate(this->Internal->Cameras.size());
-
-    vtkNew<vtkCellArray> lines;
-    this->Internal->PathPolyData->SetLines(lines.GetPointer());
-    lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
-
-    for(auto const& camData : this->Internal->Cameras)
+    // Don't add points unless we have more than one camera; we obviously can't
+    // draw lines for a single point, and for some reason having only one point
+    // causes the other actors to fail to render
+    if (this->Internal->Cameras.size() > 1)
     {
-      double position[3];
-      camData.second->GetPosition(position);
-      lines->InsertCellPoint(points->InsertNextPoint(position));
+      vtkNew<vtkPoints> points;
+      this->Internal->PathPolyData->SetPoints(points.GetPointer());
+      points->Allocate(this->Internal->Cameras.size());
+
+      vtkNew<vtkCellArray> lines;
+      this->Internal->PathPolyData->SetLines(lines.GetPointer());
+      lines->InsertNextCell(static_cast<int>(this->Internal->Cameras.size()));
+
+      for(auto const& camData : this->Internal->Cameras)
+      {
+        double position[3];
+        camData.second->GetPosition(position);
+        lines->InsertCellPoint(points->InsertNextPoint(position));
+      }
     }
+
     this->Internal->PathPolyData->Modified();
     this->Internal->PathNeedsUpdate = false;
   }

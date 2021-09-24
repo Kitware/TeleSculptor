@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2016-2019 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "WorldView.h"
 
@@ -66,7 +40,6 @@
 #include <vtkEventQtSlotConnect.h>
 #include <vtkFlyingEdges3D.h>
 #include <vtkGenericOpenGLRenderWindow.h>
-#include <vtkGeometryFilter.h>
 #include <vtkImageActor.h>
 #include <vtkImageData.h>
 #include <vtkMaptkImageDataGeometryFilter.h>
@@ -75,6 +48,7 @@
 #include <vtkMetaImageReader.h>
 #include <vtkNew.h>
 #include <vtkOBJWriter.h>
+#include <vtkPLYReader.h>
 #include <vtkPLYWriter.h>
 #include <vtkPlaneSource.h>
 #include <vtkPointData.h>
@@ -90,7 +64,9 @@
 #include <vtkTimeStamp.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
+#include <vtkVertexGlyphFilter.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
 
 #ifdef VTKWEBGLEXPORTER
@@ -104,14 +80,52 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QMenu>
 #include <QTimer>
 #include <QToolButton>
 #include <QWidgetAction>
 
+#include <array>
+
 using namespace LandmarkArrays;
 
 QTE_IMPLEMENT_D_FUNC(WorldView)
+
+namespace // anonymous
+{
+
+//-----------------------------------------------------------------------------
+vtkDataArray* findArrayToColor(vtkDataSet* dataset)
+{
+  bool mapScalars;
+  vtkPointData* pd = dataset->GetPointData();
+  // first try the active scalars
+  vtkDataArray* a = pd->GetScalars();
+  if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
+  {
+    return a;
+  }
+  // if active scalars are not set look through all arrays,
+  // if we find an array that fits, set it as active scalars and return it.
+  for(int i = 0; i < pd->GetNumberOfArrays(); ++i)
+  {
+    a = pd->GetArray(i);
+    if (VolumeOptions::isArrayValidForColoring(a, mapScalars))
+    {
+      pd->SetScalars(a);
+      return a;
+    }
+    else
+    {
+      continue;
+    }
+  }
+  mapScalars = false;
+  return nullptr;
+}
+
+} // namespace <anonymous>
 
 //-----------------------------------------------------------------------------
 class WorldViewPrivate
@@ -197,6 +211,7 @@ public:
 
   vtkNew<vtkActor> volumeActor;
   vtkSmartPointer<vtkImageData> volume;
+  vtkSmartPointer<vtkPolyData> mesh;
 
   vtkSmartPointer<vtkBoxWidget2> boxWidget;
   vtkSmartPointer<vtkBox> roi;
@@ -587,7 +602,7 @@ WorldView::WorldView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->setImageData(0, QSize(1, 1));
+  this->setImageData(nullptr, QSize{1, 1});
 
   // Set up landmark actor
   vtkNew<vtkPolyData> landmarkPolyData;
@@ -720,7 +735,7 @@ void WorldView::connectDepthPipeline()
 
   if (!d->inputDepthGeometryFilter)
   {
-    d->depthScalarFilter->SetInputConnection(0);
+    d->depthScalarFilter->SetInputConnection(nullptr);
     return;
   }
 
@@ -854,34 +869,37 @@ void WorldView::setMaskConfig(QString const& path,
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setCameras(kwiver::vital::camera_map_sptr cameras)
+void WorldView::invalidateCameras()
 {
   QTE_D();
 
   d->cameraRep->CamerasModified();
-  d->volumeOptions->setCameras(cameras);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::loadVolume(QString const& path)
+bool WorldView::loadVolume(QString const& path)
 {
-  QFileInfo check_file(path);
-  if (!check_file.exists() || !check_file.isFile())
+  QFileInfo fileInfo{path};
+  if (!fileInfo.exists() || !fileInfo.isFile())
   {
-    return;
+    return false;
   }
-  // Create the vtk pipeline
-  // Read volume
+
+  // Create the vtk pipeline and read the volume
   vtkNew<vtkMetaImageReader> reader;
   reader->SetFileName(qPrintable(path));
   reader->Update();
 
-  vtkSmartPointer<vtkImageData> volume = vtkImageData::SafeDownCast(reader->GetOutput());
-  if (volume->GetPointData()->GetNumberOfArrays() > 0)
+  auto volume = vtkImageData::SafeDownCast(reader->GetOutput());
+  if (volume->GetPointData()->GetNumberOfArrays() <= 0)
   {
-    volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
-    this->setVolume(volume);
+    return false;
   }
+
+  volume->GetPointData()->GetAbstractArray(0)->SetName("reconstruction_scalar");
+  this->setVolume(volume);
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -894,7 +912,6 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
 
   d->volume = volume;
 
-
   // Apply contour
   d->contourFilter->SetInputData(volume);
   d->contourFilter->SetNumberOfContours(1);
@@ -903,6 +920,9 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   d->contourFilter->SetInputArrayToProcess(0, 0, 0,
     vtkDataObject::FIELD_ASSOCIATION_POINTS,
     "reconstruction_scalar");
+
+  d->contourFilter->Update();
+  d->mesh = d->contourFilter->GetOutput();
 
   // Create mapper
   vtkNew<vtkPolyDataMapper> contourMapper;
@@ -917,15 +937,13 @@ void WorldView::setVolume(vtkSmartPointer<vtkImageData> volume)
   d->volumeActor->SetVisibility(true);
   d->volumeOptions->setActor(d->volumeActor);
   d->volumeOptions->setEnabled(true);
+  d->volumeOptions->setSurfaceColoringMode(VolumeOptions::NO_COLOR);
+  d->volumeOptions->disableOriginalColor();
 
-  if (d->UI.actionShowVolume->isChecked())
-  {
-    this->fusedMeshEnabled(true);
-  }
-  connect(d->UI.actionShowVolume, &QAction::triggered,
-          this, &WorldView::fusedMeshEnabled);
-  connect(d->UI.actionShowVolume, &QAction::toggled,
-          this, &WorldView::fusedMeshEnabled);
+  emit this->volumeEnabled(true);
+  emit this->fusedMeshEnabled(true);
+
+  this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
 
   // Add this actor to the renderer
   d->renderer->AddActor(d->volumeActor);
@@ -938,10 +956,12 @@ void WorldView::resetVolume()
   QTE_D();
 
   d->volume = nullptr;
+  d->mesh = nullptr;
 
   d->renderer->RemoveActor(d->volumeActor);
 
-  this->fusedMeshEnabled(false);
+  emit this->volumeEnabled(false);
+  emit this->fusedMeshEnabled(false);
   d->volumeOptions->setEnabled(false);
 }
 
@@ -950,13 +970,28 @@ void WorldView::setVolumeVisible(bool state)
 {
   QTE_D();
 
-  d->volumeActor->SetVisibility(state);
-  d->volumeOptions->setEnabled(state);
-  this->render();
+  if (d->volume || d->mesh)
+  {
+    if (static_cast<bool>(d->volumeActor->GetVisibility()) != state)
+    {
+      d->volumeActor->SetVisibility(state);
+      d->volumeOptions->setEnabled(state);
+      this->render();
+
+      if (d->volume)
+      {
+        emit this->volumeEnabled(state);
+      }
+      if (d->mesh)
+      {
+        emit this->fusedMeshEnabled(state);
+      }
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setVolumeCurrentFrame(int frame)
+void WorldView::setVolumeCurrentFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 
@@ -970,37 +1005,163 @@ void WorldView::computeContour(double threshold)
 
   d->contourFilter->SetValue(0, threshold);
   d->contourFilter->Update();
-  if(d->volumeOptions->isColorOptionsEnabled())
+  if (d->volumeOptions->isColorOptionsEnabled())
   {
     d->volumeOptions->forceColorize();
+  }
+  vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
+  if (mesh)
+  {
+    d->mesh = mesh;
   }
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
+bool WorldView::loadMesh(QString const& path)
 {
-  Q_UNUSED(id)
+  QTE_D();
 
+  QFileInfo fileInfo{path};
+  if (!fileInfo.exists() || !fileInfo.isFile())
+  {
+    return false;
+  }
+
+  QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+  vtkSmartPointer<vtkPolyData> mesh;
+  QString const& ext = fileInfo.suffix().toLower();
+  if (ext == "ply")
+  {
+    vtkNew<vtkPLYReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else if (ext == "vtp")
+  {
+    vtkNew<vtkXMLPolyDataReader> reader;
+    reader->SetFileName(qPrintable(path));
+    reader->Update();
+    mesh = vtkPolyData::SafeDownCast(reader->GetOutput());
+  }
+  else
+  {
+    LOG_ERROR(d->logger, "Invalid mesh type: " << qPrintable(fileInfo.suffix()));
+    return false;
+  }
+  QGuiApplication::restoreOverrideCursor();
+
+  this->setMesh(mesh);
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setMesh(vtkSmartPointer<vtkPolyData> mesh)
+{
+  QTE_D();
+
+  if (mesh->GetNumberOfCells() == 0)
+  {
+    vtkNew<vtkVertexGlyphFilter> vertexFilter;
+    vertexFilter->SetInputData(mesh);
+    vertexFilter->Update();
+    mesh = vertexFilter->GetOutput();
+  }
+
+  d->mesh = mesh;
+
+  // Create mapper
+  vtkNew<vtkPolyDataMapper> meshMapper;
+  meshMapper->SetInputData(mesh);
+
+  // Set the actor's mapper
+  d->volumeActor->SetMapper(meshMapper);
+  d->volumeActor->SetVisibility(true);
+  // Add this actor to the renderer
+  d->renderer->AddActor(d->volumeActor);
+  emit this->fusedMeshEnabled(true);
+  d->volumeOptions->setActor(d->volumeActor);
+  d->volumeOptions->setEnabled(true);
+
+  this->setVolumeVisible(d->UI.actionShowVolume->isChecked());
+  std::array<std::string, 3> requiredArrays = {"mean", "median", "count"};
+  size_t i;
+  for (i = 0; i < requiredArrays.size(); ++i)
+  {
+    if (! mesh->GetPointData()->GetArray(requiredArrays[i].c_str()))
+    {
+      break;
+    }
+  }
+  if (i == requiredArrays.size())
+  {
+    // if the mesh has the required arrays set IMAGE_COLOR and
+    // avoid recomputing colors from current image.
+    d->volumeOptions->setSurfaceColoringMode(
+      VolumeOptions::IMAGE_COLOR, true /*blockSignals*/);
+  }
+  else
+  {
+    // check if there is other scalar to color
+    vtkDataArray* scalars = findArrayToColor(mesh);
+    if (scalars)
+    {
+      d->volumeOptions->setOriginalColorArray(scalars);
+      // make sure refresh the picture even when setting the same ORIGINAL_COLOR
+      d->volumeOptions->setSurfaceColoringMode(
+        VolumeOptions::ORIGINAL_COLOR, true /*blockSignals*/);
+      d->volumeOptions->surfaceColoringModeChanged(
+        VolumeOptions::ORIGINAL_COLOR);
+    }
+    else
+    {
+      d->volumeOptions->setSurfaceColoringMode(VolumeOptions::NO_COLOR);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::addCamera(
+  kwiver::vital::frame_id_t id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
+{
   QTE_D();
 
   d->cameraRep->AddCamera(id, camera);
+
+  d->volumeOptions->setCamera(id, camera->GetCamera());
 
   d->updateCameras(this);
   d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::removeCamera(int id)
+void WorldView::updateCamera(
+  kwiver::vital::frame_id_t id, kwiver::arrows::vtk::vtkKwiverCamera* camera)
 {
-  Q_UNUSED(id)
+  QTE_D();
 
-    QTE_D();
+  d->volumeOptions->setCamera(id, camera->GetCamera());
 
-  d->cameraRep->RemoveCamera(id);
+  d->updateCameras(this);
+  d->updateAxes(this);
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::setActiveCamera(int id)
+void WorldView::removeCamera(kwiver::vital::frame_id_t id)
+{
+  QTE_D();
+
+  d->cameraRep->RemoveCamera(id);
+
+  d->volumeOptions->setCamera(id, nullptr);
+
+  d->updateCameras(this);
+  d->updateAxes(this);
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setActiveCamera(kwiver::vital::frame_id_t id)
 {
   static auto const plane = kwiver::vital::vector_4d(0.0, 0.0, 1.0, 0.0);
 
@@ -1073,11 +1234,11 @@ void WorldView::setLandmarks(kwiver::vital::landmark_map const& lm)
   d->landmarkObservations->Allocate(size);
 
   vtkIdType vertIndex = 0;
-  foreach (auto const& lm, landmarks)
+  foreach (auto const& landmark, landmarks)
   {
-    auto const& pos = lm.second->loc();
-    auto const& color = lm.second->color();
-    auto const observations = lm.second->observations();
+    auto const& pos = landmark.second->loc();
+    auto const& color = landmark.second->color();
+    auto const observations = landmark.second->observations();
 
     d->landmarkPoints->InsertNextPoint(pos.data());
     d->landmarkVerts->InsertNextCell(1);
@@ -1221,6 +1382,11 @@ void WorldView::resetViewToLandmarks()
 
   vtkBoundingBox bbox;
   bbox.AddBounds(d->landmarkActor->GetBounds());
+
+  if (!bbox.IsValid())
+  {
+    return;
+  }
 
   double bounds[6];
   bbox.GetBounds(bounds);
@@ -1447,7 +1613,7 @@ void WorldView::updateDepthMapThresholds(bool filterState)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveDepthPoints(QString const& path,
+bool WorldView::saveDepthPoints(QString const& path,
                                 kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
@@ -1462,6 +1628,7 @@ void WorldView::saveDepthPoints(QString const& path,
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(data, DepthMapArrays::TrueColor, points, colors);
     kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+    return true;
   }
   else
   {
@@ -1471,7 +1638,8 @@ void WorldView::saveDepthPoints(QString const& path,
     writer->SetInputConnection(d->depthScalarFilter->GetOutputPort());
     writer->SetColorMode(0);
     writer->SetArrayName(DepthMapArrays::TrueColor);
-    writer->Write();
+    auto const result = writer->Write();
+    return (result == VTK_OK);
   }
 }
 
@@ -1515,7 +1683,7 @@ void WorldView::exportWebGLScene(QString const& path)
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveVolume(const QString &path)
+bool WorldView::saveVolume(const QString &path)
 {
   QTE_D();
 
@@ -1529,81 +1697,107 @@ void WorldView::saveVolume(const QString &path)
   mIWriter->Write();
 
   LOG_INFO(d->logger, "Saved : " << qPrintable(path));
+  return true;
 }
 
 //-----------------------------------------------------------------------------
-void WorldView::saveFusedMesh(const QString &path,
+bool WorldView::saveFusedMesh(const QString &path,
                               kwiver::vital::local_geo_cs const& lgcs)
 {
   QTE_D();
   namespace kv = kwiver::vital;
+
+  if (!d->mesh)
+  {
+    LOG_ERROR(d->logger, "No mesh available to save");
+    return false;
+  }
+
+  int result;
   const QString ext = QFileInfo(path).suffix().toLower();
   if (ext == "ply")
   {
     vtkNew<vtkPLYWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetColorMode(0);
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     if (d->volumeOptions->isColorOptionsEnabled())
     {
-      writer->SetArrayName(mesh->GetPointData()->GetScalars()->GetName());
+      writer->SetArrayName(d->mesh->GetPointData()->GetScalars()->GetName());
       writer->SetLookupTable(d->volumeActor->GetMapper()->GetLookupTable());
     }
-    writer->AddInputDataObject(mesh);
-    writer->Write();
+    writer->AddInputDataObject(d->mesh);
+    result = writer->Write();
   }
   else if (ext == "obj")
   {
     vtkNew<vtkOBJWriter> writer;
     writer->SetFileName(qPrintable(path));
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
-    writer->AddInputDataObject(mesh);
-    writer->Write();
+    writer->AddInputDataObject(d->mesh);
+    result = writer->Write();
   }
   else if (ext == "las")
   {
-    vtkSmartPointer<vtkPolyData> mesh = d->contourFilter->GetOutput();
     std::vector<kv::vector_3d> points;
     std::vector<kv::rgb_color> colors;
-    d->vtkToPointList(mesh, mesh->GetPointData()->GetScalars()->GetName(),
+    d->vtkToPointList(d->mesh, d->mesh->GetPointData()->GetScalars()->GetName(),
                       points, colors);
     kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+    result = VTK_OK;
   }
   else
   {
     vtkNew<vtkXMLPolyDataWriter> writer;
     writer->SetFileName(qPrintable(path));
     writer->SetDataModeToBinary();
-    writer->AddInputDataObject(d->contourFilter->GetOutput());
-    writer->Write();
+    writer->AddInputDataObject(d->mesh);
+    result = writer->Write();
   }
 
-  std::cout << "Saved : " << qPrintable(path) << std::endl;
+  LOG_INFO(d->logger, "Saved : " << qPrintable(path));
+  return (result == VTK_OK);
 }
 
 //-----------------------------------------------------------------------------
 void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
 {
   QTE_D();
+
+  if (!d->mesh)
+  {
+    LOG_ERROR(d->logger, "No mesh available to save");
+    return;
+  }
+
   QEventLoop loop;
-  vtkPolyData* mesh = d->contourFilter->GetOutput();
   std::string videoPath = d->volumeOptions->getVideoPath();
   kwiver::vital::config_block_sptr videoConfig =  d->volumeOptions->getVideoConfig();
+  if (!videoConfig || videoPath.empty())
+  {
+    LOG_ERROR(d->logger, "Unable to extract colors, no video loaded");
+    return;
+  }
+
   std::string maskPath = d->volumeOptions->getMaskPath();
   kwiver::vital::config_block_sptr maskConfig =  d->volumeOptions->getMaskConfig();
   kwiver::vital::camera_map_sptr cameras = d->volumeOptions->getCameras();
+  if (!cameras || cameras->size() == 0)
+  {
+    LOG_ERROR(d->logger, "Unable to extract colors, no camera models available");
+    return;
+  }
+
   MeshColoration* coloration =
     new MeshColoration(videoConfig, videoPath,
                        maskConfig, maskPath,
                        cameras);
   coloration->setProperty("mesh_output_path", path);
-  coloration->set_input(mesh);
+  coloration->set_input(d->mesh);
   coloration->set_frame_sampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->set_occlusion_threshold(occlusionThreshold);
   coloration->set_remove_occluded(occlusion);
   vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
-  meshFrameColors->CopyStructure(mesh);
+  meshFrameColors->CopyStructure(d->mesh);
   coloration->set_output(meshFrameColors);
   coloration->set_frame(-1);
   coloration->set_all_frames(true);
@@ -1616,7 +1810,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   loop.exec();
 }
 
-
+//-----------------------------------------------------------------------------
 void WorldView::meshColorationHandleResult(MeshColoration* coloration)
 {
   QTE_D();
@@ -1787,6 +1981,17 @@ void WorldView::updateROI(vtkObject* caller,
     d->roi->SetBounds(rep->GetBounds());
     d->updateScale(this);
   }
+}
+
+//-----------------------------------------------------------------------------
+void WorldView::setEditMode(EditMode mode)
+{
+  QTE_D();
+
+  d->groundControlPointsWidget->enableWidget(
+    mode == EditMode::GroundControlPoints);
+  d->UI.actionPlaceEditGCP->setChecked(
+    mode == EditMode::GroundControlPoints);
 }
 
 //-----------------------------------------------------------------------------

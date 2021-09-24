@@ -80,7 +80,6 @@ endif()
 
 option(TELESCULPTOR_ENABLE_MANUALS "Build TeleSculptor user manual(s)" OFF)
 option(TELESCULPTOR_ENABLE_TESTING "Build TeleSculptor testing" OFF)
-option(TELESCULPTOR_ENABLE_TOOLS "Build command line tools" ON)
 set(PYTHON_VERSION_MAJOR "3")
 
 if(TELESCULPTOR_SUPERBUILD)
@@ -94,11 +93,6 @@ include( telesculptor-depends )
 set(kwiver_export_name     telesculptor_exports)
 
 add_subdirectory(maptk)
-
-# this is where the executables source code lives
-if(TELESCULPTOR_ENABLE_TOOLS)
-  add_subdirectory(tools)
-endif()
 
 # this is where the algorithm default configuration files live
 add_subdirectory(config)
@@ -137,7 +131,7 @@ endif()
 # Manuals
 #
 if(TELESCULPTOR_ENABLE_MANUALS)
-  add_subdirectory(doc/manuals)
+  add_subdirectory(doc)
 endif()
 
 ###

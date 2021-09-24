@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2017-2018 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "CameraView.h"
 
@@ -205,8 +179,6 @@ public:
     vtkNew<vtkDoubleArray> elevations;
   };
 
-  CameraViewPrivate() : featuresDirty(false), renderQueued(false) {}
-
   void setPopup(QAction* action, QMenu* menu);
   void setPopup(QAction* action, QWidget* widget);
 
@@ -235,14 +207,18 @@ public:
 
   PointOptions* landmarkOptions;
   ResidualsOptions* residualsOptions;
+  GroundControlPointsWidget* registrationPointsWidget;
   GroundControlPointsWidget* groundControlPointsWidget;
   RulerWidget* rulerWidget;
 
   double imageBounds[6];
 
-  bool featuresDirty;
+  EditMode editMode = EditMode::None;
 
-  bool renderQueued;
+  bool cameraValid = false;
+  bool featuresDirty = false;
+
+  bool renderQueued = false;
 };
 
 //END CameraViewPrivate definition
@@ -470,6 +446,22 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   connect(d->landmarkOptions, &PointOptions::modified,
           this, &CameraView::render);
 
+  auto const registrationMenu = new QMenu(this);
+  registrationMenu->addAction(d->UI.actionComputeCamera);
+  d->setPopup(d->UI.actionPlaceEditCRP, registrationMenu);
+
+  d->registrationPointsWidget = new GroundControlPointsWidget(this);
+  d->registrationPointsWidget->setColor({128, 224, 255});
+  d->registrationPointsWidget->setSelectedColor({64, 192, 255});
+  d->registrationPointsWidget->setTransformMatrix(d->transformMatrix);
+
+  connect(d->UI.actionPlaceEditCRP, &QAction::toggled,
+          this, &CameraView::pointPlacementEnabled);
+
+  connect(d->UI.actionComputeCamera, &QAction::triggered,
+          this, &CameraView::cameraComputationRequested,
+          Qt::QueuedConnection);
+
   d->groundControlPointsWidget = new GroundControlPointsWidget(this);
   d->groundControlPointsWidget->setTransformMatrix(d->transformMatrix);
 
@@ -542,6 +534,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
 #endif
   vtkNew<vtkInteractorStyleRubberBand2D> is;
   renderInteractor->SetInteractorStyle(is);
+  d->registrationPointsWidget->setInteractor(renderInteractor);
   d->groundControlPointsWidget->setInteractor(renderInteractor);
   d->rulerWidget->setInteractor(renderInteractor);
 
@@ -565,7 +558,7 @@ CameraView::CameraView(QWidget* parent, Qt::WindowFlags flags)
   d->emptyImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
   d->emptyImage->SetScalarComponentFromDouble(0, 0, 0, 0, 0.0);
 
-  this->setImageData(0, QSize(1, 1));
+  this->setImageData(nullptr, QSize{1, 1});
 }
 
 //-----------------------------------------------------------------------------
@@ -619,7 +612,20 @@ void CameraView::setImageData(vtkImageData* data, QSize dimensions)
 }
 
 //-----------------------------------------------------------------------------
-void CameraView::setActiveFrame(unsigned frame)
+void CameraView::setActiveCamera(kwiver::arrows::vtk::vtkKwiverCamera* camera)
+{
+  QTE_D();
+
+  auto const valid = (camera != nullptr);
+  if (valid != d->cameraValid)
+  {
+    d->cameraValid = valid;
+    this->setEditMode(d->editMode);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void CameraView::setActiveFrame(kwiver::vital::frame_id_t frame)
 {
   QTE_D();
 
@@ -854,6 +860,14 @@ GroundControlPointsWidget* CameraView::groundControlPointsWidget() const
 }
 
 //-----------------------------------------------------------------------------
+GroundControlPointsWidget* CameraView::registrationPointsWidget() const
+{
+  QTE_D();
+
+  return d->registrationPointsWidget;
+}
+
+//-----------------------------------------------------------------------------
 RulerWidget* CameraView::rulerWidget() const
 {
   QTE_D();
@@ -885,11 +899,27 @@ void CameraView::enableAntiAliasing(bool enable)
 }
 
 //-----------------------------------------------------------------------------
+void CameraView::setEditMode(EditMode mode)
+{
+  QTE_D();
+
+  d->editMode = mode;
+
+  d->groundControlPointsWidget->enableWidget(
+    mode == EditMode::GroundControlPoints && d->cameraValid);
+  d->registrationPointsWidget->enableWidget(
+    mode == EditMode::CameraRegistrationPoints);
+  d->UI.actionPlaceEditCRP->setChecked(
+    mode == EditMode::CameraRegistrationPoints);
+}
+
+//-----------------------------------------------------------------------------
 void CameraView::clearGroundControlPoints()
 {
   QTE_D();
 
   d->groundControlPointsWidget->clearPoints();
+  d->registrationPointsWidget->clearPoints();
   this->render();
 }
 

@@ -1,44 +1,21 @@
-/*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #ifndef TELESCULPTOR_WORLDVIEW_H_
 #define TELESCULPTOR_WORLDVIEW_H_
+
+#include "EditMode.h"
 
 #include <vital/config/config_block_types.h>
 #include <vital/types/camera_map.h>
 #include <vital/types/local_geo_cs.h>
 
+#include <vtkSmartPointer.h>
+
 #include <qtGlobal.h>
 
 #include <QWidget>
-#include <vtkSmartPointer.h>
 
 class vtkBox;
 class vtkImageData;
@@ -69,22 +46,25 @@ class WorldView : public QWidget
   Q_OBJECT
 
 public:
-  explicit WorldView(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  explicit WorldView(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
   ~WorldView() override;
 
   void initFrameSampling(int nbFrames);
 
-  void loadVolume(QString const& path);
+  bool loadVolume(QString const& path);
 
   void setVolume(vtkSmartPointer<vtkImageData> volume);
 
   void resetVolume();
 
+  bool loadMesh(QString const& path);
+
+  void setMesh(vtkSmartPointer<vtkPolyData> mesh);
+
   void setVideoConfig(QString const& path,
                       kwiver::vital::config_block_sptr config);
   void setMaskConfig(QString const& path,
                      kwiver::vital::config_block_sptr config);
-  void setCameras(kwiver::vital::camera_map_sptr cameras);
 
   void enableAntiAliasing(bool enable);
   void setROI(vtkBox*, bool init = false);
@@ -98,7 +78,8 @@ signals:
   void depthMapEnabled(bool);
 
   void contourChanged();
-  void updateThresholds(double,double,double,double);
+  void updateThresholds(double, double, double, double);
+  void volumeEnabled(bool);
   void fusedMeshEnabled(bool);
   void pointPlacementEnabled(bool);
   void rulerEnabled(bool);
@@ -106,8 +87,11 @@ signals:
 public slots:
   void setBackgroundColor(QColor const&);
 
-  void addCamera(int id, kwiver::arrows::vtk::vtkKwiverCamera* camera);
-  void removeCamera(int id);
+  void addCamera(kwiver::vital::frame_id_t id,
+                 kwiver::arrows::vtk::vtkKwiverCamera* camera);
+  void updateCamera(kwiver::vital::frame_id_t id,
+                    kwiver::arrows::vtk::vtkKwiverCamera* camera);
+  void removeCamera(kwiver::vital::frame_id_t id);
   void setLandmarks(kwiver::vital::landmark_map const&);
 
   void setValidDepthInput(bool);
@@ -128,7 +112,7 @@ public slots:
 
   void setPerspective(bool);
 
-  void setActiveCamera(int id);
+  void setActiveCamera(kwiver::vital::frame_id_t id);
 
   void queueResetView();
   void resetView();
@@ -140,21 +124,23 @@ public slots:
   void viewToWorldFront();
   void viewToWorldBack();
 
+  void setEditMode(EditMode);
 
-  void saveDepthPoints(QString const & path,
+  bool saveDepthPoints(QString const & path,
                        kwiver::vital::local_geo_cs const & lgcs);
   void exportWebGLScene(QString const& path);
 
-  void saveVolume(QString const& path);
-  void saveFusedMesh(QString const& path,
+  bool saveVolume(QString const& path);
+  bool saveFusedMesh(QString const& path,
                      kwiver::vital::local_geo_cs const & lgcs);
   void saveFusedMeshFrameColors(QString const& path, bool occlusion = true);
   void meshColorationHandleResult(MeshColoration* coloration);
 
   void invalidateGeometry();
+  void invalidateCameras();
 
   void setVolumeVisible(bool);
-  void setVolumeCurrentFrame(int);
+  void setVolumeCurrentFrame(kwiver::vital::frame_id_t);
 
   void computeContour(double threshold);
   void render();

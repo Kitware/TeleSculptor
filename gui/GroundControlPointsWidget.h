@@ -1,46 +1,17 @@
-/*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #ifndef TELESCULPTOR_GROUNDCONTROLPOINTSWIDGET_H_
 #define TELESCULPTOR_GROUNDCONTROLPOINTSWIDGET_H_
 
-// qtExtensions includes
-#include <qtGlobal.h>
-
-// kwiver includes
 #include <vital/types/vector.h>
 
-// Qt includes
+#include <qtGlobal.h>
+
+#include <QColor>
 #include <QObject>
 
-// STL includes
 #include <list>
 
 // Forward declarations
@@ -58,7 +29,7 @@ class GroundControlPointsWidget : public QObject
   Q_OBJECT
 
 public:
-  GroundControlPointsWidget(QObject* parent = 0);
+  GroundControlPointsWidget(QObject* parent = nullptr);
   ~GroundControlPointsWidget();
 
   void setInteractor(vtkRenderWindowInteractor* iren);
@@ -80,12 +51,12 @@ public:
   int findHandleWidget(vtkHandleWidget* handle) const;
 
   // Add a point
-  void addDisplayPoint(double pt[3]);
-  void addDisplayPoint(double x, double y, double z);
-  void addDisplayPoint(kwiver::vital::vector_3d pt);
-  void addPoint(double const pt[3]);
-  void addPoint(double x, double y, double z);
-  void addPoint(kwiver::vital::vector_3d pt);
+  int addDisplayPoint(double pt[3]);
+  int addDisplayPoint(double x, double y, double z);
+  int addDisplayPoint(kwiver::vital::vector_3d pt);
+  int addPoint(double const pt[3]);
+  int addPoint(double x, double y, double z);
+  int addPoint(kwiver::vital::vector_3d pt);
   void movePoint(int handleId, double x, double y, double z);
   void clearPoints();
 
@@ -111,6 +82,9 @@ signals:
   void activePointChanged(int id);
 
 public slots:
+  void setColor(QColor);
+  void setSelectedColor(QColor);
+
   /// Delete the point and remove the widget handle
   void deletePoint(int handleId);
   // Set active handle

@@ -1,0 +1,107 @@
+TeleSculptor v1.2.0 Release Notes
+=================================
+
+This is a minor release of TeleSculptor that provides both new functionality
+and fixes over the previous v1.1.0 release.
+
+The biggest changes in this release are the transition to a new Sphinx-based
+user manual at https://telesculptor.readthedocs.io, the removal of deprecated
+MAP-Tk command line tools, improved handling of mesh coloring from the video,
+and an interface for manual camera calibration by manually placing camera
+registration points on frames.
+
+TeleSculptor v1.2.0 also builds on updated KWIVER v1.6.0 and Fletch v1.5.0,
+which provide upgraded third-party packages and improvements to algorithms.
+For example, TeleSculptor now uses VTK 9.0, OpenCV 4.5, and Qt 5.12.
+KWIVER now supports both CPU and GPU (CUDA) implementations for depth map
+fusion, and an option has been added to TeleSculptor to enable GPU use.
+While command line tools have been removed from TeleSculptor, it is now
+possible to reproduce the entire TeleSculptor processing chain from the
+command line using the *kwiver* command.  The command line workflow uses
+KWIVER v1.6 directly and does not require the TeleSculptor GUI.
+
+Additional details about TeleSculptor changes in this release are provided
+in the detailed release notes below.
+
+
+Updates since v1.1.2
+--------------------
+
+TeleSculptor Application
+
+ * Move computation of mesh coloring to a separate thread to prevent it from
+   blocking GUI interaction while running.
+
+ * Display a progress bar when coloring the mesh using more than just the
+   current frame.
+
+ * Added an option to mesh coloring that excludes coloring surfaces that are
+   occluded from the camera's viewpoint.  This prevent colors on closer
+   surfaces from also spilling onto the hidden surfaces behind them.
+
+ * Added an option to mesh coloring that excludes coloring surfaces using
+   pixels masked out by the loaded mask image sequence.
+
+ * Added an option to export the fused mesh as a VTP file including the colors
+   projected from all frames instead of only the mean or median color.
+
+ * Updated depth computation tools to return uncertainty images to be displayed
+   and saved.
+
+ * Update Depth Map and Batch Depth Map estimation tools to select the
+   support frames based on a new angle_span parameter rather than
+   sequential frames.  This allows more consistent angular sampling
+   of frames.
+
+ * Added support for building against VTK 9.0.
+
+ * Added an option to import PLY mesh files like those exported from
+   TeleSculptor
+
+ * Added support for opening .ts (MPEG transport stream) video files.
+
+ * Added interfaces to the GCP and Camera View panels to allow the placement
+   of Camera Registration Points (CRPs).  These are manual feature tracks
+   placed on multiple images and associated to a GCP.
+
+ * Added an interface to estimate a camera from manually placed CRPs.
+
+ * Added keyboard shortcuts to change frames and to change the selected ground
+   control point.
+
+ * Added an option to enable use of the GPU.  This specifically supports depth
+   map fusion for which both GPU and CPU implementations exist.  For the first
+   time, it is now possible to run TeleSculptor end-to-end without a
+   CUDA-enabled GPU.
+
+Tools
+
+ * Removed deprecated command line maptk tools. All the underlying kwiver
+   algorithms can be accessed via the 'kwiver' command line tool.
+
+Build System
+
+ * The superbuild now allows using system packages for many dependencies.
+
+ * Updated OpenCV version to 4.5.1
+
+ * Updated Qt version to 5.12.8
+
+ * Updated VTK Version to 9.0
+
+Documentation
+
+ * Replaced the PDF user guide and the basic HTML help page with a better
+   formatted and more maintainable manual using Sphinx.  The same user manual
+   is now available at https://telesculptor.readthedocs.io and offline in the
+   TeleSculptor help menu.
+
+
+Fixes since v1.1.2
+------------------
+
+TeleSculptor Application
+
+ * Fixed a bug in which the "zoom to landmarks" option would make the World
+   View projections permanently invalid if there were no landmarks to zoom to.
+

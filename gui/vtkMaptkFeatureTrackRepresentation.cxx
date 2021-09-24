@@ -1,35 +1,8 @@
-/*ckwg +29
- * Copyright 2017 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "vtkMaptkFeatureTrackRepresentation.h"
-
 
 #include <vtkActor.h>
 #include <vtkCellArray.h>
@@ -48,9 +21,9 @@ typedef vtkMaptkFeatureTrackRepresentation::TrailStyleEnum TrailStyleEnum;
 class vtkMaptkFeatureTrackRepresentation::vtkInternal
 {
 public:
-  void UpdateActivePoints(unsigned activeFrame);
-  void UpdateTrails(unsigned activeFrame, unsigned trailLength,
-                    TrailStyleEnum style);
+  void UpdateActivePoints(kwiver::vital::frame_id_t activeFrame);
+  void UpdateTrails(kwiver::vital::frame_id_t activeFrame,
+                    unsigned trailLength, TrailStyleEnum style);
 
   vtkNew<vtkPoints> PointsWithDesc;
   vtkNew<vtkPoints> PointsWithoutDesc;
@@ -66,8 +39,8 @@ public:
   vtkNew<vtkPolyData> TrailsWithDescPolyData;
   vtkNew<vtkPolyData> TrailsWithoutDescPolyData;
 
-  typedef std::map<unsigned, vtkIdType> TrackType;
-  typedef std::map<unsigned, TrackType> TrackMapType;
+  using TrackType    = std::map<kwiver::vital::frame_id_t, vtkIdType>;
+  using TrackMapType = std::map<kwiver::vital::track_id_t, TrackType>;
 
   TrackMapType TracksWithDesc;
   TrackMapType TracksWithoutDesc;
@@ -75,7 +48,7 @@ public:
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
-  unsigned activeFrame)
+  kwiver::vital::frame_id_t activeFrame)
 {
   this->PointsWithDescCells->Reset();
 
@@ -112,7 +85,8 @@ void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateActivePoints(
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::vtkInternal::UpdateTrails(
-  unsigned activeFrame, unsigned trailLength, TrailStyleEnum style)
+  kwiver::vital::frame_id_t activeFrame, unsigned trailLength,
+  TrailStyleEnum style)
 {
   this->TrailsWithDescCells->Reset();
   this->TrailsWithoutDescCells->Reset();
@@ -262,7 +236,8 @@ vtkMaptkFeatureTrackRepresentation::~vtkMaptkFeatureTrackRepresentation()
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::AddTrackWithDescPoint(
-  unsigned trackId, unsigned frameId, double x, double y)
+  kwiver::vital::track_id_t trackId, kwiver::vital::frame_id_t frameId,
+  double x, double y)
 {
   auto const id = this->Internal->PointsWithDesc->InsertNextPoint(x, y, 0.0);
   this->Internal->TracksWithDesc[trackId][frameId] = id;
@@ -270,7 +245,8 @@ void vtkMaptkFeatureTrackRepresentation::AddTrackWithDescPoint(
 
 //-----------------------------------------------------------------------------
 void vtkMaptkFeatureTrackRepresentation::AddTrackWithoutDescPoint(
-  unsigned trackId, unsigned frameId, double x, double y)
+  kwiver::vital::track_id_t trackId, kwiver::vital::frame_id_t frameId,
+  double x, double y)
 {
   auto const id = this->Internal->PointsWithoutDesc->InsertNextPoint(x, y, 0.0);
   this->Internal->TracksWithoutDesc[trackId][frameId] = id;
@@ -290,7 +266,8 @@ void vtkMaptkFeatureTrackRepresentation::ClearTrackData()
 }
 
 //-----------------------------------------------------------------------------
-void vtkMaptkFeatureTrackRepresentation::SetActiveFrame(unsigned frame)
+void vtkMaptkFeatureTrackRepresentation::SetActiveFrame(
+  kwiver::vital::frame_id_t frame)
 {
   if (this->ActiveFrame == frame)
   {

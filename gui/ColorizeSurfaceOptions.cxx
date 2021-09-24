@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2016-2018 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "ColorizeSurfaceOptions.h"
 #include "MainWindow.h"
@@ -48,30 +22,37 @@
 
 #include <QDebug>
 
+namespace kv = kwiver::vital;
+
 //-----------------------------------------------------------------------------
 class ColorizeSurfaceOptionsPrivate
 {
 public:
-  ColorizeSurfaceOptionsPrivate(): volumeActor(nullptr), currentFrame(-1)
-  {}
-
   MainWindow* mainWindow = nullptr;
 
   Ui::ColorizeSurfaceOptions UI;
   qtUiState uiState;
 
-  vtkActor* volumeActor;
+  vtkActor* volumeActor = nullptr;
 
-  kwiver::vital::config_block_sptr videoConfig;
+  kv::config_block_sptr videoConfig;
   std::string videoPath;
-  kwiver::vital::config_block_sptr maskConfig;
+  kv::config_block_sptr maskConfig;
   std::string maskPath;
-  kwiver::vital::camera_map_sptr cameras;
+  kv::camera_map_of_sptr<kv::camera> cameras =
+    std::make_shared<kv::camera_map_of_<kv::camera>>();
 
   QString krtdFile;
   QString frameFile;
 
-  int currentFrame;
+  kv::frame_id_t currentFrame = -1;
+
+  double occlusionThreshold = 1;
+  bool removeOccluded = true;
+  bool removeMasked = true;
+  bool insideColorize = false;
+  const int INVALID_FRAME = -2;
+  kwiver::vital::frame_id_t lastColorizedFrame = INVALID_FRAME;
 };
 
 QTE_IMPLEMENT_D_FUNC(ColorizeSurfaceOptions)
@@ -108,7 +89,6 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
   connect(d->UI.radioButtonAllFrames, &QAbstractButton::clicked,
           this, &ColorizeSurfaceOptions::allFrameSelected);
 
-
   connect(d->UI.buttonCompute, &QAbstractButton::clicked,
           this, &ColorizeSurfaceOptions::colorize);
 
@@ -125,16 +105,10 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
           &QCheckBox::stateChanged,
           this, &ColorizeSurfaceOptions::removeMaskedChanged);
 
-
   d->krtdFile = QString();
   d->frameFile = QString();
 
   d->UI.comboBoxColorDisplay->setDuplicatesEnabled(false);
-  this->OcclusionThreshold = 1;
-  this->RemoveOccluded = true;
-  this->RemoveMasked = true;
-  this->InsideColorize = false;
-  this->LastColorizedFrame = INVALID_FRAME;
 }
 
 //-----------------------------------------------------------------------------
@@ -143,6 +117,34 @@ ColorizeSurfaceOptions::~ColorizeSurfaceOptions()
   QTE_D();
 
   d->uiState.save();
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setOcclusionThreshold(double occlusionThreshold)
+{
+  QTE_D();
+  d->occlusionThreshold = occlusionThreshold;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setRemoveOccluded(double removeOccluded)
+{
+  QTE_D();
+  d->removeOccluded = removeOccluded;
+}
+
+//-----------------------------------------------------------------------------
+void ColorizeSurfaceOptions::setRemoveMasked(double removeMasked)
+{
+  QTE_D();
+  d->removeMasked = removeMasked;
+}
+
+//-----------------------------------------------------------------------------
+double ColorizeSurfaceOptions::getOcclusionThreshold()
+{
+  QTE_D();
+  return d->occlusionThreshold;
 }
 
 //-----------------------------------------------------------------------------
@@ -163,7 +165,7 @@ int ColorizeSurfaceOptions::getFrameSampling() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCurrentFrame(int frame)
+void ColorizeSurfaceOptions::setCurrentFrame(kv::frame_id_t frame)
 {
   QTE_D();
 
@@ -188,8 +190,8 @@ void ColorizeSurfaceOptions::setActor(vtkActor* actor)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setVideoConfig(std::string const& path,
-                                            kwiver::vital::config_block_sptr config)
+void ColorizeSurfaceOptions::setVideoConfig(
+  std::string const& path, kv::config_block_sptr config)
 {
   QTE_D();
 
@@ -198,7 +200,7 @@ void ColorizeSurfaceOptions::setVideoConfig(std::string const& path,
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getVideoConfig() const
+kv::config_block_sptr ColorizeSurfaceOptions::getVideoConfig() const
 {
   QTE_D();
 
@@ -214,8 +216,8 @@ std::string ColorizeSurfaceOptions::getVideoPath() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setMaskConfig(std::string const& path,
-                                           kwiver::vital::config_block_sptr config)
+void ColorizeSurfaceOptions::setMaskConfig(
+  std::string const& path, kv::config_block_sptr config)
 {
   QTE_D();
   d->maskConfig = config;
@@ -228,7 +230,7 @@ void ColorizeSurfaceOptions::setMaskConfig(std::string const& path,
 }
 
 //-----------------------------------------------------------------------------
-kwiver::vital::config_block_sptr ColorizeSurfaceOptions::getMaskConfig() const
+kv::config_block_sptr ColorizeSurfaceOptions::getMaskConfig() const
 {
   QTE_D();
   return d->maskConfig;
@@ -242,11 +244,19 @@ std::string ColorizeSurfaceOptions::getMaskPath() const
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setCameras(kwiver::vital::camera_map_sptr cameras)
+void ColorizeSurfaceOptions::setCamera(
+  kv::frame_id_t id, kv::camera_sptr const& camera)
 {
   QTE_D();
 
-  d->cameras = cameras;
+  if (camera)
+  {
+    d->cameras->insert(id, camera);
+  }
+  else
+  {
+    d->cameras->erase(id);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -294,8 +304,6 @@ void ColorizeSurfaceOptions::changeColorDisplay()
   else
   {
     mapper->SetColorModeToDirectScalars();
-    mapper->CreateDefaultLookupTable();
-    mapper->UseLookupTableScalarRangeOff();
   }
 
   mapper->Update();
@@ -306,7 +314,8 @@ void ColorizeSurfaceOptions::changeColorDisplay()
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::forceColorize()
 {
-  this->LastColorizedFrame = INVALID_FRAME;
+  QTE_D();
+  d->lastColorizedFrame = d->INVALID_FRAME;
   colorize();
 }
 
@@ -314,19 +323,20 @@ void ColorizeSurfaceOptions::forceColorize()
 void ColorizeSurfaceOptions::colorize()
 {
   QTE_D();
-  if (! this->InsideColorize)
+  if (! d->insideColorize)
   {
-    this->InsideColorize = true;
-    int colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ?
-      d->currentFrame : -1;
-    while (this->LastColorizedFrame != colorizedFrame)
+    d->insideColorize = true;
+    auto colorizedFrame =
+      (d->UI.radioButtonCurrentFrame->isChecked() ? d->currentFrame : -1);
+    while (d->lastColorizedFrame != colorizedFrame)
     {
-      this->LastColorizedFrame = colorizedFrame;
+      d->lastColorizedFrame = colorizedFrame;
 
-      if (d->cameras->size() == 0)
+      if (!d->cameras || d->cameras->size() == 0)
       {
         d->UI.comboBoxColorDisplay->setEnabled(true);
         emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
+        d->insideColorize = false;
         return;
       }
       QEventLoop loop;
@@ -340,17 +350,17 @@ void ColorizeSurfaceOptions::colorize()
       coloration->set_input(volume);
       coloration->set_output(volume);
       coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
-      coloration->set_occlusion_threshold(this->OcclusionThreshold);
-      coloration->set_remove_occluded(this->RemoveOccluded);
-      coloration->set_remove_masked(this->RemoveMasked);
-      coloration->set_frame(this->LastColorizedFrame);
+      coloration->set_occlusion_threshold(d->occlusionThreshold);
+      coloration->set_remove_occluded(d->removeOccluded);
+      coloration->set_remove_masked(d->removeMasked);
+      coloration->set_frame(d->lastColorizedFrame);
       coloration->set_all_frames(false);
       connect(coloration, &MeshColoration::resultReady,
               this, &ColorizeSurfaceOptions::meshColorationHandleResult);
       connect( coloration, &MeshColoration::resultReady, &loop, &QEventLoop::quit );
       connect(coloration, &MeshColoration::finished,
               coloration, &MeshColoration::deleteLater);
-      if (this->LastColorizedFrame < 0)
+      if (d->lastColorizedFrame < 0)
       {
         // only enable the progress bar if coloring with multiple frames
         connect(coloration, &MeshColoration::progressChanged,
@@ -360,7 +370,7 @@ void ColorizeSurfaceOptions::colorize()
       loop.exec();
       colorizedFrame = (d->UI.radioButtonCurrentFrame->isChecked()) ? d->currentFrame : -1;
     }
-    this->InsideColorize = false;
+    d->insideColorize = false;
   }
 }
 
@@ -381,8 +391,6 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(
   d->UI.checkBoxRemoveOccluded->setEnabled(coloration);
   d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(coloration);
 }
-
-
 
 //-----------------------------------------------------------------------------
 void ColorizeSurfaceOptions::enableAllFramesParameters(bool state)

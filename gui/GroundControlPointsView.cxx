@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2018-2019 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #include "GroundControlPointsView.h"
 
@@ -86,7 +60,7 @@ QPixmap colorize(QByteArray svg, int physicalSize, int logicalSize,
 class GroundControlPointsViewPrivate
 {
 public:
-  void updateRegisteredIcon(QWidget* widget);
+  void updateIcons(QWidget* widget);
 
   void enableControls(bool state, bool haveLocation = true);
 
@@ -113,7 +87,7 @@ public:
 QTE_IMPLEMENT_D_FUNC(GroundControlPointsView)
 
 //-----------------------------------------------------------------------------
-void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
+void GroundControlPointsViewPrivate::updateIcons(QWidget* widget)
 {
   QIcon icon;
 
@@ -125,24 +99,34 @@ void GroundControlPointsViewPrivate::updateRegisteredIcon(QWidget* widget)
   auto const disabledColor =
     palette.color(QPalette::Disabled, QPalette::Text);
 
-  QFile f{QStringLiteral(":/icons/scalable/registered")};
-  f.open(QIODevice::ReadOnly);
-  auto const svg = f.readAll();
-
   auto const dpr = widget->devicePixelRatioF();
-  for (auto const size : {16, 20, 22, 24, 32})
-  {
-    auto const dsize = static_cast<int>(size * dpr);
 
-    icon.addPixmap(colorize(svg, dsize, size, dpr, normalColor),
-                   QIcon::Normal);
-    icon.addPixmap(colorize(svg, dsize, size, dpr, selectedColor),
-                   QIcon::Selected);
-    icon.addPixmap(colorize(svg, dsize, size, dpr, disabledColor),
-                   QIcon::Disabled);
-  }
+  auto buildIcon = [&](QString const& resource){
+    QFile f{resource};
+    f.open(QIODevice::ReadOnly);
+    auto const svg = f.readAll();
 
-  this->model.setRegisteredIcon(icon);
+    for (auto const size : {16, 20, 22, 24, 32})
+    {
+      auto const dsize = static_cast<int>(size * dpr);
+
+      icon.addPixmap(colorize(svg, dsize, size, dpr, normalColor),
+                     QIcon::Normal);
+      icon.addPixmap(colorize(svg, dsize, size, dpr, selectedColor),
+                     QIcon::Selected);
+      icon.addPixmap(colorize(svg, dsize, size, dpr, disabledColor),
+                     QIcon::Disabled);
+    }
+
+    return icon;
+  };
+
+  this->model.setCameraIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/camera")));
+  this->model.setSurveyedIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/surveyed")));
+  this->model.setRegisteredIcon(
+    buildIcon(QStringLiteral(":/icons/scalable/registered")));
 }
 
 //-----------------------------------------------------------------------------
@@ -237,10 +221,12 @@ void GroundControlPointsViewPrivate::setPointPosition(id_t id)
 //-----------------------------------------------------------------------------
 id_t GroundControlPointsViewPrivate::selectedPoint() const
 {
-  auto const& i = this->UI.pointsList->selectionModel()->currentIndex();
-  auto const& ni = this->model.index(i.row(), 0, i.parent());
-  auto const& id = this->model.data(ni, Qt::EditRole);
-  return (id.isValid() ? id.value<id_t>() : INVALID_POINT);
+  auto const& s = this->UI.pointsList->selectionModel()->selectedIndexes();
+  if (!s.isEmpty())
+  {
+    return this->model.id(s.first());
+  }
+  return INVALID_POINT;
 }
 
 //-----------------------------------------------------------------------------
@@ -301,7 +287,7 @@ GroundControlPointsView::GroundControlPointsView(
   d->UI.pointsList->setContextMenuPolicy(Qt::CustomContextMenu);
 
   connect(d->UI.pointsList->selectionModel(),
-          &QItemSelectionModel::currentChanged,
+          &QItemSelectionModel::selectionChanged,
           this, [d]{
             auto const id = d->selectedPoint();
 
@@ -312,8 +298,21 @@ GroundControlPointsView::GroundControlPointsView(
               d->helper->setActivePoint(id);
             }
           });
+  connect(d->UI.pointsList, &QTreeView::activated, this,
+          [d, this](QModelIndex const& index){
+            auto const& parent = index.parent();
+            if (parent.isValid())
+            {
+              auto const& fi = d->model.index(index.row(), 0, parent);
+              auto const& data = d->model.data(fi, Qt::EditRole);
+              if (data.isValid())
+              {
+                emit this->cameraRequested(data.value<kv::frame_id_t>());
+              }
+            }
+          });
 
-  d->updateRegisteredIcon(this);
+  d->updateIcons(this);
 
   auto const clText = QStringLiteral("Copy Location");
 
@@ -416,6 +415,7 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
             {
               d->showPoint(id);
             }
+            d->model.modifyPoint(id);
           });
   connect(helper, &GroundControlPointsHelper::pointsRecomputed,
           this, [d](){
@@ -447,7 +447,39 @@ void GroundControlPointsView::setHelper(GroundControlPointsHelper* helper)
   connect(helper, &GroundControlPointsHelper::pointsReloaded,
           &d->model, &GroundControlPointsModel::resetPoints);
 
-  d->model.setPointData(helper->groundControlPoints());
+  d->model.setDataSource(helper);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsView::setActiveCamera(qint64 id)
+{
+  QTE_D();
+  d->model.setActiveCamera(id);
+}
+
+//-----------------------------------------------------------------------------
+void GroundControlPointsView::shiftSelection(int offset)
+{
+  QTE_D();
+
+  auto* const sm = d->UI.pointsList->selectionModel();
+  auto const& s = sm->selectedIndexes();
+  if (!s.isEmpty())
+  {
+    auto const& i = s.first();
+    auto const& p = i.parent();
+    auto const r = (p.isValid() ? p.row() : i.row());
+
+    auto const n = d->model.index(r + offset, 0);
+    if (n.isValid())
+    {
+      constexpr auto flags =
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current |
+        QItemSelectionModel::Rows;
+
+      sm->select(n, flags);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -456,7 +488,7 @@ void GroundControlPointsView::changeEvent(QEvent* e)
   if (e && e->type() == QEvent::PaletteChange)
   {
     QTE_D();
-    d->updateRegisteredIcon(this);
+    d->updateIcons(this);
   }
 
   QWidget::changeEvent(e);
@@ -470,7 +502,7 @@ void GroundControlPointsView::showEvent(QShowEvent* e)
   disconnect(d->screenChanged);
   d->screenChanged =
     connect(this->window()->windowHandle(), &QWindow::screenChanged,
-            this, [d, this] { d->updateRegisteredIcon(this); });
+            this, [d, this] { d->updateIcons(this); });
 
   QWidget::showEvent(e);
 }

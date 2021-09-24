@@ -20,7 +20,7 @@ TeleSculptor can be installed from precompiled binaries for Linux, MacOS, and
 Windows included at the bottom of the
 `latest release`_ page by following the instructions in the Installation_ section.
 Instructions on how to use the TeleSculptor GUI can be found in
-the `User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_. A computer with at
+the `User Guide`_. A computer with at
 least 16GB of RAM is recommended for processing most datasets.
 
 More advanced users who wish to build the project from source should proceed to the
@@ -94,9 +94,8 @@ TeleSculptor application into the Applications folder.
 ``./TeleSculptor-<version>-Linux-x86_64.sh --help``
 
 The remainder of this document is aimed at developers who wish to build the
-project from source or run command line tools.  For end users looking for
-instruction on running the GUI application please read the
-`User Guide <doc/TeleSculptor-v1.1-User-Guide.pdf>`_.
+project from source.  For end users looking for instruction on running the GUI
+application please read the `User Guide`_.
 
 
 Building TeleSculptor
@@ -122,14 +121,15 @@ Before building on Linux systems you must install the following packages:
 .. code-block :: bash
 
   sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
+  sudo apt-get libx11-xcb-dev libxcb1-dev libxcb-glx0-dev libxkbcommon-x11-dev
   sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
 
-On Linux, to optionally build with Python and help menu documentation you will
-also need to install the following:
+On Linux, to optionally build with Python and to build the user documentation,
+you will also need to install the following:
 
 .. code-block :: bash
 
-  sudo apt-get install python3-dev python3-docutils
+  sudo apt-get install python3-dev python3-sphinx python3-sphinx-rtd-theme
 
 Set up the folder structure and obtain the source files. This can be done with
 git or by downloading the files and extracting them. Then setup the folder(s)
@@ -199,7 +199,6 @@ CMake Options
 ``TELESCULPTOR_ENABLE_CUDA``       Enable GPU acceleration with CUDA
 ``TELESCULPTOR_ENABLE_PYTHON``     Enable Python bindings in KWIVER
 ``TELESCULPTOR_ENABLE_MANUALS``    Turn on building the user documentation
-``TELESCULPTOR_ENABLE_TOOLS``      Build the command line tools
 ``TELESCULPTOR_ENABLE_TESTING``    Build the unit tests
 ``TELESCULPTOR_SUPERBUILD``        Build as a superbuild (build Fletch and KWIVER)
 ================================== ===================================================
@@ -312,102 +311,7 @@ Overview of Directories
 ``plugins/blender``     contains Python plug-ins for Blender
 ``plugins/sketchup``    contains Ruby plug-ins for SketchUp
 ``tests``               contains testing framework and tests for each module
-``tools``               contains source for command line utilities
 ======================= ========================================================
-
-MAP-Tk Tools
-============
-
-MAP-Tk command line tools are placed in the ``bin`` directory of the build
-or install path.  These tools are described below.  Note that these tools are
-in the process of being migrated to KWIVER and will leave this repository soon.
-Continued support is not guaranteed and behavior may diverge from documentation.
-
-
-Summary of MAP-Tk Tools
------------------------
-
-The primary tools are ``maptk_track_features`` and
-``maptk_bundle_adjust_tracks``. Together these form the sparse bundle
-adjustment pipeline.  The other tools are for debugging and analysis purposes.
-
-``maptk_detect_and_describe``
-  This optional tool pre-computes feature points and descriptors on each frame
-  of video and caches them on disk.  The same is also done in the
-  ``maptk_track_features``, so this step is not required.  However, this tool
-  makes better use of threading to process all frames in parallel.
-
-``maptk_track_featues``
-  Takes a list of images and produces a feature tracks file.
-
-``maptk_bundle_adjust_tracks``
-  Takes feature tracks and produces cameras (KRTD files) and 3D points (PLY
-  file). Can also take input POS files or geo-reference points and produce
-  optimized POS files.
-
-``maptk_apply_gcp``
-  This tool takes an existing solution from ``maptk_bundle_adjust_tracks``
-  and uses provided ground control points (GCPs) to fit a 3D similarity
-  transformation to align the solution to the GCPs.  The same is done in
-  the bundle adjust tool, but this tool lets you update and reapply GCPs
-  without recomputing bundle adjustment.
-
-``maptk_pos2krtd``
-  Takes POS files and directly produces KRTD.
-
-``maptk_analyze_tracks``
-  Takes images and feature tracks and produces tracking statistics or images
-  with tracks overlaid.
-
-``maptk_estimate_homography``
-  Estimates a homography transformation between two images, outputting a file
-  containing the matrices.
-
-
-Running MAP-Tk Tools
---------------------
-
-Each MAP-Tk tool has the same interface and accepts three command line
-arguments:
-
-* ``-c`` to specify an input configuration file
-* ``-o`` to output the current configuration to a file
-* ``-h`` for help (lists these options)
-
-Each tool has all of its options, including paths to input and output files,
-specified in the configuration file.  To get started, run one of the tools
-like this::
-
-    $ maptk_track_features -o config_file.conf
-
-This will produce an initial set of configuration options.  You can then edit
-``config_file.conf`` to specify input/output files, choices of algorithms, and
-algorithm parameters.  Just as in CMake, configuring some parameters will
-enable new sub-parameters and you need to re-run the tool to get the updated
-list of parameters.  For example::
-
-    $ maptk_track_features -c config_file.conf -o config_file.conf
-
-The above command will overwrite the existing config file with a new file.
-Ordering of entries and comments are not preserved.  Use a different output
-file name to prevent overwriting the original.  Continue to adjust parameters
-and re-run the above command until the tool no longer reports the message::
-
-    ERROR: Configuration not valid.
-
-Note that the config file itself contains detail comments documenting each
-parameter.  For each abstract algorithm you must specify the name of variant
-to use, but the list of valid names (based on which modules are compiled)
-is provided directly in the comment for easy reference. When the config file
-is complete and valid, run the tool one final time as::
-
-    $ maptk_track_features -c config_file.conf
-
-An easier way to get started is to use the sample configuration files for each
-tool that are provided in the ``examples`` directory.  These examples use
-recommended default settings that are known to produce useful results on some
-selected public data samples.  The example configuration files include the
-default configuration files for each algorithm in the ``config`` directory.
 
 
 Getting Help
@@ -443,18 +347,19 @@ public release via 88ABW-2015-2555.
 .. _Kitware: http://www.kitware.com/
 .. _KWIVER: http://www.kwiver.org/
 .. _Qt: https://www.qt.io/
-.. _Travis CI: https://travis-ci.org/
+.. _Travis CI: https://travis-ci.com/
 .. _VisualSFM: http://ccwu.me/vsfm/
 .. _VTK: https://vtk.org/
 .. _latest release: https://github.com/Kitware/TeleSculptor/releases/latest
+.. _User Guide: https://telesculptor.readthedocs.io/en/latest/
 
 .. Appendix II: Text Substitutions
 .. ===============================
 
 .. |>=| unicode:: U+02265 .. greater or equal sign
 
-.. |CI:master| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=master
-.. |CI:release| image:: https://travis-ci.org/Kitware/TeleSculptor.svg?branch=release
+.. |CI:master| image:: https://travis-ci.com/Kitware/TeleSculptor.svg?branch=master
+.. |CI:release| image:: https://travis-ci.com/Kitware/TeleSculptor.svg?branch=release
 
-.. _CI:master: https://travis-ci.org/Kitware/TeleSculptor
-.. _CI:release: https://travis-ci.org/Kitware/TeleSculptor
+.. _CI:master: https://travis-ci.com/Kitware/TeleSculptor
+.. _CI:release: https://travis-ci.com/Kitware/TeleSculptor

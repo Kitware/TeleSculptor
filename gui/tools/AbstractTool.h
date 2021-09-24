@@ -1,32 +1,6 @@
-/*ckwg +29
- * Copyright 2017-2018 by Kitware, Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  * Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name Kitware, Inc. nor the names of any contributors may be
- *    used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// This file is part of TeleSculptor, and is distributed under the
+// OSI-approved BSD 3-Clause License. See top-level LICENSE file or
+// https://github.com/Kitware/TeleSculptor/blob/master/LICENSE for details.
 
 #ifndef TELESCULPTOR_ABSTRACTTOOL_H_
 #define TELESCULPTOR_ABSTRACTTOOL_H_
@@ -93,8 +67,8 @@ public:
            !cameras && !landmarks && !volume;
   }
 
-  int maxFrame;
-  unsigned int activeFrame;
+  kwiver::vital::frame_id_t maxFrame;
+  kwiver::vital::frame_id_t activeFrame;
   std::string videoPath;
   std::string maskPath;
   feature_track_set_sptr tracks;
@@ -141,7 +115,7 @@ public:
   };
   Q_DECLARE_FLAGS(Outputs, Output)
 
-  explicit AbstractTool(QObject* parent = 0);
+  explicit AbstractTool(QObject* parent = nullptr);
   ~AbstractTool() override;
 
   /// Get the types of output produced by the tool.
@@ -158,7 +132,7 @@ public:
   std::shared_ptr<ToolData> data();
 
   /// Set the active frame to be used by the tool.
-  void setActiveFrame(unsigned int frame);
+  void setActiveFrame(kwiver::vital::frame_id_t frame);
 
   /// Set the frame number of the last frame.
   ///
@@ -167,7 +141,7 @@ public:
   /// progress, since this value is expected to be known by the caller, but may
   /// be expensive for the tool to determine. This does \em not affect how many
   /// frames the tool will actually process.
-  void setLastFrame(int);
+  void setLastFrame(kwiver::vital::frame_id_t);
 
   /// Set the feature tracks to be used as input to the tool.
   void setTracks(feature_track_set_sptr const&);
@@ -212,13 +186,13 @@ public:
   ///
   /// \return \c true if tool execution was started successfully, otherwise
   ///         \c false.
-  virtual bool execute(QWidget* window = 0);
+  virtual bool execute(QWidget* window = nullptr);
 
   /// Block until the tool has finished executing
   void wait();
 
   /// Get the active frame.
-  unsigned int activeFrame() const;
+  kwiver::vital::frame_id_t activeFrame() const;
 
   std::shared_ptr<std::map<kwiver::vital::frame_id_t, std::string> > depthLookup() const;
   vtkBox *ROI() const;

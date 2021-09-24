@@ -72,6 +72,7 @@
      <addaction name="actionImportTracks"/>
      <addaction name="actionImportLandmarks"/>
      <addaction name="actionImportGroundControlPoints"/>
+     <addaction name="actionImportMesh"/>
     </widget>
     <addaction name="actionNewProject"/>
     <addaction name="actionOpenProject"/>
@@ -120,6 +121,7 @@
      <addaction name="actionIgnoreMetadata"/>
      <addaction name="actionVariableLens"/>
      <addaction name="actionFixGeoOrigin"/>
+     <addaction name="actionUseGPU"/>
     </widget>
     <addaction name="actionCancelComputation"/>
     <addaction name="separator"/>
@@ -544,7 +546,7 @@
     <string>&amp;Masks...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O, M</string>
+    <string>Ctrl+O, K</string>
    </property>
   </action>
   <action name="actionImportCameras">
@@ -577,6 +579,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O, G</string>
+   </property>
+  </action>
+  <action name="actionImportMesh">
+   <property name="text">
+    <string>&amp;Mesh...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O, M</string>
    </property>
   </action>
   <action name="actionIgnoreMetadata">
@@ -612,12 +622,67 @@
     <string>Keep the origin of the local geospatial coordinates fixed.</string>
    </property>
   </action>
+  <action name="actionUseGPU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Use GPU</string>
+   </property>
+   <property name="toolTip">
+    <string>Use CUDA to accelerate processing on the GPU.</string>
+   </property>
+  </action>
   <action name="actionExportFusedMeshFrameColors">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
     <string>Fused Mesh Frame Colors...</string>
+   </property>
+  </action>
+  <action name="actionFramePrevious">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Previous Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>[</string>
+   </property>
+  </action>
+  <action name="actionFrameNext">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Next Frame</string>
+   </property>
+   <property name="shortcut">
+    <string>]</string>
+   </property>
+  </action>
+  <action name="actionGcpPrevious">
+   <property name="text">
+    <string>Previous Point</string>
+   </property>
+   <property name="shortcut">
+    <string>,</string>
+   </property>
+  </action>
+  <action name="actionGcpNext">
+   <property name="text">
+    <string>Next Point</string>
+   </property>
+   <property name="toolTip">
+    <string>Next Point</string>
+   </property>
+   <property name="shortcut">
+    <string>.</string>
    </property>
   </action>
  </widget>
@@ -703,6 +768,38 @@
     <hint type="destinationlabel">
      <x>613</x>
      <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFramePrevious</sender>
+   <signal>triggered()</signal>
+   <receiver>cameraSpin</receiver>
+   <slot>stepDown()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>569</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFrameNext</sender>
+   <signal>triggered()</signal>
+   <receiver>cameraSpin</receiver>
+   <slot>stepUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>569</y>
     </hint>
    </hints>
   </connection>
