@@ -54,7 +54,7 @@ library.  This means that new plugins can be dropped into TeleSculptor to
 enable alternative or new functionality by adjusting some settings in a
 configuration file.  While TeleSculptor provides a default workflow that works
 out of the box, it is not just an end user tool.  It is designed to be highly
-configurable to support research into to algorithms and new problem domains.
+configurable to support research into algorithms and new problem domains.
 
 The screenshots below show TeleSculptor
 running on example videos from the `VIRAT Video Dataset`_,
@@ -121,8 +121,9 @@ Before building on Linux systems you must install the following packages:
 .. code-block :: bash
 
   sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
-  sudo apt-get libx11-xcb-dev libxcb1-dev libxcb-glx0-dev libxkbcommon-x11-dev
+  sudo apt-get install libx11-xcb-dev libxcb1-dev libxcb-glx0-dev libxkbcommon-x11-dev
   sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+  sudo apt-get install libxcb-xfixes0-dev
 
 On Linux, to optionally build with Python and to build the user documentation,
 you will also need to install the following:
@@ -171,7 +172,7 @@ A description of the configuration options can be found in `CMake Options`_.
   # build directories accordingly and then press the "Configure" and “Generate”
   # buttons
 
-Build the installer target/project
+Build the installer target/project.
 
 .. code-block :: bash
 
@@ -188,7 +189,7 @@ Build the installer target/project
   # build/external/telesculptor-build/TeleSculptor.sln
 
 You have now built a TeleSculptor installer similar to what is provided in the
-`latest release`_ section. To install TeleSculptor on you machine, follow the
+`latest release`_ section. To install TeleSculptor on your machine, follow the
 instructions above in `Installation`_.
 
 CMake Options
@@ -291,9 +292,9 @@ which contains the kwiver-config.cmake file.
 
 You must ensure that the specified build of KWIVER was built with at least the following options set:
 
-The required KWIVER flags can be found in this file : `<CMake/telesculptor-external-kwiver.cmake>`_
+The required KWIVER flags can be found in this file: `<CMake/telesculptor-external-kwiver.cmake>`_
 
-The required Fletch flags can be found in this file : `<CMake/telesculptor-external-fletch.cmake>`_
+The required Fletch flags can be found in this file: `<CMake/telesculptor-external-fletch.cmake>`_
 
 Overview of Directories
 =======================
