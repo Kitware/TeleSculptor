@@ -123,6 +123,7 @@ Before building on Linux systems you must install the following packages:
   sudo apt-get install build-essential libgl1-mesa-dev libxt-dev
   sudo apt-get install libx11-xcb-dev libxcb1-dev libxcb-glx0-dev libxkbcommon-x11-dev
   sudo apt-get install libexpat1-dev libgtk2.0-dev liblapack-dev
+  sudo apt-get install libxcb-xfixes0-dev
 
 On Linux, to optionally build with Python and to build the user documentation,
 you will also need to install the following:
