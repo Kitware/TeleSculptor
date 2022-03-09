@@ -348,7 +348,6 @@ void ColorizeSurfaceOptions::colorize()
                            d->cameras);
 
       coloration->set_input(volume);
-      coloration->set_output(volume);
       coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
       coloration->set_occlusion_threshold(d->occlusionThreshold);
       coloration->set_remove_occluded(d->removeOccluded);
@@ -383,6 +382,7 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(
   {
     vtkPolyData* volume = coloration->get_output();
     volume->GetPointData()->SetActiveScalars("mean");
+    d->volumeActor->GetMapper()->SetInputDataObject(volume);
     d->UI.comboBoxColorDisplay->setCurrentIndex(
       d->UI.comboBoxColorDisplay->findText("mean"));
     d->UI.comboBoxColorDisplay->setEnabled(true);
