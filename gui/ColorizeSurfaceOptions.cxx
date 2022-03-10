@@ -48,8 +48,8 @@ public:
   kv::frame_id_t currentFrame = -1;
 
   double occlusionThreshold = 1;
-  bool removeOccluded = true;
-  bool removeMasked = true;
+  bool colorOccluded = false;
+  bool colorMasked = false;
   bool insideColorize = false;
   const int INVALID_FRAME = -2;
   kwiver::vital::frame_id_t lastColorizedFrame = INVALID_FRAME;
@@ -98,12 +98,12 @@ ColorizeSurfaceOptions::ColorizeSurfaceOptions(
 
   connect(d->UI.doubleSpinBoxOcclusionThreshold, &QDoubleSpinBox::editingFinished,
           this, &ColorizeSurfaceOptions::updateOcclusionThreshold);
-  connect(d->UI.checkBoxRemoveOccluded,
+  connect(d->UI.checkBoxColorOccluded,
           &QCheckBox::stateChanged,
-          this, &ColorizeSurfaceOptions::removeOccludedChanged);
-  connect(d->UI.checkBoxRemoveMasked,
+          this, &ColorizeSurfaceOptions::colorOccludedChanged);
+  connect(d->UI.checkBoxColorMasked,
           &QCheckBox::stateChanged,
-          this, &ColorizeSurfaceOptions::removeMaskedChanged);
+          this, &ColorizeSurfaceOptions::colorMaskedChanged);
 
   d->krtdFile = QString();
   d->frameFile = QString();
@@ -127,17 +127,17 @@ void ColorizeSurfaceOptions::setOcclusionThreshold(double occlusionThreshold)
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setRemoveOccluded(double removeOccluded)
+void ColorizeSurfaceOptions::setColorOccluded(double colorOccluded)
 {
   QTE_D();
-  d->removeOccluded = removeOccluded;
+  d->colorOccluded = colorOccluded;
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::setRemoveMasked(double removeMasked)
+void ColorizeSurfaceOptions::setColorMasked(double colorMasked)
 {
   QTE_D();
-  d->removeMasked = removeMasked;
+  d->colorMasked = colorMasked;
 }
 
 //-----------------------------------------------------------------------------
@@ -225,7 +225,7 @@ void ColorizeSurfaceOptions::setMaskConfig(
   if (d->UI.radioButtonAllFrames->isEnabled())
   {
     this->forceColorize();
-    d->UI.checkBoxRemoveMasked->setEnabled(! d->maskPath.empty());
+    d->UI.checkBoxColorMasked->setEnabled(! d->maskPath.empty());
   }
 }
 
@@ -275,8 +275,8 @@ void ColorizeSurfaceOptions::enableMenu(bool state)
   d->UI.radioButtonAllFrames->setEnabled(state);
   d->UI.radioButtonCurrentFrame->setEnabled(state);
   d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(state);
-  d->UI.checkBoxRemoveOccluded->setEnabled(state);
-  d->UI.checkBoxRemoveMasked->setEnabled(state && ! d->maskPath.empty());
+  d->UI.checkBoxColorOccluded->setEnabled(state);
+  d->UI.checkBoxColorMasked->setEnabled(state && ! d->maskPath.empty());
 }
 
 //-----------------------------------------------------------------------------
@@ -350,8 +350,8 @@ void ColorizeSurfaceOptions::colorize()
       coloration->set_input(volume);
       coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
       coloration->set_occlusion_threshold(d->occlusionThreshold);
-      coloration->set_remove_occluded(d->removeOccluded);
-      coloration->set_remove_masked(d->removeMasked);
+      coloration->set_color_occluded(d->colorOccluded);
+      coloration->set_color_masked(d->colorMasked);
       coloration->set_frame(d->lastColorizedFrame);
       coloration->set_all_frames(false);
       connect(coloration, &MeshColoration::resultReady,
@@ -388,7 +388,7 @@ void ColorizeSurfaceOptions::meshColorationHandleResult(
     d->UI.comboBoxColorDisplay->setEnabled(true);
     emit colorModeChanged(d->UI.buttonGroup->checkedButton()->text());
   }
-  d->UI.checkBoxRemoveOccluded->setEnabled(coloration);
+  d->UI.checkBoxColorOccluded->setEnabled(coloration);
   d->UI.doubleSpinBoxOcclusionThreshold->setEnabled(coloration);
 }
 
@@ -430,15 +430,15 @@ void ColorizeSurfaceOptions::updateOcclusionThreshold()
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::removeOccludedChanged(int removeOccluded)
+void ColorizeSurfaceOptions::colorOccludedChanged(int colorOccluded)
 {
-  this->setRemoveOccluded(removeOccluded);
+  this->setColorOccluded(colorOccluded);
   this->forceColorize();
 }
 
 //-----------------------------------------------------------------------------
-void ColorizeSurfaceOptions::removeMaskedChanged(int removeMasked)
+void ColorizeSurfaceOptions::colorMaskedChanged(int colorMasked)
 {
-  this->setRemoveMasked(removeMasked);
+  this->setColorMasked(colorMasked);
   this->forceColorize();
 }

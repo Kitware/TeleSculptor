@@ -1811,7 +1811,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   coloration->set_frame_sampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->set_occlusion_threshold(occlusionThreshold);
-  coloration->set_remove_occluded(occlusion);
+  coloration->set_color_occluded(occlusion);
   coloration->set_frame(-1);
   coloration->set_all_frames(true);
   connect(coloration, &MeshColoration::resultReady,

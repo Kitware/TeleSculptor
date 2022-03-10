@@ -103,15 +103,15 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QCheckBox" name="checkBoxRemoveOccluded">
+    <widget class="QCheckBox" name="checkBoxColorOccluded">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>Remove occluded surface color</string>
+      <string>Color occluded surface</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -142,15 +142,15 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QCheckBox" name="checkBoxRemoveMasked">
+    <widget class="QCheckBox" name="checkBoxColorMasked">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>Remove masked surface color</string>
+      <string>Color masked surface</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
