@@ -33,7 +33,6 @@
 #include "vtkMaptkImageUnprojectDepth.h"
 
 #include <maptk/version.h>
-#include <maptk/write_pdal.h>
 
 #include <arrows/core/match_matrix.h>
 #include <arrows/core/track_set_impl.h>
@@ -41,6 +40,7 @@
 #include "arrows/vtk/vtkKwiverCamera.h"
 #include <vital/algo/algorithm_factory.h>
 #include <vital/algo/estimate_similarity_transform.h>
+#include <vital/algo/pointcloud_io.h>
 #include <vital/algo/resection_camera.h>
 #include <vital/algo/video_input.h>
 #include <vital/io/camera_from_metadata.h>
@@ -2395,7 +2395,15 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
     if (QFileInfo(path).suffix() == "las")
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
-      kwiver::maptk::write_pdal(stdString(path), lgcs, d->landmarks);
+      auto pc_io = kv::algo::pointcloud_io::create("pdal");
+      if (!pc_io)
+      {
+        LOG_ERROR(kv::get_logger("telesculptor.mainwindow"),
+          "Unable to write file: failed to create PDAL pointcloud writer");
+        return;
+      }
+      pc_io->set_local_geo_cs(lgcs);
+      pc_io->save(stdString(path), d->landmarks);
     }
     else
     {

@@ -23,9 +23,8 @@
 #include "vtkMaptkInteractorStyle.h"
 #include "vtkMaptkScalarDataFilter.h"
 
-#include <maptk/write_pdal.h>
-
 #include "arrows/vtk/vtkKwiverCamera.h"
+#include <vital/algo/pointcloud_io.h>
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
 
@@ -1627,7 +1626,16 @@ bool WorldView::saveDepthPoints(QString const& path,
     std::vector<kv::vector_3d> points;
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(data, DepthMapArrays::TrueColor, points, colors);
-    kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+
+    kv::algo::pointcloud_io_sptr pc_io = kv::algo::pointcloud_io::create("pdal");
+    if(!pc_io)
+    {
+      LOG_ERROR(d->logger,
+        "Unable to write file: failed to create PDAL pointcloud writer");
+      return false;
+    }
+    pc_io->set_local_geo_cs(lgcs);
+    pc_io->save(stdString(path), points, colors);
     return true;
   }
   else
@@ -1741,7 +1749,15 @@ bool WorldView::saveFusedMesh(const QString &path,
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(d->mesh, d->mesh->GetPointData()->GetScalars()->GetName(),
                       points, colors);
-    kwiver::maptk::write_pdal(stdString(path), lgcs, points, colors);
+    kv::algo::pointcloud_io_sptr pc_io = kv::algo::pointcloud_io::create("pdal");
+    if(!pc_io)
+    {
+      LOG_ERROR(d->logger,
+        "Unable to write file: failed to create PDAL pointcloud writer");
+      return false;
+    }
+    pc_io->set_local_geo_cs(lgcs);
+    pc_io->save(stdString(path), points, colors);
     result = VTK_OK;
   }
   else
