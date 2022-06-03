@@ -34,8 +34,8 @@ public:
 
   void setCurrentFrame(kwiver::vital::frame_id_t frame);
   void setOcclusionThreshold(double occlusionThreshold);
-  void setRemoveOccluded(double removeOccluded);
-  void setRemoveMasked(double removeMasked);
+  void setColorOccluded(double colorOccluded);
+  void setColorMasked(double colorMasked);
   double getOcclusionThreshold();
   void setActor(vtkActor* actor);
   void setVideoConfig(std::string const& path,
@@ -65,8 +65,8 @@ public slots:
   void allFrameSelected();
   void currentFrameSelected();
   void updateOcclusionThreshold();
-  void removeOccludedChanged(int removeOccluded);
-  void removeMaskedChanged(int removeMasked);
+  void colorOccludedChanged(int colorOccluded);
+  void colorMaskedChanged(int colorMasked);
 
 private:
 
