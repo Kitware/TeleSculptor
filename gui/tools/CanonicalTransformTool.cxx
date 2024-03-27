@@ -5,6 +5,7 @@
 #include "CanonicalTransformTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/estimate_canonical_transform.h>
 
 #include <arrows/mvg/transform.h>
@@ -76,7 +77,7 @@ bool CanonicalTransformTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!estimate_canonical_transform::check_nested_algo_configuration(BLOCK, config))
+  if (!kwiver::vital::check_nested_algo_configuration<estimate_canonical_transform>(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -85,7 +86,7 @@ bool CanonicalTransformTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  estimate_canonical_transform::set_nested_algo_configuration(
+  kwiver::vital::set_nested_algo_configuration<estimate_canonical_transform>(
     BLOCK, config, d->algorithm);
 
   return AbstractTool::execute(window);

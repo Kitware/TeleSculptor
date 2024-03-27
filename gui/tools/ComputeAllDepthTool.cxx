@@ -7,6 +7,7 @@
 #include "GuiCommon.h"
 
 #include <arrows/core/depth_utils.h>
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/compute_depth.h>
 #include <vital/algo/image_io.h>
 #include <vital/algo/video_input.h>
@@ -111,7 +112,7 @@ bool ComputeAllDepthTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!video_input::check_nested_algo_configuration(BLOCK_VR, config))
+  if (!kwiver::vital::check_nested_algo_configuration<video_input>(BLOCK_VR, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -119,7 +120,7 @@ bool ComputeAllDepthTool::execute(QWidget* window)
     return false;
   }
 
-  if (!compute_depth::check_nested_algo_configuration(BLOCK_CD, config))
+  if (!kwiver::vital::check_nested_algo_configuration<compute_depth>(BLOCK_CD, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -128,7 +129,7 @@ bool ComputeAllDepthTool::execute(QWidget* window)
   }
 
   auto const hasMask = !this->data()->maskPath.empty();
-  if (hasMask && !video_input::check_nested_algo_configuration(BLOCK_MR, config))
+  if (hasMask && !kwiver::vital::check_nested_algo_configuration<video_input>(BLOCK_MR, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -138,9 +139,9 @@ bool ComputeAllDepthTool::execute(QWidget* window)
 
   // Create algorithm from configuration
   config->merge_config(this->data()->config);
-  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
-  compute_depth::set_nested_algo_configuration(BLOCK_CD, config, d->depth_algo);
-  video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
+  kwiver::vital::set_nested_algo_configuration<video_input>(BLOCK_VR, config, d->video_reader);
+  kwiver::vital::set_nested_algo_configuration<compute_depth>(BLOCK_CD, config, d->depth_algo);
+  kwiver::vital::set_nested_algo_configuration<video_input>(BLOCK_MR, config, d->mask_reader);
 
   d->start_frame = config->get_value<int>("batch_depth:first_frame", 0);
   d->end_frame = config->get_value<int>("batch_depth:end_frame", -1);

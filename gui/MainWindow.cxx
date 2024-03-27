@@ -38,8 +38,9 @@
 #include <arrows/core/track_set_impl.h>
 #include <arrows/mvg/transform.h>
 #include "arrows/vtk/vtkKwiverCamera.h"
-#include <vital/algo/algorithm_factory.h>
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/estimate_similarity_transform.h>
+#include <vital/algo/integrate_depth_maps.h>
 #include <vital/algo/pointcloud_io.h>
 #include <vital/algo/resection_camera.h>
 #include <vital/algo/video_input.h>
@@ -613,7 +614,7 @@ void MainWindowPrivate::addVideoSource(
     this->videoSource->close();
   }
 
-  kv::algo::video_input::set_nested_algo_configuration(
+  kv::set_nested_algo_configuration<kv::algo::video_input>(
     "video_reader", config, this->videoSource);
 
   try
@@ -1729,7 +1730,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
   // check if the application has the CUDA plugin
   bool has_cuda =
-    kwiver::vital::has_algorithm_impl_name("integrate_depth_maps", "cuda");
+    kwiver::vital::has_algorithm_impl_name<kv::algo::integrate_depth_maps>("cuda");
   if (!has_cuda)
   {
     d->UI.actionUseGPU->setChecked(false);
@@ -2395,7 +2396,7 @@ void MainWindow::saveLandmarks(QString const& path, bool writeToProject)
     if (QFileInfo(path).suffix() == "las")
     {
       auto lgcs = d->sfmConstraints->get_local_geo_cs();
-      auto pc_io = kv::algo::pointcloud_io::create("pdal");
+      auto pc_io = kv::create_algorithm<kv::algo::pointcloud_io>("pdal");
       if (!pc_io)
       {
         LOG_ERROR(kv::get_logger("telesculptor.mainwindow"),
@@ -3455,7 +3456,7 @@ void MainWindow::applySimilarityTransform()
   }
 
   config->merge_config(d->project->config);
-  if (!kv::algo::estimate_similarity_transform::check_nested_algo_configuration("st_estimator", config))
+  if (!kv::check_nested_algo_configuration<kv::algo::estimate_similarity_transform>("st_estimator", config))
   {
     QMessageBox::critical(
       this, "Configuration error",
@@ -3465,7 +3466,7 @@ void MainWindow::applySimilarityTransform()
 
   // Create the similarity transform from the ground control points
   kv::algo::estimate_similarity_transform_sptr st_estimator;
-  kv::algo::estimate_similarity_transform::set_nested_algo_configuration(
+  kv::set_nested_algo_configuration<kv::algo::estimate_similarity_transform>(
     "st_estimator", config, st_estimator);
 
   // initialize identity transform
@@ -3596,7 +3597,7 @@ void MainWindow::computeCamera()
   {
     // Create algorithm to write detections
     kv::algo::resection_camera_sptr algorithm;
-    kv::algo::resection_camera::set_nested_algo_configuration(
+    kv::set_nested_algo_configuration<kv::algo::resection_camera>(
       "resection", config, algorithm);
 
     if (!algorithm)

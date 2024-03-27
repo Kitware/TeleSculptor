@@ -5,6 +5,7 @@
 #include "InitCamerasLandmarksTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/initialize_cameras_landmarks.h>
 
 #include <QMessageBox>
@@ -76,7 +77,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!initialize_cameras_landmarks::check_nested_algo_configuration(BLOCK, config))
+  if (!kwiver::vital::check_nested_algo_configuration<initialize_cameras_landmarks>(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -92,7 +93,7 @@ bool InitCamerasLandmarksTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  initialize_cameras_landmarks::set_nested_algo_configuration(
+  kwiver::vital::set_nested_algo_configuration<initialize_cameras_landmarks>(
     BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates

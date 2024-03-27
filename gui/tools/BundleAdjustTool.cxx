@@ -5,6 +5,7 @@
 #include "BundleAdjustTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/bundle_adjust.h>
 
 #include <QMessageBox>
@@ -74,7 +75,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!bundle_adjust::check_nested_algo_configuration(BLOCK, config))
+  if (!kwiver::vital::check_nested_algo_configuration<bundle_adjust>(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -83,7 +84,7 @@ bool BundleAdjustTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  bundle_adjust::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  kwiver::vital::set_nested_algo_configuration<bundle_adjust>(BLOCK, config, d->algorithm);
 
   // Set the callback to receive updates
   using std::placeholders::_1;

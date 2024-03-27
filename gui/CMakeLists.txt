@@ -107,7 +107,8 @@ set(gui_sources
   tools/RunAllTool.cxx
   tools/SaveFrameTool.cxx
   tools/SaveKeyFrameTool.cxx
-  tools/TrackFeaturesSprokitTool.cxx
+  # sprokit disabled for kwiver v2, until sprokit is ported.
+  # tools/TrackFeaturesSprokitTool.cxx
   tools/TrackFeaturesTool.cxx
   tools/TrackFilterTool.cxx
   tools/TriangulateTool.cxx
@@ -159,11 +160,11 @@ unset(no_install)
 
 target_link_libraries(TeleSculptor
   maptk
-  kwiver::kwiver_adapter
+  # kwiver::kwiver_adapter
   kwiver::kwiver_algo_core
   kwiver::kwiver_algo_mvg
   kwiver::kwiver_algo_qt_widgets
-  kwiver::sprokit_pipeline
+  # kwiver::sprokit_pipeline
   kwiver::vital_vpm
   kwiver::kwiver_algo_vtk
   qtExtensions
