@@ -5,6 +5,7 @@
 #include "TriangulateTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/triangulate_landmarks.h>
 
 #include <QMessageBox>
@@ -78,7 +79,7 @@ bool TriangulateTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!triangulate_landmarks::check_nested_algo_configuration(BLOCK, config))
+  if (!kwiver::vital::check_nested_algo_configuration<triangulate_landmarks>(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -87,7 +88,7 @@ bool TriangulateTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  triangulate_landmarks::set_nested_algo_configuration(
+  kwiver::vital::set_nested_algo_configuration<triangulate_landmarks>(
     BLOCK, config, d->algorithm);
 
   // Hand off to base class

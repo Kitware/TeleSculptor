@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/convert_image.h>
 #include <vital/algo/video_input.h>
 
@@ -98,8 +99,8 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, config))
+  if (!kwiver::vital::check_nested_algo_configuration<convert_image>(BLOCK_CI, config) ||
+      !kwiver::vital::check_nested_algo_configuration<video_input>(BLOCK_VR, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -108,8 +109,8 @@ bool TrackFeaturesSprokitTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
-  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
+  kwiver::vital::set_nested_algo_configuration<convert_image>(BLOCK_CI, config, d->image_converter);
+  kwiver::vital::set_nested_algo_configuration<video_input>(BLOCK_VR, config, d->video_reader);
 
   std::stringstream pipe_str(create_pipeline_config(window));
   if (pipe_str.str().empty())

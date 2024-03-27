@@ -5,6 +5,7 @@
 #include "FuseDepthTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/image_io.h>
 #include <vital/algo/integrate_depth_maps.h>
 #include <vital/algo/video_input.h>
@@ -115,7 +116,7 @@ bool FuseDepthTool::execute(QWidget* window)
 
   config->merge_config(this->data()->config);
 
-  if(!integrate_depth_maps::check_nested_algo_configuration(BLOCK_IDM, config))
+  if(!kwiver::vital::check_nested_algo_configuration<integrate_depth_maps>(BLOCK_IDM, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -124,8 +125,7 @@ bool FuseDepthTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  integrate_depth_maps::
-    set_nested_algo_configuration(BLOCK_IDM, config, d->fuse_algo);
+  kwiver::vital::set_nested_algo_configuration<integrate_depth_maps>(BLOCK_IDM, config, d->fuse_algo);
 
   return AbstractTool::execute(window);
 }

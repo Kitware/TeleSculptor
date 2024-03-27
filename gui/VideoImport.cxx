@@ -4,6 +4,7 @@
 
 #include "VideoImport.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/video_input.h>
 
 #include <qtStlUtil.h>
@@ -85,7 +86,7 @@ void VideoImport::run()
   try
   {
 
-    if (!video_input::check_nested_algo_configuration(
+    if (!kwiver::vital::check_nested_algo_configuration<video_input>(
       BLOCK_VR, d->config))
     {
       LOG_WARN(d->logger,
@@ -93,7 +94,7 @@ void VideoImport::run()
       return;
     }
 
-    video_input::set_nested_algo_configuration(
+    kwiver::vital::set_nested_algo_configuration<video_input>(
       BLOCK_VR, d->config, d->video_reader);
 
     kwiver::vital::timestamp currentTimestamp;

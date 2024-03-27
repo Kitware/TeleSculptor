@@ -7,6 +7,7 @@
 
 #include <iomanip>
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/image_io.h>
 #include <vital/algo/video_input.h>
 #include <kwiversys/SystemTools.hxx>
@@ -74,7 +75,7 @@ bool SaveFrameTool::execute(QWidget* window)
     return false;
   }
 
-  if (!video_input::check_nested_algo_configuration(
+  if (!kwiver::vital::check_nested_algo_configuration<video_input>(
     BLOCK_VR, this->data()->config))
   {
     QMessageBox::critical(
@@ -96,7 +97,7 @@ bool SaveFrameTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!image_io::check_nested_algo_configuration(BLOCK_IW, config))
+  if (!kwiver::vital::check_nested_algo_configuration<image_io>(BLOCK_IW, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -104,9 +105,9 @@ bool SaveFrameTool::execute(QWidget* window)
     return false;
   }
 
-  video_input::set_nested_algo_configuration(
+  kwiver::vital::set_nested_algo_configuration<video_input>(
     BLOCK_VR, this->data()->config, d->video_reader);
-  image_io::set_nested_algo_configuration(
+  kwiver::vital::set_nested_algo_configuration<image_io>(
     BLOCK_IW, config, d->image_writer);
 
   return AbstractTool::execute(window);

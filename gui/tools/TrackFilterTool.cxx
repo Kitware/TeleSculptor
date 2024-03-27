@@ -5,6 +5,7 @@
 #include "TrackFilterTool.h"
 #include "GuiCommon.h"
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/filter_tracks.h>
 
 #include <QMessageBox>
@@ -72,7 +73,7 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   config->merge_config(this->data()->config);
-  if (!filter_tracks::check_nested_algo_configuration(BLOCK, config))
+  if (!kwiver::vital::check_nested_algo_configuration<filter_tracks>(BLOCK, config))
   {
     QMessageBox::critical(
       window, "Configuration error",
@@ -81,7 +82,7 @@ bool TrackFilterTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  filter_tracks::set_nested_algo_configuration(BLOCK, config, d->algorithm);
+  kwiver::vital::set_nested_algo_configuration<filter_tracks>(BLOCK, config, d->algorithm);
 
   return AbstractTool::execute(window);
 }
