@@ -46,6 +46,8 @@ set(TELESCULPTOR_BINARY_DIR     "${CMAKE_BINARY_DIR}")
 set(TELESCULPTOR_EXTERNAL_DIR   "${TELESCULPTOR_BINARY_DIR}/external")
 set(TELESCULPTOR_STAMP_DIR       ${TELESCULPTOR_EXTERNAL_DIR}/stamps)
 
+set(CMAKE_CXX_STANDARD 17)
+
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)

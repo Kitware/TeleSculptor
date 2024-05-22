@@ -8,6 +8,7 @@
 #include <arrows/core/colorize.h>
 #include <maptk/version.h>
 
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/image_io.h>
 #include <vital/algo/convert_image.h>
 #include <vital/algo/track_features.h>
@@ -113,10 +114,10 @@ bool TrackFeaturesTool::execute(QWidget* window)
 
   auto const hasMask = !this->data()->maskPath.empty();
   config->merge_config(this->data()->config);
-  if (!convert_image::check_nested_algo_configuration(BLOCK_CI, config) ||
-      !track_features::check_nested_algo_configuration(BLOCK_TF, config) ||
-      !video_input::check_nested_algo_configuration(BLOCK_VR, config) ||
-      (hasMask && !video_input::check_nested_algo_configuration(BLOCK_MR, config)))
+  if (!kwiver::vital::check_nested_algo_configuration<convert_image>(BLOCK_CI, config) ||
+      !kwiver::vital::check_nested_algo_configuration<track_features>(BLOCK_TF, config) ||
+      !kwiver::vital::check_nested_algo_configuration<video_input>(BLOCK_VR, config) ||
+      (hasMask && !kwiver::vital::check_nested_algo_configuration<video_input>(BLOCK_MR, config)))
 
   {
     QMessageBox::critical(
@@ -126,10 +127,10 @@ bool TrackFeaturesTool::execute(QWidget* window)
   }
 
   // Create algorithm from configuration
-  convert_image::set_nested_algo_configuration(BLOCK_CI, config, d->image_converter);
-  track_features::set_nested_algo_configuration(BLOCK_TF, config, d->feature_tracker);
-  video_input::set_nested_algo_configuration(BLOCK_VR, config, d->video_reader);
-  video_input::set_nested_algo_configuration(BLOCK_MR, config, d->mask_reader);
+  kwiver::vital::set_nested_algo_configuration<convert_image>(BLOCK_CI, config, d->image_converter);
+  kwiver::vital::set_nested_algo_configuration<track_features>(BLOCK_TF, config, d->feature_tracker);
+  kwiver::vital::set_nested_algo_configuration<video_input>(BLOCK_VR, config, d->video_reader);
+  kwiver::vital::set_nested_algo_configuration<video_input>(BLOCK_MR, config, d->mask_reader);
 
   // The maximum number of frames to track
   d->max_frames = config->get_value<unsigned int>("feature_tracker:max_frames",

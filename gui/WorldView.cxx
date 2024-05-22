@@ -24,6 +24,7 @@
 #include "vtkMaptkScalarDataFilter.h"
 
 #include "arrows/vtk/vtkKwiverCamera.h"
+#include <vital/algo/algorithm.txx>
 #include <vital/algo/pointcloud_io.h>
 #include <vital/types/camera.h>
 #include <vital/types/landmark_map.h>
@@ -1627,7 +1628,7 @@ bool WorldView::saveDepthPoints(QString const& path,
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(data, DepthMapArrays::TrueColor, points, colors);
 
-    kv::algo::pointcloud_io_sptr pc_io = kv::algo::pointcloud_io::create("pdal");
+    kv::algo::pointcloud_io_sptr pc_io = kv::create_algorithm<kv::algo::pointcloud_io>("pdal");
     if(!pc_io)
     {
       LOG_ERROR(d->logger,
@@ -1749,7 +1750,7 @@ bool WorldView::saveFusedMesh(const QString &path,
     std::vector<kv::rgb_color> colors;
     d->vtkToPointList(d->mesh, d->mesh->GetPointData()->GetScalars()->GetName(),
                       points, colors);
-    kv::algo::pointcloud_io_sptr pc_io = kv::algo::pointcloud_io::create("pdal");
+    kv::algo::pointcloud_io_sptr pc_io = kv::create_algorithm<kv::algo::pointcloud_io>("pdal");
     if(!pc_io)
     {
       LOG_ERROR(d->logger,
@@ -1811,10 +1812,7 @@ void WorldView::saveFusedMeshFrameColors(const QString &path, bool occlusion)
   coloration->set_frame_sampling(d->volumeOptions->getFrameSampling());
   double occlusionThreshold = d->volumeOptions->getOcclusionThreshold();
   coloration->set_occlusion_threshold(occlusionThreshold);
-  coloration->set_remove_occluded(occlusion);
-  vtkSmartPointer<vtkPolyData> meshFrameColors = vtkSmartPointer<vtkPolyData>::New();
-  meshFrameColors->CopyStructure(d->mesh);
-  coloration->set_output(meshFrameColors);
+  coloration->set_color_occluded(!occlusion);
   coloration->set_frame(-1);
   coloration->set_all_frames(true);
   connect(coloration, &MeshColoration::resultReady,

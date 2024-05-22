@@ -9,7 +9,7 @@
 #include <maptk/version.h>
 
 #include <kwiversys/SystemTools.hxx>
-#include <vital/plugin_loader/plugin_manager.h>
+#include <vital/plugin_management/plugin_manager.h>
 
 #include <qtCliArgs.h>
 #include <qtStlUtil.h>

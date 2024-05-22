@@ -348,11 +348,10 @@ void ColorizeSurfaceOptions::colorize()
                            d->cameras);
 
       coloration->set_input(volume);
-      coloration->set_output(volume);
       coloration->set_frame_sampling(d->UI.spinBoxFrameSampling->value());
       coloration->set_occlusion_threshold(d->occlusionThreshold);
-      coloration->set_remove_occluded(d->removeOccluded);
-      coloration->set_remove_masked(d->removeMasked);
+      coloration->set_color_occluded(!d->removeOccluded);
+      coloration->set_color_masked(!d->removeMasked);
       coloration->set_frame(d->lastColorizedFrame);
       coloration->set_all_frames(false);
       connect(coloration, &MeshColoration::resultReady,
